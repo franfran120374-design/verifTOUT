@@ -342,6 +342,65 @@
       padding: 0.6rem 1.25rem; font-size: 0.82rem; opacity: 0;
       transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 300; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ─── MEMORY CARD ACTIONS ─── */
+    .memory-actions { display: flex; gap: 0.5rem; padding: 0.75rem 1.25rem; border-top: 1px solid var(--border); background: var(--surface); }
+    .btn-mem-action {
+      flex: 1; padding: 0.45rem 0; font-size: 0.75rem; font-weight: 500;
+      border-radius: var(--radius-sm); border: 1px solid var(--border);
+      background: var(--white); color: var(--muted); cursor: pointer;
+      font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+    }
+    .btn-mem-action:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+    .btn-mem-action.danger:hover { border-color: #c0392b; color: #c0392b; background: #fdf2f2; }
+
+    /* ─── PARTAGE FAMILLE ─── */
+    .share-section { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+    .share-title { font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.75rem; display: block; }
+    .famille-membres { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .membre-row {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.6rem 0.85rem; background: var(--white);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+    }
+    .membre-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 500; flex-shrink: 0;
+      background: var(--gold-bg); color: var(--gold);
+    }
+    .membre-info { flex: 1; min-width: 0; }
+    .membre-name { font-size: 0.82rem; font-weight: 500; color: var(--text); }
+    .membre-email { font-size: 0.7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .membre-status { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 100px; flex-shrink: 0; }
+    .membre-status.ok { background: var(--green-bg); color: var(--green); }
+    .membre-status.pending { background: var(--gold-bg); color: var(--gold); }
+    .membre-check { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); }
+    .btn-retirer { background: none; border: none; color: var(--muted); font-size: 0.9rem; cursor: pointer; padding: 0 0.25rem; }
+    .btn-retirer:hover { color: #c0392b; }
+    .invite-row { display: flex; gap: 0.5rem; }
+    .invite-row input { flex: 1; padding: 0.6rem 0.85rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem; font-family: 'DM Sans', sans-serif; background: var(--white); color: var(--text); outline: none; }
+    .invite-row input:focus { border-color: var(--accent); }
+    .btn-inviter { padding: 0.6rem 1rem; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-size: 0.82rem; cursor: pointer; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+    .btn-inviter:hover { background: var(--accent-light); }
+
+    /* ─── BOTTOM NAV (famille tab) ─── */
+    .snav-famille { margin-top: 0.35rem; }
+
+    /* ─── FAMILLE VIEW ─── */
+    .famille-header { padding: 1.5rem; border-bottom: 1px solid var(--border); background: var(--white); }
+    .famille-header h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; }
+    .famille-header p { font-size: 0.82rem; color: var(--muted); margin-top: 0.25rem; }
+    .famille-content { padding: 1.5rem; }
+    .shared-memory-card { background: var(--white); border: 1px solid var(--border); border-left: 3px solid var(--gold); border-radius: var(--radius); margin-bottom: 1rem; overflow: hidden; }
+    .shared-by { font-size: 0.7rem; color: var(--gold); font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; }
+
+    /* ─── CONFIRM MODAL ─── */
+    .confirm-modal { background: var(--white); border-radius: 20px 20px 0 0; padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom)); width: 100%; max-width: 520px; }
+    .confirm-modal h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 0.5rem; }
+    .confirm-modal p { font-size: 0.88rem; color: var(--muted); line-height: 1.5; margin-bottom: 1.5rem; }
+    .btn-delete-confirm { width: 100%; padding: 0.9rem; background: #c0392b; color: white; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; margin-bottom: 0.5rem; }
+    .btn-delete-confirm:hover { background: #a93226; }
   </style>
 </head>
 <body>
@@ -355,6 +414,7 @@
     <nav class="sidebar-nav">
       <button class="snav active" id="snav-home" onclick="showView('home')"><span class="snav-icon">🏡</span> Mes chapitres</button>
       <button class="snav" id="snav-memories" onclick="showView('memories')"><span class="snav-icon">📖</span> Mes souvenirs</button>
+      <button class="snav" id="snav-famille" onclick="showView('famille')"><span class="snav-icon">👨‍👩‍👧</span> Famille</button>
     </nav>
     <div class="sidebar-footer">
       <button class="btn-premium-sidebar" onclick="openPaywall()">✦ Accès illimité — 3,99€</button>
@@ -455,6 +515,11 @@
           </div>
         </div>
 
+        <div class="share-section" id="record-share-section" style="display:none;">
+          <span class="share-title">Partager avec la famille</span>
+          <div class="famille-membres" id="record-famille-membres"></div>
+        </div>
+
         <button class="btn-save" onclick="saveMemory()">💾 Sauvegarder ce souvenir</button>
       </div>
     </div>
@@ -464,6 +529,27 @@
       <div class="memories-content">
         <p class="memories-title">📖 Mes souvenirs</p>
         <div id="memories-list"></div>
+      </div>
+    </div>
+
+    <!-- FAMILLE VIEW -->
+    <div class="view" id="view-famille">
+      <div class="famille-header">
+        <h2>👨‍👩‍👧 Ma famille</h2>
+        <p>Gérez les membres et les souvenirs partagés</p>
+      </div>
+      <div class="famille-content">
+        <span class="share-title">Membres de la famille</span>
+        <div id="famille-membres-list"></div>
+        <div class="invite-row" style="margin-top:0.75rem;">
+          <input type="email" id="invite-email-global" placeholder="Inviter par email…" />
+          <button class="btn-inviter" onclick="inviterMembre()">+ Inviter</button>
+        </div>
+
+        <div style="margin-top:2rem;">
+          <span class="share-title">Souvenirs partagés avec moi</span>
+          <div id="shared-memories-list"></div>
+        </div>
       </div>
     </div>
 
@@ -477,6 +563,9 @@
   </button>
   <button class="bnav" id="bnav-memories" onclick="showView('memories')">
     <span class="bi">📖</span>Souvenirs
+  </button>
+  <button class="bnav" id="bnav-famille" onclick="showView('famille')">
+    <span class="bi">👨‍👩‍👧</span>Famille
   </button>
   <button class="bnav" onclick="openPaywall()">
     <span class="bi">✦</span>Premium
@@ -538,12 +627,44 @@
   </div>
 </div>
 
+<!-- CONFIRM DELETE MODAL -->
+<div class="modal-overlay" id="confirm-delete-modal">
+  <div class="confirm-modal">
+    <div class="modal-handle"></div>
+    <h3>Supprimer ce souvenir ?</h3>
+    <p>Cette action est irréversible. Le souvenir sera définitivement supprimé pour vous et les membres de la famille avec qui il était partagé.</p>
+    <button class="btn-delete-confirm" onclick="confirmDelete()">🗑 Supprimer définitivement</button>
+    <button class="btn-cancel" onclick="document.getElementById('confirm-delete-modal').classList.remove('open')">Annuler</button>
+  </div>
+</div>
+
+<!-- EDIT MEMORY MODAL -->
+<div class="modal-overlay" id="edit-memory-modal">
+  <div class="paywall-modal" style="max-height:90vh;overflow-y:auto;">
+    <div class="modal-handle"></div>
+    <h2 style="font-size:1.3rem;margin-bottom:1rem;">✏️ Modifier le souvenir</h2>
+    <div style="margin-bottom:1rem;">
+      <label class="input-label">Votre réponse</label>
+      <textarea id="edit-text" style="min-height:120px;"></textarea>
+    </div>
+    <div class="share-section" id="edit-share-section">
+      <span class="share-title">Partager avec la famille</span>
+      <div class="famille-membres" id="edit-famille-membres"></div>
+    </div>
+    <button class="btn-buy" onclick="saveEdit()" style="margin-top:1rem;">💾 Sauvegarder</button>
+    <button class="btn-cancel" onclick="document.getElementById('edit-memory-modal').classList.remove('open')">Annuler</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import {
+  getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
+  collection, query, where, onSnapshot, orderBy, serverTimestamp, arrayUnion, arrayRemove
+} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB1TwbZSkqkAKEPhNJXuwn9zMEz2BqBk48",
@@ -559,18 +680,34 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// ══════════════════════════════════════════════
-// ⚠️ Remplacez par votre lien Stripe
-// ══════════════════════════════════════════════
-window.STRIPE_HERITAGE = "https://buy.stripe.com/4gMcMY15b0cLfCw81G4Vy02";
+window.STRIPE_HERITAGE = "https://buy.stripe.com/VOTRE_LIEN_HERITAGE";
 
-// ─── DATA ───
-let memories = JSON.parse(localStorage.getItem('hm_memories') || '[]');
+// ─── STATE ───
+let memories = [];          // Firestore (mes souvenirs)
+let sharedMemories = [];    // Firestore (souvenirs partagés avec moi)
+let familleMembers = [];    // Firestore (ma liste famille)
 let isPremium = false;
 let currentUser = null;
 let currentChapter = null;
+let currentQuestion = '';
+let uploadedPhotos = [];
+let mediaRecorder = null;
+let audioChunks = [];
+let audioBlob = null;
+let recInterval = null;
+let recSeconds = 0;
+let editingMemoryId = null;
+let deletingMemoryId = null;
+let unsubMemories = null;
+let unsubShared = null;
+let unsubFamille = null;
 
-// ─── AUTH STATE ───
+// Fallback localStorage si non connecté
+function loadLocal() {
+  try { memories = JSON.parse(localStorage.getItem('hm_memories') || '[]'); } catch { memories = []; }
+}
+
+// ─── AUTH ───
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   if (user) {
@@ -582,9 +719,16 @@ onAuthStateChanged(auth, async (user) => {
       isPremium = snap.exists() && snap.data()?.subscriptions?.heritage?.premium === true;
       if (isPremium) document.getElementById('hm-premium-ind').style.display = 'inline-block';
     } catch {}
+    subscribeMemories();
+    subscribeFamille();
     renderChapters();
   } else {
     currentUser = null; isPremium = false;
+    if (unsubMemories) { unsubMemories(); unsubMemories = null; }
+    if (unsubShared) { unsubShared(); unsubShared = null; }
+    if (unsubFamille) { unsubFamille(); unsubFamille = null; }
+    familleMembers = []; sharedMemories = [];
+    loadLocal();
     document.getElementById('hm-auth-bar').style.display = 'flex';
     document.getElementById('hm-user-bar').style.display = 'none';
     document.getElementById('hm-premium-ind').style.display = 'none';
@@ -592,10 +736,49 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
+// ─── FIRESTORE SUBSCRIPTIONS ───
+function subscribeMemories() {
+  if (!currentUser) return;
+  const uid = currentUser.uid;
+
+  // Mes souvenirs
+  const q = query(collection(db, 'souvenirs'), where('auteurId', '==', uid), orderBy('createdAt', 'desc'));
+  unsubMemories = onSnapshot(q, snap => {
+    memories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderMemories();
+    renderChapters();
+  });
+
+  // Souvenirs partagés avec moi
+  const q2 = query(collection(db, 'souvenirs'), where('partageAvec', 'array-contains', uid), orderBy('createdAt', 'desc'));
+  unsubShared = onSnapshot(q2, snap => {
+    sharedMemories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderSharedMemories();
+  });
+}
+
+function subscribeFamille() {
+  if (!currentUser) return;
+  const uid = currentUser.uid;
+  const q = query(collection(db, 'famille'), where('membres', 'array-contains', uid));
+  unsubFamille = onSnapshot(q, snap => {
+    familleMembers = [];
+    snap.docs.forEach(d => {
+      const data = d.data();
+      // Ajouter les autres membres (pas moi)
+      (data.invites || []).forEach(inv => {
+        if (inv.uid !== uid) familleMembers.push({ ...inv, familleId: d.id });
+      });
+    });
+    renderFamilleView();
+  });
+}
+
+// ─── AUTH HANDLERS ───
 window.openHmModal = () => document.getElementById('hm-auth-modal').classList.add('open');
 window.closeHmModal = () => document.getElementById('hm-auth-modal').classList.remove('open');
 
-window.hmSignIn = async function() {
+window.handleHmSignIn = async function() {
   const email = document.getElementById('hm-email').value.trim();
   const pwd = document.getElementById('hm-pwd').value;
   const err = document.getElementById('hm-err');
@@ -603,27 +786,34 @@ window.hmSignIn = async function() {
   try { await signInWithEmailAndPassword(auth, email, pwd); closeHmModal(); }
   catch { err.textContent = 'Email ou mot de passe incorrect.'; }
 };
+window.hmSignIn = window.handleHmSignIn;
 
-window.hmSignUp = async function() {
+window.handleHmSignUp = async function() {
   const email = document.getElementById('hm-email').value.trim();
   const pwd = document.getElementById('hm-pwd').value;
   const err = document.getElementById('hm-err');
   err.textContent = '';
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, pwd);
-    await setDoc(doc(db, 'users', cred.user.uid), { email, createdAt: new Date().toISOString(), subscriptions: {} });
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      email, createdAt: new Date().toISOString(), subscriptions: {}
+    });
+    // Créer une famille pour cet utilisateur
+    await addDoc(collection(db, 'famille'), {
+      createur: cred.user.uid,
+      membres: [cred.user.uid],
+      invites: [{ uid: cred.user.uid, email, statut: 'actif' }],
+      createdAt: serverTimestamp()
+    });
     closeHmModal();
-  } catch(e) { err.textContent = 'Erreur : ' + (e.code === 'auth/email-already-in-use' ? 'Email déjà utilisé.' : e.message); }
+  } catch(e) {
+    err.textContent = 'Erreur : ' + (e.code === 'auth/email-already-in-use' ? 'Email déjà utilisé.' : e.message);
+  }
 };
+window.hmSignUp = window.handleHmSignUp;
 
-window.hmSignOut = async () => { await signOut(auth); };
-let currentQuestion = '';
-let uploadedPhotos = [];
-let mediaRecorder = null;
-let audioChunks = [];
-let audioBlob = null;
-let recInterval = null;
-let recSeconds = 0;
+window.handleHmSignOut = async () => { await signOut(auth); };
+window.hmSignOut = window.handleHmSignOut;
 
 // ─── CHAPTERS ───
 const CHAPTERS = [
@@ -637,7 +827,6 @@ const CHAPTERS = [
   { id: 'traditions', icon: '🎄', name: 'Traditions', desc: 'Fêtes et rituels familiaux', free: false },
 ];
 
-// ─── QUESTIONS par chapitre ───
 const QUESTIONS = {
   enfance: ["Quel est votre tout premier souvenir d'enfance ?", "Comment était la maison où vous avez grandi ?", "Quel était votre jeu préféré quand vous étiez enfant ?", "Quel souvenir d'école vous reste encore aujourd'hui ?"],
   famille: ["Comment décririez-vous votre père en quelques mots ?", "Quel est le souvenir le plus fort que vous avez avec votre mère ?", "Aviez-vous des frères et sœurs ? Que partagiez-vous ?", "Quelle tradition familiale vous a le plus marqué ?"],
@@ -649,11 +838,11 @@ const QUESTIONS = {
   traditions: ["Quelle fête de famille attendiez-vous avec le plus d'impatience ?", "Y a-t-il une recette familiale qui se transmet depuis des générations ?"],
 };
 
-// ─── RENDER CHAPTERS ───
 function renderChapters() {
   const grid = document.getElementById('chapters-grid');
+  const allMems = currentUser ? memories : (JSON.parse(localStorage.getItem('hm_memories') || '[]'));
   grid.innerHTML = CHAPTERS.map(ch => {
-    const count = memories.filter(m => m.chapter === ch.id).length;
+    const count = allMems.filter(m => m.chapter === ch.id).length;
     const locked = !ch.free && !isPremium;
     return `<div class="chapter-card ${locked ? 'locked' : ''}" onclick="${locked ? 'openPaywall()' : `selectChapter('${ch.id}')`}">
       <div class="chapter-icon">${ch.icon}</div>
@@ -676,39 +865,55 @@ window.selectChapter = function(id) {
   document.getElementById('answer-text').value = '';
   document.getElementById('rec-status').textContent = 'Appuyez pour enregistrer';
   document.getElementById('rec-timer').textContent = '0:00';
+  // Render famille checkboxes dans record view
+  renderFamilleCheckboxes();
   loadNewQuestion();
   showView('record');
 };
+
+// ─── FAMILLE CHECKBOXES (dans la vue record) ───
+function renderFamilleCheckboxes() {
+  let section = document.getElementById('record-share-section');
+  if (!section) return;
+  if (!currentUser || familleMembers.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  const list = document.getElementById('record-famille-membres');
+  list.innerHTML = familleMembers.map(m => `
+    <div class="membre-row">
+      <div class="membre-avatar">${(m.email||'?')[0].toUpperCase()}</div>
+      <div class="membre-info">
+        <div class="membre-name">${m.email}</div>
+        <span class="membre-status ${m.statut==='actif'?'ok':'pending'}">${m.statut==='actif'?'✓ Actif':'En attente'}</span>
+      </div>
+      <input type="checkbox" class="membre-check" data-uid="${m.uid}" id="share-${m.uid}" />
+    </div>
+  `).join('');
+}
 
 // ─── AI QUESTION ───
 window.loadNewQuestion = async function() {
   const btn = document.getElementById('btn-new-q');
   btn.disabled = true;
   btn.textContent = '↻ Chargement...';
-
   const localQs = QUESTIONS[currentChapter?.id] || [];
-  const alreadyUsed = memories.filter(m => m.chapter === currentChapter?.id).map(m => m.question);
+  const allMems = currentUser ? memories : (JSON.parse(localStorage.getItem('hm_memories') || '[]'));
+  const alreadyUsed = allMems.filter(m => m.chapter === currentChapter?.id).map(m => m.question);
   const fresh = localQs.filter(q => !alreadyUsed.includes(q));
-
   if (fresh.length > 0) {
     currentQuestion = fresh[Math.floor(Math.random() * fresh.length)];
     document.getElementById('ai-question').textContent = currentQuestion;
-    btn.disabled = false;
-    btn.textContent = '↻ Autre question';
-    return;
+    btn.disabled = false; btn.textContent = '↻ Autre question'; return;
   }
-
-  // Call Claude API via Firebase Function
   try {
-    const response = await fetch("https://us-central1-hub-coloc.cloudfunctions.net/analyseDocument", {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        max_tokens: 150,
-        messages: [{
-          role: "user",
-          content: `Génère une seule question ouverte, chaleureuse et bienveillante pour aider quelqu'un à raconter ses souvenirs sur le thème "${currentChapter?.name}". La question doit être simple, en français, et inviter à partager un souvenir précis et personnel. Réponds uniquement avec la question, sans ponctuation finale ni guillemets.`
-        }]
+        model: "claude-sonnet-4-20250514", max_tokens: 150,
+        messages: [{ role: "user", content: `Génère une seule question ouverte, chaleureuse et bienveillante pour aider quelqu'un à raconter ses souvenirs sur le thème "${currentChapter?.name}". La question doit être simple, en français, et inviter à partager un souvenir précis et personnel. Réponds uniquement avec la question, sans ponctuation finale ni guillemets.` }]
       })
     });
     const data = await response.json();
@@ -718,44 +923,27 @@ window.loadNewQuestion = async function() {
     currentQuestion = localQs[Math.floor(Math.random() * localQs.length)];
     document.getElementById('ai-question').textContent = currentQuestion;
   }
-  btn.disabled = false;
-  btn.textContent = '↻ Autre question';
+  btn.disabled = false; btn.textContent = '↻ Autre question';
 };
 
 // ─── PHOTOS ───
 window.handlePhotos = function(event) {
-  const files = Array.from(event.target.files);
-  files.forEach(file => {
+  Array.from(event.target.files).forEach(file => {
     const reader = new FileReader();
-    reader.onload = (e) => {
-      uploadedPhotos.push(e.target.result);
-      renderPhotoPreviews();
-    };
+    reader.onload = (e) => { uploadedPhotos.push(e.target.result); renderPhotoPreviews(); };
     reader.readAsDataURL(file);
   });
 };
-
 function renderPhotoPreviews() {
-  const container = document.getElementById('photo-previews');
-  container.innerHTML = uploadedPhotos.map((src, i) => `
-    <div class="photo-thumb">
-      <img src="${src}" alt="Photo ${i+1}" />
-      <button class="remove" onclick="removePhoto(${i})">✕</button>
-    </div>
+  document.getElementById('photo-previews').innerHTML = uploadedPhotos.map((src, i) => `
+    <div class="photo-thumb"><img src="${src}" /><button class="remove" onclick="removePhoto(${i})">✕</button></div>
   `).join('');
 }
+window.removePhoto = (i) => { uploadedPhotos.splice(i, 1); renderPhotoPreviews(); };
 
-window.removePhoto = function(i) {
-  uploadedPhotos.splice(i, 1);
-  renderPhotoPreviews();
-};
-
-// ─── AUDIO RECORDING ───
+// ─── AUDIO ───
 window.toggleRecording = async function() {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    mediaRecorder.stop();
-    return;
-  }
+  if (mediaRecorder && mediaRecorder.state === 'recording') { mediaRecorder.stop(); return; }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaRecorder = new MediaRecorder(stream);
@@ -763,79 +951,255 @@ window.toggleRecording = async function() {
     mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
     mediaRecorder.onstop = () => {
       audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-      const url = URL.createObjectURL(audioBlob);
       const audio = document.getElementById('audio-playback');
-      audio.src = url; audio.style.display = 'block';
+      audio.src = URL.createObjectURL(audioBlob); audio.style.display = 'block';
       document.getElementById('rec-btn').textContent = '🎙️';
       document.getElementById('rec-btn').classList.remove('recording');
       document.getElementById('rec-status').textContent = 'Enregistrement terminé ✓';
       clearInterval(recInterval); recSeconds = 0;
       stream.getTracks().forEach(t => t.stop());
     };
-    mediaRecorder.start();
-    recSeconds = 0;
+    mediaRecorder.start(); recSeconds = 0;
     document.getElementById('rec-btn').classList.add('recording');
     document.getElementById('rec-btn').textContent = '⏹️';
     document.getElementById('rec-status').textContent = 'Enregistrement en cours...';
     recInterval = setInterval(() => {
       recSeconds++;
-      const m = Math.floor(recSeconds / 60);
-      const s = String(recSeconds % 60).padStart(2, '0');
-      document.getElementById('rec-timer').textContent = `${m}:${s}`;
+      document.getElementById('rec-timer').textContent = `${Math.floor(recSeconds/60)}:${String(recSeconds%60).padStart(2,'0')}`;
     }, 1000);
-  } catch {
-    showToast('Accès au micro refusé');
-  }
+  } catch { showToast('Accès au micro refusé'); }
 };
 
 // ─── SAVE MEMORY ───
-window.saveMemory = function() {
+window.saveMemory = async function() {
   if (!currentUser) { openHmModal(); return; }
   const text = document.getElementById('answer-text').value.trim();
   if (!text && uploadedPhotos.length === 0 && !audioBlob) {
-    showToast('Ajoutez au moins un texte ou une photo');
-    return;
+    showToast('Ajoutez au moins un texte ou une photo'); return;
   }
+
+  // Récupérer les membres cochés
+  const partageAvec = [];
+  document.querySelectorAll('#record-famille-membres .membre-check:checked').forEach(cb => partageAvec.push(cb.dataset.uid));
+
   const memory = {
-    id: Date.now(),
+    auteurId: currentUser.uid,
+    auteurEmail: currentUser.email,
     chapter: currentChapter.id,
     chapterName: currentChapter.name,
     chapterIcon: currentChapter.icon,
     question: currentQuestion,
     text,
     photos: uploadedPhotos,
-    audioUrl: audioBlob ? URL.createObjectURL(audioBlob) : null,
-    date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+    audioUrl: null,
+    partageAvec,
+    date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
+    createdAt: serverTimestamp()
   };
-  memories.unshift(memory);
-  try { localStorage.setItem('hm_memories', JSON.stringify(memories.map(m => ({...m, audioUrl: null})))); } catch {}
-  showToast('✓ Souvenir sauvegardé !');
-  setTimeout(() => showView('memories'), 800);
+
+  try {
+    await addDoc(collection(db, 'souvenirs'), memory);
+    showToast('✓ Souvenir sauvegardé !');
+    setTimeout(() => showView('memories'), 800);
+  } catch(e) {
+    // Fallback localStorage
+    const local = JSON.parse(localStorage.getItem('hm_memories') || '[]');
+    local.unshift({ ...memory, id: Date.now(), createdAt: new Date().toISOString() });
+    localStorage.setItem('hm_memories', JSON.stringify(local));
+    memories = local;
+    showToast('✓ Sauvegardé localement');
+    setTimeout(() => showView('memories'), 800);
+  }
 };
 
 // ─── RENDER MEMORIES ───
 function renderMemories() {
   const container = document.getElementById('memories-list');
-  if (memories.length === 0) {
-    container.innerHTML = `<div class="empty-memories">
-      <div class="empty-icon">📜</div>
-      <p>Vos souvenirs apparaîtront ici.<br>Choisissez un chapitre pour commencer !</p>
-    </div>`;
+  const list = currentUser ? memories : JSON.parse(localStorage.getItem('hm_memories') || '[]');
+  if (list.length === 0) {
+    container.innerHTML = `<div class="empty-memories"><div class="empty-icon">📜</div><p>Vos souvenirs apparaîtront ici.<br>Choisissez un chapitre pour commencer !</p></div>`;
     return;
   }
-  container.innerHTML = memories.map(m => `
+  container.innerHTML = list.map(m => `
     <div class="memory-card">
       <div class="memory-card-header">
         <span class="memory-chapter">${m.chapterIcon} ${m.chapterName}</span>
-        <span class="memory-date">${m.date}</span>
+        <span class="memory-date">${m.date||''}</span>
       </div>
       ${m.question ? `<div class="memory-question">"${m.question}"</div>` : ''}
       ${m.text ? `<div class="memory-text">${m.text}</div>` : ''}
       ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p => `<img src="${p}" />`).join('')}</div>` : ''}
       ${m.audioUrl ? `<div class="memory-audio"><audio controls src="${m.audioUrl}"></audio></div>` : ''}
+      ${m.partageAvec?.length ? `<div style="padding:0.5rem 1.25rem;font-size:0.72rem;color:var(--gold);">🔗 Partagé avec ${m.partageAvec.length} membre${m.partageAvec.length>1?'s':''}</div>` : ''}
+      <div class="memory-actions">
+        <button class="btn-mem-action" onclick="openEditMemory('${m.id}')">✏️ Modifier</button>
+        <button class="btn-mem-action danger" onclick="openDeleteMemory('${m.id}')">🗑 Supprimer</button>
+      </div>
     </div>
   `).join('');
 }
+
+// ─── EDIT MEMORY ───
+window.openEditMemory = function(id) {
+  const m = memories.find(x => x.id === id);
+  if (!m) return;
+  editingMemoryId = id;
+  document.getElementById('edit-text').value = m.text || '';
+
+  // Checkboxes membres
+  const container = document.getElementById('edit-famille-membres');
+  if (familleMembers.length === 0) {
+    document.getElementById('edit-share-section').style.display = 'none';
+  } else {
+    document.getElementById('edit-share-section').style.display = 'block';
+    container.innerHTML = familleMembers.map(mb => `
+      <div class="membre-row">
+        <div class="membre-avatar">${(mb.email||'?')[0].toUpperCase()}</div>
+        <div class="membre-info"><div class="membre-name">${mb.email}</div></div>
+        <input type="checkbox" class="membre-check" data-uid="${mb.uid}" ${(m.partageAvec||[]).includes(mb.uid)?'checked':''} />
+      </div>
+    `).join('');
+  }
+  document.getElementById('edit-memory-modal').classList.add('open');
+};
+
+window.saveEdit = async function() {
+  if (!editingMemoryId || !currentUser) return;
+  const text = document.getElementById('edit-text').value.trim();
+  const partageAvec = [];
+  document.querySelectorAll('#edit-famille-membres .membre-check:checked').forEach(cb => partageAvec.push(cb.dataset.uid));
+  try {
+    await updateDoc(doc(db, 'souvenirs', editingMemoryId), { text, partageAvec, updatedAt: serverTimestamp() });
+    document.getElementById('edit-memory-modal').classList.remove('open');
+    showToast('✓ Souvenir modifié !');
+  } catch(e) {
+    showToast('Erreur lors de la modification'); console.error(e);
+  }
+};
+
+// ─── DELETE MEMORY ───
+window.openDeleteMemory = function(id) {
+  deletingMemoryId = id;
+  document.getElementById('confirm-delete-modal').classList.add('open');
+};
+
+window.confirmDelete = async function() {
+  if (!deletingMemoryId) return;
+  try {
+    await deleteDoc(doc(db, 'souvenirs', deletingMemoryId));
+    document.getElementById('confirm-delete-modal').classList.remove('open');
+    showToast('Souvenir supprimé');
+  } catch(e) {
+    // Fallback local
+    const local = JSON.parse(localStorage.getItem('hm_memories') || '[]').filter(m => m.id !== deletingMemoryId);
+    localStorage.setItem('hm_memories', JSON.stringify(local));
+    memories = local;
+    renderMemories();
+    document.getElementById('confirm-delete-modal').classList.remove('open');
+    showToast('Souvenir supprimé');
+  }
+  deletingMemoryId = null;
+};
+
+// ─── FAMILLE VIEW ───
+function renderFamilleView() {
+  const container = document.getElementById('famille-membres-list');
+  if (!currentUser) {
+    container.innerHTML = `<p style="font-size:0.85rem;color:var(--muted);font-style:italic;">Connectez-vous pour gérer votre famille.</p>`;
+    return;
+  }
+  if (familleMembers.length === 0) {
+    container.innerHTML = `<p style="font-size:0.85rem;color:var(--muted);font-style:italic;">Aucun membre pour l'instant. Invitez votre famille !</p>`;
+  } else {
+    container.innerHTML = `<div class="famille-membres">` + familleMembers.map(m => `
+      <div class="membre-row">
+        <div class="membre-avatar">${(m.email||'?')[0].toUpperCase()}</div>
+        <div class="membre-info">
+          <div class="membre-name">${m.email}</div>
+          <span class="membre-status ${m.statut==='actif'?'ok':'pending'}">${m.statut==='actif'?'✓ Actif':'⏳ En attente'}</span>
+        </div>
+        <button class="btn-retirer" onclick="retirerMembre('${m.uid}')" title="Retirer">✕</button>
+      </div>
+    `).join('') + `</div>`;
+  }
+}
+
+function renderSharedMemories() {
+  const container = document.getElementById('shared-memories-list');
+  if (!container) return;
+  if (sharedMemories.length === 0) {
+    container.innerHTML = `<p style="font-size:0.85rem;color:var(--muted);font-style:italic;">Aucun souvenir partagé avec vous pour l'instant.</p>`;
+    return;
+  }
+  container.innerHTML = sharedMemories.map(m => `
+    <div class="shared-memory-card">
+      <div class="memory-card-header">
+        <span class="memory-chapter">${m.chapterIcon} ${m.chapterName}</span>
+        <span class="shared-by">de ${m.auteurEmail||'un proche'}</span>
+      </div>
+      ${m.question ? `<div class="memory-question">"${m.question}"</div>` : ''}
+      ${m.text ? `<div class="memory-text">${m.text}</div>` : ''}
+      ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p=>`<img src="${p}"/>`).join('')}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ─── INVITER UN MEMBRE ───
+window.inviterMembre = async function() {
+  if (!currentUser) { openHmModal(); return; }
+  const emailInput = document.getElementById('invite-email-global');
+  const email = emailInput.value.trim().toLowerCase();
+  if (!email || !email.includes('@')) { showToast('Email invalide'); return; }
+
+  try {
+    // Chercher le document famille de l'utilisateur
+    const q = query(collection(db, 'famille'), where('createur', '==', currentUser.uid));
+    // On crée directement l'entrée avec statut "en attente"
+    // Le vrai uid sera résolu quand l'invité se connectera
+    const familleQuery = query(collection(db, 'famille'), where('membres', 'array-contains', currentUser.uid));
+    // Récupérer la première famille
+    const nouvelInvite = { uid: 'pending_' + email.replace(/[^a-z0-9]/g,'_'), email, statut: 'en attente' };
+
+    // Trouver ou créer la famille
+    const snap = await import("https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js")
+      .then(m => m.getDocs(familleQuery));
+
+    if (snap.empty) {
+      await addDoc(collection(db, 'famille'), {
+        createur: currentUser.uid, membres: [currentUser.uid],
+        invites: [{ uid: currentUser.uid, email: currentUser.email, statut: 'actif' }, nouvelInvite],
+        createdAt: serverTimestamp()
+      });
+    } else {
+      const familleDoc = snap.docs[0];
+      await updateDoc(doc(db, 'famille', familleDoc.id), {
+        invites: arrayUnion(nouvelInvite)
+      });
+    }
+    emailInput.value = '';
+    showToast(`✓ Invitation envoyée à ${email}`);
+  } catch(e) {
+    console.error(e);
+    showToast('Erreur lors de l\'invitation');
+  }
+};
+
+window.retirerMembre = async function(uid) {
+  if (!currentUser) return;
+  try {
+    const q = query(collection(db, 'famille'), where('membres', 'array-contains', currentUser.uid));
+    const { getDocs } = await import("https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js");
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      const familleDoc = snap.docs[0];
+      const data = familleDoc.data();
+      const invites = (data.invites || []).filter(i => i.uid !== uid);
+      const membres = (data.membres || []).filter(m => m !== uid);
+      await updateDoc(doc(db, 'famille', familleDoc.id), { invites, membres });
+      showToast('Membre retiré');
+    }
+  } catch(e) { showToast('Erreur'); }
+};
 
 // ─── NAVIGATION ───
 window.showView = function(id) {
@@ -848,6 +1212,7 @@ window.showView = function(id) {
   if (snav) snav.classList.add('active');
   if (id === 'memories') renderMemories();
   if (id === 'home') renderChapters();
+  if (id === 'famille') { renderFamilleView(); renderSharedMemories(); }
   window.scrollTo(0, 0);
 };
 
@@ -858,9 +1223,7 @@ window.goPremium = () => {
   if (!currentUser) { closePaywall(); openHmModal(); return; }
   if (window.STRIPE_HERITAGE && !window.STRIPE_HERITAGE.includes('VOTRE_LIEN')) {
     window.open(window.STRIPE_HERITAGE + '?prefilled_email=' + encodeURIComponent(currentUser.email), '_blank');
-  } else {
-    showToast('Lien Stripe non configuré');
-  }
+  } else { showToast('Lien Stripe non configuré'); }
   closePaywall();
 };
 
@@ -873,6 +1236,7 @@ function showToast(msg) {
 window.showToast = showToast;
 
 // ─── INIT ───
+loadLocal();
 renderChapters();
 </script>
 </body>
