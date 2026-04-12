@@ -3,31 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VérifTOUT — Des apps qui simplifient la vie</title>
-  <meta name="description" content="Des applications simples et utiles pour le quotidien." />
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0b0f1a" />
+  <title>HéritageMémoire — Gardez les histoires vivantes</title>
+  <meta name="description" content="Archivez la mémoire de vos proches : questions guidées par l'IA, texte, photos et audio." />
+  <meta name="theme-color" content="#f9f5ef" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0b0f1a;
-      --surface: #131929;
-      --surface2: #1a2236;
-      --border: rgba(255,255,255,0.08);
-      --border-hover: rgba(255,255,255,0.18);
-      --text: #eeeae0;
-      --muted: #8a9ab5;
-      --accent: #d4a853;
-      --accent-light: #f0c97a;
-      --accent-bg: rgba(212,168,83,0.10);
-      --green: #2cb67d;
-      --green-bg: rgba(44,182,125,0.10);
-      --radius: 14px;
-      --radius-sm: 8px;
+      --bg: #f9f5ef;
+      --white: #fffef9;
+      --surface: #f2ebe0;
+      --border: #e0d5c4;
+      --text: #2c1f0e;
+      --muted: #8a7660;
+      --accent: #8b4513;
+      --accent-light: #a0522d;
+      --accent-bg: #f5ebe0;
+      --gold: #c8922a;
+      --gold-bg: #fdf5e4;
+      --green: #3a6b3a;
+      --green-bg: #edf5ed;
+      --radius: 16px;
+      --radius-sm: 10px;
     }
 
     body {
@@ -35,687 +35,846 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      overflow-x: hidden;
     }
 
-    /* ─── NAV ─── */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    /* ─── RESPONSIVE LAYOUT ─── */
+    .app-shell {
+      max-width: 520px;
+      margin: 0 auto;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    @media (min-width: 900px) {
+      body { background: #ede6d8; }
+      .app-shell {
+        max-width: 1100px;
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        min-height: 100vh;
+        background: var(--white);
+        margin: 2rem auto;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        box-shadow: 0 12px 48px rgba(44,31,14,0.12);
+      }
+      .sidebar { display: flex !important; }
+      .mobile-header { display: none !important; }
+      .bottom-nav { display: none !important; }
+      .app-content { border-left: 1px solid var(--border); }
+    }
+
+    /* ─── SIDEBAR ─── */
+    .sidebar {
+      display: none;
+      flex-direction: column;
+      background: var(--surface);
+      padding: 2rem 1.5rem;
+      border-right: 1px solid var(--border);
+    }
+    .sidebar-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem; font-weight: 600;
+      color: var(--accent); margin-bottom: 0.25rem;
+    }
+    .sidebar-logo em { font-style: italic; font-weight: 400; color: var(--gold); }
+    .sidebar-tagline { font-size: 0.78rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.5; }
+    .sidebar-nav { display: flex; flex-direction: column; gap: 0.35rem; }
+    .snav { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem;
+      border-radius: var(--radius-sm); font-size: 0.88rem; cursor: pointer;
+      border: none; background: none; color: var(--text); text-align: left;
+      transition: all 0.18s; }
+    .snav:hover { background: var(--accent-bg); color: var(--accent); }
+    .snav.active { background: var(--accent-bg); color: var(--accent); font-weight: 500; }
+    .snav-icon { font-size: 1.1rem; }
+    .sidebar-footer { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+    .btn-premium-sidebar {
+      width: 100%; padding: 0.85rem; background: var(--accent); color: white;
+      border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-premium-sidebar:hover { background: var(--accent-light); }
+
+    /* ─── APP CONTENT ─── */
+    .app-content { display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ─── MOBILE HEADER ─── */
+    .mobile-header {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 1.1rem 1.5rem;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 1.2rem 2.5rem;
-      background: rgba(11,15,26,0.85);
-      backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .mobile-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem; font-weight: 600; color: var(--accent);
+    }
+    .mobile-logo em { font-style: italic; font-weight: 400; color: var(--gold); }
+    .btn-prem-sm {
+      font-size: 0.72rem; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--gold);
+      background: var(--gold-bg); border: 1px solid rgba(200,146,42,0.25);
+      border-radius: 100px; padding: 0.3rem 0.8rem; cursor: pointer;
+    }
+
+    /* ─── VIEWS ─── */
+    .view { display: none; flex: 1; overflow-y: auto; padding-bottom: 90px; }
+    .view.active { display: block; }
+    @media (min-width: 900px) { .view { padding-bottom: 2rem; } }
+
+    /* ─── HOME VIEW ─── */
+    .home-hero {
+      background: linear-gradient(135deg, #f5e6c8 0%, #ede0c8 100%);
+      padding: 2.5rem 1.5rem 2rem; text-align: center;
       border-bottom: 1px solid var(--border);
     }
-    .logo {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.6rem; font-weight: 600;
-      color: var(--text); letter-spacing: 0.02em;
-      text-decoration: none;
+    .home-hero .hero-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .home-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem; font-weight: 600; line-height: 1.2;
+      margin-bottom: 0.5rem;
     }
-    .logo span { color: var(--accent); }
-    nav .right { display: flex; align-items: center; gap: 1rem; }
-    .btn-ghost {
+    .home-hero h1 em { font-style: italic; color: var(--accent); }
+    .home-hero p { font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+
+    .chapters-section { padding: 1.5rem; }
+    .chapters-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem; margin-bottom: 1rem; color: var(--text);
+    }
+    .chapters-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .chapter-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.25rem 1rem;
+      cursor: pointer; transition: all 0.2s; text-align: center;
+    }
+    .chapter-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .chapter-card.locked { opacity: 0.55; cursor: pointer; }
+    .chapter-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .chapter-name { font-size: 0.88rem; font-weight: 500; margin-bottom: 0.2rem; }
+    .chapter-count { font-size: 0.72rem; color: var(--muted); }
+    .chapter-lock { font-size: 0.65rem; color: var(--gold); font-weight: 500;
+      background: var(--gold-bg); border-radius: 100px; padding: 0.15rem 0.5rem;
+      margin-top: 0.35rem; display: inline-block; }
+
+    /* ─── RECORD VIEW ─── */
+    .record-header {
+      padding: 1.5rem; border-bottom: 1px solid var(--border);
+      background: var(--white);
+    }
+    .record-header .back-btn {
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: 0.85rem; margin-bottom: 0.75rem; padding: 0; display: flex;
+      align-items: center; gap: 0.4rem;
+    }
+    .record-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; font-weight: 600;
+    }
+    .record-header p { font-size: 0.82rem; color: var(--muted); margin-top: 0.25rem; }
+
+    .record-content { padding: 1.5rem; }
+
+    /* AI Question */
+    .ai-question-box {
+      background: var(--gold-bg); border: 1px solid rgba(200,146,42,0.25);
+      border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem;
+    }
+    .ai-question-label {
+      font-size: 0.7rem; font-weight: 500; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--gold); margin-bottom: 0.6rem;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .ai-question-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem; font-style: italic; line-height: 1.5; color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+    .btn-new-question {
       background: none; border: 1px solid var(--border);
-      color: var(--muted); font-family: 'DM Sans', sans-serif;
-      font-size: 0.875rem; padding: 0.5rem 1.1rem;
-      border-radius: var(--radius-sm); cursor: pointer;
-      transition: all 0.2s;
+      border-radius: var(--radius-sm); padding: 0.4rem 0.85rem;
+      font-size: 0.78rem; color: var(--muted); cursor: pointer;
+      transition: all 0.2s; font-family: 'DM Sans', sans-serif;
     }
-    .btn-ghost:hover { border-color: var(--border-hover); color: var(--text); }
-    .btn-accent {
-      background: var(--accent); border: none;
-      color: #1a0e00; font-family: 'DM Sans', sans-serif;
-      font-size: 0.875rem; font-weight: 500; padding: 0.5rem 1.3rem;
-      border-radius: var(--radius-sm); cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-accent:hover { background: var(--accent-light); }
-    #user-info { display: none; align-items: center; gap: 0.75rem; }
-    #user-email { font-size: 0.8rem; color: var(--muted); }
+    .btn-new-question:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-new-question:disabled { opacity: 0.5; }
 
-    /* ─── HERO ─── */
-    .hero {
-      min-height: 100vh; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; text-align: center;
-      padding: 7rem 2rem 4rem;
-      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,168,83,0.07) 0%, transparent 70%);
-    }
-    .hero-tag {
-      display: inline-block; font-size: 0.75rem; letter-spacing: 0.12em;
-      text-transform: uppercase; color: var(--accent);
-      border: 1px solid rgba(212,168,83,0.3); border-radius: 100px;
-      padding: 0.35rem 1rem; margin-bottom: 2rem;
-    }
-    .hero h1 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(2.8rem, 7vw, 5rem); font-weight: 600;
-      line-height: 1.1; letter-spacing: -0.01em;
-      max-width: 700px;
-      margin-bottom: 1.5rem;
-    }
-    .hero h1 em { color: var(--accent); font-style: italic; }
-    .hero p {
-      font-size: 1.05rem; color: var(--muted); max-width: 480px;
-      line-height: 1.7; margin-bottom: 2.5rem;
-    }
-    .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
-    .btn-primary {
-      background: var(--accent); border: none;
-      color: #1a0e00; font-family: 'DM Sans', sans-serif;
-      font-size: 0.95rem; font-weight: 500; padding: 0.85rem 2rem;
-      border-radius: var(--radius-sm); cursor: pointer;
-      transition: all 0.2s; text-decoration: none; display: inline-block;
-    }
-    .btn-primary:hover { background: var(--accent-light); transform: translateY(-1px); }
-    .btn-outline {
-      background: none; border: 1px solid var(--border-hover);
-      color: var(--text); font-family: 'DM Sans', sans-serif;
-      font-size: 0.95rem; padding: 0.85rem 2rem;
-      border-radius: var(--radius-sm); cursor: pointer;
-      transition: all 0.2s; text-decoration: none; display: inline-block;
-    }
-    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-
-    /* ─── APPS SECTION ─── */
-    .section { padding: 5rem 2rem; max-width: 900px; margin: 0 auto; }
-    .section-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 2.2rem; font-weight: 600; margin-bottom: 0.5rem;
-    }
-    .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; }
-
-    /* ─── APP CARD ─── */
-    .app-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden; margin-bottom: 2rem;
+    /* Text area */
+    .input-label { font-size: 0.75rem; font-weight: 500; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.5rem; display: block; }
+    textarea {
+      width: 100%; padding: 1rem; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); background: var(--white);
+      font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--text);
+      resize: none; outline: none; line-height: 1.7; min-height: 130px;
       transition: border-color 0.2s;
     }
-    .app-card:hover { border-color: var(--border-hover); }
-    .app-header {
-      display: flex; align-items: center; gap: 1.25rem;
-      padding: 1.75rem 2rem;
-      border-bottom: 1px solid var(--border);
+    textarea:focus { border-color: var(--accent); }
+    textarea::placeholder { color: #c4b59a; }
+
+    /* Photo upload */
+    .photo-section { margin-top: 1.25rem; }
+    .photo-upload-zone {
+      border: 2px dashed var(--border); border-radius: var(--radius-sm);
+      padding: 1.5rem; text-align: center; cursor: pointer; background: var(--white);
+      transition: all 0.2s; position: relative;
     }
-    .app-icon {
-      width: 56px; height: 56px; border-radius: 14px;
-      background: var(--accent-bg); border: 1px solid rgba(212,168,83,0.25);
+    .photo-upload-zone:hover { border-color: var(--accent); background: var(--accent-bg); }
+    .photo-upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .photo-upload-zone p { font-size: 0.82rem; color: var(--muted); margin-top: 0.35rem; }
+    .photo-previews { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.75rem; }
+    .photo-thumb { position: relative; border-radius: var(--radius-sm); overflow: hidden; aspect-ratio: 1; }
+    .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .photo-thumb .remove { position: absolute; top: 3px; right: 3px;
+      background: rgba(0,0,0,0.55); color: white; border: none; border-radius: 50%;
+      width: 20px; height: 20px; font-size: 0.65rem; cursor: pointer; }
+
+    /* Audio recorder */
+    .audio-section { margin-top: 1.25rem; }
+    .recorder-box {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 1.25rem; text-align: center;
+    }
+    .rec-btn {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: var(--accent); border: none; color: white;
+      font-size: 1.4rem; cursor: pointer; margin: 0 auto 0.75rem;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.6rem; flex-shrink: 0;
+      transition: all 0.2s;
     }
-    .app-meta h2 { font-size: 1.2rem; font-weight: 500; margin-bottom: 0.25rem; }
-    .app-meta p { font-size: 0.875rem; color: var(--muted); }
-    .app-badge {
-      margin-left: auto; background: var(--green-bg);
-      color: var(--green); font-size: 0.7rem; font-weight: 500;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      border: 1px solid rgba(44,182,125,0.2);
-      border-radius: 100px; padding: 0.3rem 0.75rem;
-    }
+    .rec-btn.recording { background: #c0392b; animation: pulse-rec 1s infinite; }
+    @keyframes pulse-rec { 0%,100% { box-shadow: 0 0 0 0 rgba(192,57,43,0.4); }
+      50% { box-shadow: 0 0 0 10px rgba(192,57,43,0); } }
+    .rec-status { font-size: 0.82rem; color: var(--muted); }
+    .rec-timer { font-size: 1.1rem; font-weight: 500; color: var(--text); margin: 0.25rem 0; }
+    .audio-playback { margin-top: 0.75rem; width: 100%; height: 36px; }
 
-    /* ─── PRICING GRID ─── */
-    .pricing-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 1px; background: var(--border);
+    /* Save button */
+    .btn-save {
+      width: 100%; padding: 1rem; margin-top: 1.5rem;
+      background: var(--accent); color: white; border: none;
+      border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: background 0.2s;
     }
-    .plan {
-      background: var(--surface); padding: 2rem;
-    }
-    .plan-name {
-      font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 0.75rem;
-    }
-    .plan-price {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 2.5rem; font-weight: 600; margin-bottom: 0.25rem;
-    }
-    .plan-price span { font-size: 1rem; font-family: 'DM Sans', sans-serif; color: var(--muted); }
-    .plan-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
-    .feature-list { list-style: none; margin-bottom: 1.75rem; }
-    .feature-list li {
-      display: flex; align-items: flex-start; gap: 0.6rem;
-      font-size: 0.875rem; color: var(--muted);
-      margin-bottom: 0.6rem;
-    }
-    .feature-list li .check {
-      color: var(--green); font-size: 0.9rem; flex-shrink: 0; margin-top: 1px;
-    }
-    .feature-list li.active { color: var(--text); }
-    .plan.featured { background: var(--surface2); }
-    .plan.featured .plan-price { color: var(--accent); }
+    .btn-save:hover { background: var(--accent-light); }
 
-    .btn-plan {
-      width: 100%; padding: 0.85rem; border-radius: var(--radius-sm);
-      font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
-      cursor: pointer; transition: all 0.2s; text-align: center;
-      display: block; text-decoration: none;
+    /* ─── MEMORIES VIEW ─── */
+    .memories-content { padding: 1.5rem; }
+    .memories-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem; margin-bottom: 1.25rem;
     }
-    .btn-plan-free {
-      background: none; border: 1px solid var(--border-hover); color: var(--text);
+    .memory-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); margin-bottom: 1rem; overflow: hidden;
     }
-    .btn-plan-free:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-plan-premium {
-      background: var(--accent); border: none; color: #1a0e00;
+    .memory-card-header {
+      padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
     }
-    .btn-plan-premium:hover { background: var(--accent-light); }
+    .memory-chapter { font-size: 0.72rem; font-weight: 500; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--gold); }
+    .memory-date { font-size: 0.75rem; color: var(--muted); }
+    .memory-question {
+      padding: 1rem 1.25rem 0.5rem;
+      font-family: 'Playfair Display', serif;
+      font-style: italic; font-size: 0.95rem; color: var(--muted);
+    }
+    .memory-text { padding: 0 1.25rem 1rem; font-size: 0.9rem; line-height: 1.7; }
+    .memory-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+    .memory-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+    .memory-audio { padding: 0.75rem 1.25rem; border-top: 1px solid var(--border); }
+    .memory-audio audio { width: 100%; height: 32px; }
 
-    /* ─── COMING SOON ─── */
-    .coming-soon-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 1rem;
-    }
-    .coming-card {
-      background: var(--surface); border: 1px dashed rgba(255,255,255,0.08);
-      border-radius: var(--radius); padding: 1.5rem; text-align: center;
-      opacity: 0.6;
-    }
-    .coming-card .icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
-    .coming-card h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.25rem; }
-    .coming-card p { font-size: 0.75rem; color: var(--muted); }
-    .coming-tag {
-      display: inline-block; font-size: 0.65rem; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--muted);
-      border: 1px solid var(--border); border-radius: 100px;
-      padding: 0.2rem 0.6rem; margin-top: 0.75rem;
-    }
+    .empty-memories { text-align: center; padding: 4rem 1.5rem; }
+    .empty-memories .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.35; }
+    .empty-memories p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
 
-    /* ─── FOOTER ─── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 2.5rem 2.5rem;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 1rem;
+    /* ─── BOTTOM NAV ─── */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 520px;
+      background: var(--white); border-top: 1px solid var(--border);
+      display: flex; padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom));
     }
-    footer .logo-sm {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.2rem; font-weight: 600; color: var(--muted);
-    }
-    footer .logo-sm span { color: var(--accent); }
-    footer p { font-size: 0.8rem; color: var(--muted); }
+    .bnav { flex: 1; display: flex; flex-direction: column; align-items: center;
+      gap: 0.15rem; font-size: 0.62rem; color: var(--muted);
+      background: none; border: none; cursor: pointer; padding: 0.4rem;
+      border-radius: var(--radius-sm); transition: all 0.2s; }
+    .bnav .bi { font-size: 1.25rem; }
+    .bnav.active { color: var(--accent); background: var(--accent-bg); }
 
-    /* ─── MODAL ─── */
-    .modal-overlay {
-      position: fixed; inset: 0; z-index: 200;
-      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
-      display: none; align-items: center; justify-content: center; padding: 1rem;
-    }
+    /* ─── PAYWALL MODAL ─── */
+    .modal-overlay { position: fixed; inset: 0; z-index: 200;
+      background: rgba(44,31,14,0.6); backdrop-filter: blur(4px);
+      display: none; align-items: flex-end; justify-content: center; }
     .modal-overlay.open { display: flex; }
-    .modal {
-      background: var(--surface); border: 1px solid var(--border-hover);
-      border-radius: var(--radius); padding: 2.5rem;
-      width: 100%; max-width: 380px; position: relative;
+    .paywall-modal {
+      background: var(--white); border-radius: 24px 24px 0 0;
+      padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom));
+      width: 100%; max-width: 520px;
     }
-    .modal h2 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem;
-    }
-    .modal p { font-size: 0.875rem; color: var(--muted); margin-bottom: 1.75rem; }
-    .modal-close {
-      position: absolute; top: 1.25rem; right: 1.25rem;
-      background: none; border: none; color: var(--muted); cursor: pointer;
-      font-size: 1.2rem;
-    }
-    .form-group { margin-bottom: 1rem; }
-    .form-group label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.4rem; }
-    .form-group input {
-      width: 100%; padding: 0.7rem 1rem;
-      background: var(--bg); border: 1px solid var(--border-hover);
-      border-radius: var(--radius-sm); color: var(--text);
-      font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
-      outline: none; transition: border-color 0.2s;
-    }
-    .form-group input:focus { border-color: var(--accent); }
-    .btn-full {
-      width: 100%; padding: 0.9rem;
-      background: var(--accent); border: none; color: #1a0e00;
-      font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
-      border-radius: var(--radius-sm); cursor: pointer; margin-top: 0.5rem;
-      transition: background 0.2s;
-    }
-    .btn-full:hover { background: var(--accent-light); }
-    .modal-switch {
-      text-align: center; font-size: 0.8rem; color: var(--muted); margin-top: 1rem;
-    }
-    .modal-switch a { color: var(--accent); text-decoration: none; cursor: pointer; }
-    .error-msg { font-size: 0.8rem; color: #e05252; margin-top: 0.75rem; text-align: center; }
+    .modal-handle { width: 36px; height: 4px; background: var(--border);
+      border-radius: 2px; margin: 0 auto 1.5rem; }
+    .paywall-modal h2 { font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; text-align: center; margin-bottom: 0.4rem; }
+    .paywall-modal .sub { font-size: 0.85rem; color: var(--muted); text-align: center; margin-bottom: 1.5rem; }
+    .paywall-features { list-style: none; margin-bottom: 1.5rem; }
+    .paywall-features li { display: flex; align-items: flex-start; gap: 0.6rem;
+      font-size: 0.88rem; margin-bottom: 0.6rem; }
+    .paywall-features li::before { content: "✦"; color: var(--gold); flex-shrink: 0; }
+    .paywall-price { text-align: center; margin-bottom: 1.25rem; }
+    .paywall-price .price { font-family: 'Playfair Display', serif;
+      font-size: 2.2rem; font-weight: 600; }
+    .paywall-price .once { font-size: 0.85rem; color: var(--muted); }
+    .btn-buy { width: 100%; padding: 1rem; background: var(--accent); color: white;
+      border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; font-weight: 500; cursor: pointer; margin-bottom: 0.75rem;
+      transition: background 0.2s; }
+    .btn-buy:hover { background: var(--accent-light); }
+    .btn-cancel { width: 100%; padding: 0.75rem; background: none; border: none;
+      color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; cursor: pointer; }
 
     /* ─── TOAST ─── */
-    .toast {
-      position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
-      background: var(--surface2); border: 1px solid var(--border-hover);
-      border-radius: var(--radius-sm); padding: 0.9rem 1.4rem;
-      font-size: 0.875rem; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-      transform: translateY(80px); opacity: 0;
-      transition: all 0.3s; pointer-events: none;
-    }
-    .toast.show { transform: translateY(0); opacity: 1; }
-
-    @media (max-width: 600px) {
-      nav { padding: 1rem 1.25rem; }
-      .hero h1 { font-size: 2.5rem; }
-      .pricing-grid { grid-template-columns: 1fr; }
-      footer { flex-direction: column; text-align: center; }
-    }
+    .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--text); color: var(--white); border-radius: 100px;
+      padding: 0.6rem 1.25rem; font-size: 0.82rem; opacity: 0;
+      transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 300; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <a href="#" class="logo">VérifTOUT<span>.</span></a>
-  <div class="right">
-    <div id="user-info">
-      <span id="user-email"></span>
-      <button class="btn-ghost" onclick="handleSignOut()">Déconnexion</button>
-    </div>
-    <div id="auth-buttons">
-      <button class="btn-ghost" onclick="openModal('login')">Connexion</button>
-      <button class="btn-accent" onclick="openModal('signup')">Créer un compte</button>
-    </div>
-  </div>
-</nav>
+<div class="app-shell">
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-tag">✦ Des apps utiles, vraiment</div>
-  <h1>Des apps simples qui <em>changent</em> le quotidien</h1>
-  <p>VérifTOUT crée des applications légères, pensées pour résoudre de vrais problèmes du quotidien — sans abonnement inutile, sans complexité.</p>
-  <div class="hero-cta">
-    <a href="#apps" class="btn-primary">Voir les apps →</a>
-    <a href="#apps" class="btn-outline">En savoir plus</a>
-  </div>
-</section>
-
-<!-- APPS -->
-<section class="section" id="apps">
-  <h2 class="section-title">Nos applications</h2>
-  <p class="section-sub">Simple. Fiable. Sans superflu.</p>
-
-  <!-- HUB COLOC -->
-  <div class="app-card">
-    <div class="app-header">
-      <div class="app-icon">🏠</div>
-      <div class="app-meta">
-        <h2>Hub Coloc</h2>
-        <p>Gérez votre colocation sans prise de tête — dépenses, tâches, vie commune.</p>
-      </div>
-      <div class="app-badge">Disponible</div>
-    </div>
-
-    <div class="pricing-grid">
-      <!-- GRATUIT -->
-      <div class="plan">
-        <div class="plan-name">Gratuit</div>
-        <div class="plan-price">0€ <span>/ toujours</span></div>
-        <div class="plan-desc">Pour découvrir Hub Coloc</div>
-        <ul class="feature-list">
-          <li class="active"><span class="check">✓</span> Jusqu'à 4 colocataires</li>
-          <li class="active"><span class="check">✓</span> Gestion des dépenses communes</li>
-          <li class="active"><span class="check">✓</span> Liste de tâches partagée</li>
-          <li><span class="check" style="color:var(--muted)">✗</span> Historique illimité</li>
-          <li><span class="check" style="color:var(--muted)">✗</span> Notifications avancées</li>
-          <li><span class="check" style="color:var(--muted)">✗</span> Export PDF des comptes</li>
-          <li><span class="check" style="color:var(--muted)">✗</span> Colocs illimitées</li>
-        </ul>
-        <a href="https://VOTRE-LIEN-HUB-COLOC.github.io" target="_blank" class="btn-plan btn-plan-free">
-          Utiliser gratuitement
-        </a>
-      </div>
-
-      <!-- PREMIUM -->
-      <div class="plan featured">
-        <div class="plan-name">Premium</div>
-        <div class="plan-price">3,99€ <span>/ mois</span></div>
-        <div class="plan-desc">Pour une coloc sans friction</div>
-        <ul class="feature-list">
-          <li class="active"><span class="check">✓</span> Colocataires illimités</li>
-          <li class="active"><span class="check">✓</span> Gestion des dépenses communes</li>
-          <li class="active"><span class="check">✓</span> Liste de tâches partagée</li>
-          <li class="active"><span class="check">✓</span> Historique illimité</li>
-          <li class="active"><span class="check">✓</span> Notifications avancées</li>
-          <li class="active"><span class="check">✓</span> Export PDF des comptes</li>
-          <li class="active"><span class="check">✓</span> Colocs illimitées</li>
-        </ul>
-        <button class="btn-plan btn-plan-premium" onclick="handlePremium('hub-coloc')">
-          Passer au Premium →
-        </button>
-      </div>
+  <!-- SIDEBAR (desktop) -->
+  <div class="sidebar">
+    <div class="sidebar-logo">Héritage<em>Mémoire</em></div>
+    <p class="sidebar-tagline">Gardez les histoires de vos proches vivantes pour toujours.</p>
+    <nav class="sidebar-nav">
+      <button class="snav active" id="snav-home" onclick="showView('home')"><span class="snav-icon">🏡</span> Mes chapitres</button>
+      <button class="snav" id="snav-memories" onclick="showView('memories')"><span class="snav-icon">📖</span> Mes souvenirs</button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-premium-sidebar" onclick="openPaywall()">✦ Accès illimité — 3,99€</button>
     </div>
   </div>
 
-  <!-- MEDITRAD CARD -->
-  <div class="app-card" style="margin-top:2rem;">
-    <div class="app-header">
-      <div class="app-icon">🩺</div>
-      <div class="app-meta">
-        <h2>MédiTrad</h2>
-        <p>Vos ordonnances et comptes-rendus expliqués en langage simple grâce à l'IA.</p>
-      </div>
-      <div class="app-badge">Disponible</div>
-    </div>
+  <!-- APP CONTENT -->
+  <div class="app-content">
 
-    <div class="pricing-grid">
-      <!-- GRATUIT -->
-      <div class="plan">
-        <div class="plan-name">Gratuit</div>
-        <div class="plan-price">0€ <span>/ toujours</span></div>
-        <div class="plan-desc">Pour découvrir MédiTrad</div>
-        <ul class="feature-list">
-          <li class="active"><span class="check">✓</span> 3 analyses par mois</li>
-          <li class="active"><span class="check">✓</span> Ordonnances & comptes-rendus</li>
-          <li class="active"><span class="check">✓</span> Aucune donnée sauvegardée</li>
-          <li><span class="check" style="color:var(--muted)">✗</span> Interactions médicamenteuses</li>
-          <li><span class="check" style="color:var(--muted)">✗</span> Analyses illimitées</li>
-          <li><span class="check" style="color:var(--muted)">✗</span> Export PDF</li>
-        </ul>
-        <a href="meditrad.html" class="btn-plan btn-plan-free">
-          Utiliser gratuitement
-        </a>
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+      <div class="mobile-logo">Héritage<em>Mémoire</em></div>
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        <span id="hm-premium-ind" style="display:none;font-size:0.65rem;font-weight:500;color:var(--green);background:var(--green-bg);border-radius:100px;padding:0.2rem 0.5rem;">✓ Premium</span>
+        <div id="hm-auth-bar" style="display:flex;">
+          <button class="btn-prem-sm" onclick="openHmModal()">Connexion</button>
+        </div>
+        <div id="hm-user-bar" style="display:none;align-items:center;gap:0.4rem;">
+          <span id="hm-user-email" style="font-size:0.65rem;color:var(--muted);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+          <button class="btn-prem-sm" onclick="hmSignOut()">↪</button>
+        </div>
+        <button class="btn-prem-sm" onclick="openPaywall()">✦ 3,99€</button>
       </div>
+    </header>
 
-      <!-- PREMIUM -->
-      <div class="plan featured">
-        <div class="plan-name">Premium</div>
-        <div class="plan-price">3,99€ <span>/ accès à vie</span></div>
-        <div class="plan-desc">Paiement unique, sans abonnement</div>
-        <ul class="feature-list">
-          <li class="active"><span class="check">✓</span> Analyses illimitées</li>
-          <li class="active"><span class="check">✓</span> Ordonnances & comptes-rendus</li>
-          <li class="active"><span class="check">✓</span> Aucune donnée sauvegardée</li>
-          <li class="active"><span class="check">✓</span> Interactions médicamenteuses</li>
-          <li class="active"><span class="check">✓</span> Analyses illimitées</li>
-          <li class="active"><span class="check">✓</span> Export PDF</li>
-        </ul>
-        <button class="btn-plan btn-plan-premium" onclick="handlePremium('meditrad')">
-          Acheter l'accès — 3,99€ →
-        </button>
+    <!-- AUTH MODAL -->
+    <div class="modal-overlay" id="hm-auth-modal">
+      <div class="paywall-modal">
+        <div class="modal-handle"></div>
+        <h2>Connexion</h2>
+        <p class="sub">Connectez-vous pour accéder au Premium.</p>
+        <div style="margin-bottom:1rem;">
+          <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:0.4rem;">Email</label>
+          <input type="email" id="hm-email" placeholder="vous@exemple.fr" style="width:100%;padding:0.7rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:0.9rem;background:var(--bg);color:var(--text);outline:none;" />
+        </div>
+        <div style="margin-bottom:1rem;">
+          <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:0.4rem;">Mot de passe</label>
+          <input type="password" id="hm-pwd" placeholder="••••••••" style="width:100%;padding:0.7rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:0.9rem;background:var(--bg);color:var(--text);outline:none;" />
+        </div>
+        <div id="hm-err" style="font-size:0.8rem;color:#c0392b;margin-bottom:0.5rem;"></div>
+        <button class="btn-buy" onclick="hmSignIn()">Se connecter</button>
+        <button class="btn-buy" style="background:var(--surface);color:var(--text);margin-top:0.5rem;" onclick="hmSignUp()">Créer un compte</button>
+        <button class="btn-cancel" onclick="closeHmModal()">Annuler</button>
       </div>
     </div>
-  </div>
 
-  <!-- HERITAGEMEMOIRE CARD -->
-  <div class="app-card" style="margin-top:2rem;">
-    <div class="app-header">
-      <div class="app-icon">📜</div>
-      <div class="app-meta">
-        <h2>HéritageMémoire</h2>
-        <p>Archivez la mémoire de vos proches — questions guidées par l'IA, texte, photos et audio.</p>
+    <!-- HOME VIEW -->
+    <div class="view active" id="view-home">
+      <div class="home-hero">
+        <div class="hero-icon">📜</div>
+        <h1>Chaque histoire mérite <em>d'être gardée</em></h1>
+        <p>Choisissez un chapitre de vie et laissez l'IA vous guider pour capturer les souvenirs de vos proches.</p>
       </div>
-      <div class="app-badge">Disponible</div>
-    </div>
-
-    <div class="pricing-grid">
-      <div class="plan">
-        <div class="plan-name">Gratuit</div>
-        <div class="plan-price">0€ <span>/ toujours</span></div>
-        <div class="plan-desc">Pour commencer</div>
-        <ul class="feature-list">
-          <li class="active"><span class="check">✓</span> 3 chapitres de vie</li>
-          <li class="active"><span class="check">✓</span> Questions guidées par l'IA</li>
-          <li class="active"><span class="check">✓</span> Texte, photos et audio</li>
-          <li><span class="check" style="color:var(--muted)">✗</span> Tous les chapitres</li>
-          <li><span class="check" style="color:var(--muted)">✗</span> Souvenirs illimités</li>
-          <li><span class="check" style="color:var(--muted)">✗</span> Export PDF</li>
-        </ul>
-        <a href="heritage.html" class="btn-plan btn-plan-free">
-          Utiliser gratuitement
-        </a>
-      </div>
-
-      <div class="plan featured">
-        <div class="plan-name">Premium</div>
-        <div class="plan-price">3,99€ <span>/ accès à vie</span></div>
-        <div class="plan-desc">Paiement unique, sans abonnement</div>
-        <ul class="feature-list">
-          <li class="active"><span class="check">✓</span> Tous les chapitres débloqués</li>
-          <li class="active"><span class="check">✓</span> Questions guidées par l'IA</li>
-          <li class="active"><span class="check">✓</span> Texte, photos et audio</li>
-          <li class="active"><span class="check">✓</span> Souvenirs illimités</li>
-          <li class="active"><span class="check">✓</span> Export PDF du livre</li>
-          <li class="active"><span class="check">✓</span> Partage famille sécurisé</li>
-        </ul>
-        <button class="btn-plan btn-plan-premium" onclick="handlePremium('heritage')">
-          Acheter l'accès — 3,99€ →
-        </button>
+      <div class="chapters-section">
+        <p class="chapters-title">Chapitres de vie</p>
+        <div class="chapters-grid" id="chapters-grid"></div>
       </div>
     </div>
-  </div>
 
-  <!-- COMING SOON -->
-  <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.5rem; margin: 3rem 0 1.25rem;">Bientôt disponibles</h3>
-  <div class="coming-soon-grid">
-    <div class="coming-card">
-      <div class="icon">🎙️</div>
-      <h3>OralCoach</h3>
-      <p>Entraînez-vous à parler en public</p>
-      <span class="coming-tag">Q1 2026</span>
-    </div>
-    <div class="coming-card">
-      <div class="icon">📖</div>
-      <h3>HéritageMémoire</h3>
-      <p>Archivez la mémoire familiale</p>
-      <span class="coming-tag">Q1 2026</span>
-    </div>
-    <div class="coming-card">
-      <div class="icon">🤝</div>
-      <h3>ProcheAidant</h3>
-      <p>Coordonnez les soins en famille</p>
-      <span class="coming-tag">Q2 2026</span>
-    </div>
-  </div>
-</section>
+    <!-- RECORD VIEW -->
+    <div class="view" id="view-record">
+      <div class="record-header">
+        <button class="back-btn" onclick="showView('home')">← Retour</button>
+        <h2 id="chapter-title">Enfance</h2>
+        <p id="chapter-desc">Racontez vos premiers souvenirs</p>
+      </div>
+      <div class="record-content">
+        <!-- AI Question -->
+        <div class="ai-question-box">
+          <div class="ai-question-label">✦ Question guidée par l'IA</div>
+          <div class="ai-question-text" id="ai-question">Chargement d'une question...</div>
+          <button class="btn-new-question" id="btn-new-q" onclick="loadNewQuestion()">↻ Autre question</button>
+        </div>
 
-<!-- FOOTER -->
-<footer>
-  <div class="logo-sm">VérifTOUT<span>.</span></div>
-  <p>© 2025 VérifTOUT — Fait avec soin 🇫🇷</p>
-</footer>
+        <!-- Text -->
+        <label class="input-label" style="margin-top:1.25rem;">Votre réponse</label>
+        <textarea id="answer-text" placeholder="Écrivez librement... Il n'y a pas de mauvaise réponse. Chaque détail compte."></textarea>
+
+        <!-- Photos -->
+        <div class="photo-section">
+          <label class="input-label">Photos (optionnel)</label>
+          <div class="photo-upload-zone" id="photo-zone">
+            <input type="file" accept="image/*" multiple onchange="handlePhotos(event)" />
+            <div style="font-size:1.5rem;">📷</div>
+            <p>Ajouter des photos liées à ce souvenir</p>
+          </div>
+          <div class="photo-previews" id="photo-previews"></div>
+        </div>
+
+        <!-- Audio -->
+        <div class="audio-section">
+          <label class="input-label">Enregistrement vocal (optionnel)</label>
+          <div class="recorder-box">
+            <button class="rec-btn" id="rec-btn" onclick="toggleRecording()">🎙️</button>
+            <div class="rec-timer" id="rec-timer">0:00</div>
+            <div class="rec-status" id="rec-status">Appuyez pour enregistrer</div>
+            <audio id="audio-playback" class="audio-playback" controls style="display:none;"></audio>
+          </div>
+        </div>
+
+        <button class="btn-save" onclick="saveMemory()">💾 Sauvegarder ce souvenir</button>
+      </div>
+    </div>
+
+    <!-- MEMORIES VIEW -->
+    <div class="view" id="view-memories">
+      <div class="memories-content">
+        <p class="memories-title">📖 Mes souvenirs</p>
+        <div id="memories-list"></div>
+      </div>
+    </div>
+
+  </div><!-- end app-content -->
+</div><!-- end app-shell -->
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav active" id="bnav-home" onclick="showView('home')">
+    <span class="bi">🏡</span>Chapitres
+  </button>
+  <button class="bnav" id="bnav-memories" onclick="showView('memories')">
+    <span class="bi">📖</span>Souvenirs
+  </button>
+  <button class="bnav" onclick="openPaywall()">
+    <span class="bi">✦</span>Premium
+  </button>
+</div>
+
+
+<!-- AUTH BAR -->
+<div id="hm-auth-bar" style="background:var(--white);border-top:1px solid var(--border);padding:0.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;position:fixed;bottom:60px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;z-index:9;">
+  <span style="font-size:0.82rem;color:var(--muted);">Connectez-vous pour sauvegarder</span>
+  <button onclick="openHmModal()" style="background:var(--accent);color:white;border:none;border-radius:var(--radius-sm);padding:0.5rem 1rem;font-size:0.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Connexion</button>
+</div>
+<div id="hm-user-bar" style="display:none;background:var(--white);border-top:1px solid var(--border);padding:0.75rem 1.5rem;align-items:center;justify-content:space-between;position:fixed;bottom:60px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;z-index:9;">
+  <span id="hm-user-email" style="font-size:0.78rem;color:var(--muted);"></span>
+  <button onclick="handleHmSignOut()" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.4rem 0.8rem;font-size:0.78rem;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;">Déconnexion</button>
+</div>
 
 <!-- AUTH MODAL -->
-<div class="modal-overlay" id="auth-modal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <h2 id="modal-title">Connexion</h2>
-    <p id="modal-subtitle">Accédez à vos applications et abonnements.</p>
-
-    <div class="form-group">
-      <label>Adresse e-mail</label>
-      <input type="email" id="auth-email" placeholder="vous@exemple.fr" />
+<div class="modal-overlay" id="hm-auth-modal">
+  <div class="paywall-modal">
+    <div class="modal-handle"></div>
+    <h2 style="font-size:1.3rem;margin-bottom:0.4rem;">Connexion</h2>
+    <p class="sub">Pour sauvegarder vos souvenirs</p>
+    <div style="margin-bottom:1rem;">
+      <label style="font-size:0.75rem;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:0.4rem;">Email</label>
+      <input id="hm-email" type="email" placeholder="vous@exemple.fr" style="width:100%;padding:0.7rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;background:var(--white);" />
     </div>
-    <div class="form-group">
-      <label>Mot de passe</label>
-      <input type="password" id="auth-password" placeholder="••••••••" />
+    <div style="margin-bottom:1rem;">
+      <label style="font-size:0.75rem;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:0.4rem;">Mot de passe</label>
+      <input id="hm-pwd" type="password" placeholder="••••••••" style="width:100%;padding:0.7rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;background:var(--white);" />
     </div>
-
-    <button class="btn-full" id="auth-submit-btn" onclick="handleAuth()">Se connecter</button>
-    <div class="error-msg" id="auth-error"></div>
-    <div class="modal-switch" id="modal-switch">
-      Pas encore de compte ? <a onclick="switchModal()">Créer un compte</a>
-    </div>
+    <div id="hm-err" style="font-size:0.8rem;color:#c0392b;margin-bottom:0.5rem;text-align:center;"></div>
+    <button class="btn-buy" onclick="handleHmSignIn()">Se connecter</button>
+    <button class="btn-cancel" onclick="handleHmSignUp()">Créer un compte</button>
+    <button class="btn-cancel" onclick="closeHmModal()">Annuler</button>
   </div>
 </div>
 
-<!-- TOAST -->
+<!-- PAYWALL -->
+<div class="modal-overlay" id="paywall">
+  <div class="paywall-modal">
+    <div class="modal-handle"></div>
+    <h2>Accès illimité</h2>
+    <p class="sub">Débloquez tous les chapitres et fonctionnalités</p>
+    <ul class="paywall-features">
+      <li>Tous les chapitres de vie débloqués</li>
+      <li>Souvenirs illimités par chapitre</li>
+      <li>Questions IA illimitées et personnalisées</li>
+      <li>Enregistrements audio conservés</li>
+      <li>Export PDF du livre de mémoire</li>
+      <li>Partage sécurisé avec la famille</li>
+    </ul>
+    <div class="paywall-price">
+      <div class="price">3,99€</div>
+      <div class="once">paiement unique — à vie</div>
+    </div>
+    <button class="btn-buy" onclick="goPremium()">Débloquer maintenant — 3,99€</button>
+    <button class="btn-cancel" onclick="closePaywall()">Continuer gratuitement (3 chapitres)</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<!-- ══════════════════════════════════════════════
-     🔥 FIREBASE CONFIG — Remplacez ces valeurs
-     ══════════════════════════════════════════════ -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-  import {
-    getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-  import {
-    getFirestore, doc, getDoc, setDoc
-  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-  // ⚠️ REMPLACEZ PAR VOTRE CONFIG FIREBASE
-  const firebaseConfig = {
-    apiKey: "AIzaSyB1TwbZSkqkAKEPhNJXuwn9zMEz2BqBk48",
-    authDomain: "hub-coloc.firebaseapp.com",
-    databaseURL: "https://hub-coloc-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "hub-coloc",
-    storageBucket: "hub-coloc.firebasestorage.app",
-    messagingSenderId: "1090628612964",
-    appId: "1:1090628612964:web:0ab8977765daf3c8304071"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyB1TwbZSkqkAKEPhNJXuwn9zMEz2BqBk48",
+  authDomain: "hub-coloc.firebaseapp.com",
+  databaseURL: "https://hub-coloc-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "hub-coloc",
+  storageBucket: "hub-coloc.firebasestorage.app",
+  messagingSenderId: "1090628612964",
+  appId: "1:1090628612964:web:0ab8977765daf3c8304071"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  // ══════════════════════════════════════════════
-  // 💳 STRIPE PAYMENT LINKS — Remplacez ces URLs
-  // ══════════════════════════════════════════════
-  const STRIPE_LINKS = {
-    "hub-coloc": "https://buy.stripe.com/6oU6oAbJP9Nlduo6XC4Vy00",
-    "meditrad": "https://buy.stripe.com/eVq6oAbJPcZxduo1Di4Vy01",
-    "heritage": "https://buy.stripe.com/4gMcMY15b0cLfCw81G4Vy02"
-  };
+// ══════════════════════════════════════════════
+// ⚠️ Remplacez par votre lien Stripe
+// ══════════════════════════════════════════════
+window.STRIPE_HERITAGE = "https://buy.stripe.com/4gMcMY15b0cLfCw81G4Vy02";
 
-  // ─── Auth state ───
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      document.getElementById('user-info').style.display = 'flex';
-      document.getElementById('auth-buttons').style.display = 'none';
-      document.getElementById('user-email').textContent = user.email;
-    } else {
-      document.getElementById('user-info').style.display = 'none';
-      document.getElementById('auth-buttons').style.display = 'flex';
-    }
-  });
+// ─── DATA ───
+let memories = JSON.parse(localStorage.getItem('hm_memories') || '[]');
+let isPremium = false;
+let currentUser = null;
+let currentChapter = null;
 
-  // ─── Expose functions to global scope ───
-  window._auth = auth;
-  window._db = db;
-  window._STRIPE_LINKS = STRIPE_LINKS;
-  window._signInWithEmailAndPassword = signInWithEmailAndPassword;
-  window._createUserWithEmailAndPassword = createUserWithEmailAndPassword;
-  window._signOut = signOut;
-  window._doc = doc;
-  window._getDoc = getDoc;
-  window._setDoc = setDoc;
-</script>
-
-<script>
-  // ─── Modal state ───
-  let currentMode = 'login';
-
-  function openModal(mode) {
-    currentMode = mode;
-    document.getElementById('auth-modal').classList.add('open');
-    updateModalUI();
-    document.getElementById('auth-email').focus();
-  }
-
-  function closeModal() {
-    document.getElementById('auth-modal').classList.remove('open');
-    document.getElementById('auth-error').textContent = '';
-  }
-
-  function updateModalUI() {
-    const isLogin = currentMode === 'login';
-    document.getElementById('modal-title').textContent = isLogin ? 'Connexion' : 'Créer un compte';
-    document.getElementById('modal-subtitle').textContent = isLogin
-      ? 'Accédez à vos applications et abonnements.'
-      : 'Rejoignez VérifTOUT — c\'est gratuit.';
-    document.getElementById('auth-submit-btn').textContent = isLogin ? 'Se connecter' : 'Créer mon compte';
-    document.getElementById('modal-switch').innerHTML = isLogin
-      ? 'Pas encore de compte ? <a onclick="switchModal()">Créer un compte</a>'
-      : 'Déjà un compte ? <a onclick="switchModal()">Se connecter</a>';
-  }
-
-  function switchModal() {
-    currentMode = currentMode === 'login' ? 'signup' : 'login';
-    updateModalUI();
-    document.getElementById('auth-error').textContent = '';
-  }
-
-  async function handleAuth() {
-    const email = document.getElementById('auth-email').value.trim();
-    const password = document.getElementById('auth-password').value;
-    const errorEl = document.getElementById('auth-error');
-    errorEl.textContent = '';
-
-    if (!email || !password) {
-      errorEl.textContent = 'Merci de remplir tous les champs.';
-      return;
-    }
-
-    const btn = document.getElementById('auth-submit-btn');
-    btn.textContent = '...';
-    btn.disabled = true;
-
+// ─── AUTH STATE ───
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  if (user) {
+    document.getElementById('hm-auth-bar').style.display = 'none';
+    document.getElementById('hm-user-bar').style.display = 'flex';
+    document.getElementById('hm-user-email').textContent = user.email;
     try {
-      if (currentMode === 'login') {
-        await window._signInWithEmailAndPassword(window._auth, email, password);
-      } else {
-        const cred = await window._createUserWithEmailAndPassword(window._auth, email, password);
-        await window._setDoc(window._doc(window._db, 'users', cred.user.uid), {
-          email, createdAt: new Date().toISOString(), subscriptions: {}
-        });
-      }
-      closeModal();
-      showToast(currentMode === 'login' ? 'Bienvenue !' : 'Compte créé — bienvenue !');
-    } catch (err) {
-      const messages = {
-        'auth/user-not-found': 'Aucun compte trouvé avec cet e-mail.',
-        'auth/wrong-password': 'Mot de passe incorrect.',
-        'auth/email-already-in-use': 'Cet e-mail est déjà utilisé.',
-        'auth/weak-password': 'Mot de passe trop court (6 caractères min).',
-        'auth/invalid-email': 'Adresse e-mail invalide.',
-      };
-      errorEl.textContent = messages[err.code] || 'Une erreur est survenue.';
-    } finally {
-      btn.disabled = false;
-      updateModalUI();
-    }
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      isPremium = snap.exists() && snap.data()?.subscriptions?.heritage?.premium === true;
+      if (isPremium) document.getElementById('hm-premium-ind').style.display = 'inline-block';
+    } catch {}
+    renderChapters();
+  } else {
+    currentUser = null; isPremium = false;
+    document.getElementById('hm-auth-bar').style.display = 'flex';
+    document.getElementById('hm-user-bar').style.display = 'none';
+    document.getElementById('hm-premium-ind').style.display = 'none';
+    renderChapters();
+  }
+});
+
+window.openHmModal = () => document.getElementById('hm-auth-modal').classList.add('open');
+window.closeHmModal = () => document.getElementById('hm-auth-modal').classList.remove('open');
+
+window.hmSignIn = async function() {
+  const email = document.getElementById('hm-email').value.trim();
+  const pwd = document.getElementById('hm-pwd').value;
+  const err = document.getElementById('hm-err');
+  err.textContent = '';
+  try { await signInWithEmailAndPassword(auth, email, pwd); closeHmModal(); }
+  catch { err.textContent = 'Email ou mot de passe incorrect.'; }
+};
+
+window.hmSignUp = async function() {
+  const email = document.getElementById('hm-email').value.trim();
+  const pwd = document.getElementById('hm-pwd').value;
+  const err = document.getElementById('hm-err');
+  err.textContent = '';
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pwd);
+    await setDoc(doc(db, 'users', cred.user.uid), { email, createdAt: new Date().toISOString(), subscriptions: {} });
+    closeHmModal();
+  } catch(e) { err.textContent = 'Erreur : ' + (e.code === 'auth/email-already-in-use' ? 'Email déjà utilisé.' : e.message); }
+};
+
+window.hmSignOut = async () => { await signOut(auth); };
+let currentQuestion = '';
+let uploadedPhotos = [];
+let mediaRecorder = null;
+let audioChunks = [];
+let audioBlob = null;
+let recInterval = null;
+let recSeconds = 0;
+
+// ─── CHAPTERS ───
+const CHAPTERS = [
+  { id: 'enfance', icon: '🧒', name: 'Enfance', desc: 'Les premières années', free: true },
+  { id: 'famille', icon: '👨‍👩‍👧', name: 'Famille', desc: 'Parents, frères, sœurs', free: true },
+  { id: 'amour', icon: '💑', name: 'Amour', desc: 'Rencontres et romance', free: true },
+  { id: 'travail', icon: '💼', name: 'Travail', desc: 'Carrière et métier', free: false },
+  { id: 'voyages', icon: '✈️', name: 'Voyages', desc: 'Aventures et découvertes', free: false },
+  { id: 'guerre', icon: '🕊️', name: 'Histoire', desc: 'Témoignages et époque', free: false },
+  { id: 'sagesse', icon: '🌟', name: 'Sagesse', desc: 'Leçons de vie', free: false },
+  { id: 'traditions', icon: '🎄', name: 'Traditions', desc: 'Fêtes et rituels familiaux', free: false },
+];
+
+// ─── QUESTIONS par chapitre ───
+const QUESTIONS = {
+  enfance: ["Quel est votre tout premier souvenir d'enfance ?", "Comment était la maison où vous avez grandi ?", "Quel était votre jeu préféré quand vous étiez enfant ?", "Quel souvenir d'école vous reste encore aujourd'hui ?"],
+  famille: ["Comment décririez-vous votre père en quelques mots ?", "Quel est le souvenir le plus fort que vous avez avec votre mère ?", "Aviez-vous des frères et sœurs ? Que partagiez-vous ?", "Quelle tradition familiale vous a le plus marqué ?"],
+  amour: ["Comment avez-vous rencontré la personne la plus importante de votre vie ?", "Quel a été votre plus beau souvenir en amour ?", "Comment vous êtes-vous déclaré(e) — ou comment a-t-on se déclaré à vous ?"],
+  travail: ["Quel a été votre premier travail ?", "Qu'est-ce qui vous a amené à choisir votre métier ?", "Quel moment de votre carrière vous a rendu le plus fier ?"],
+  voyages: ["Quel est le voyage qui vous a le plus marqué dans votre vie ?", "Y a-t-il un endroit dans le monde où vous avez laissé une partie de votre cœur ?"],
+  guerre: ["Quels souvenirs gardez-vous de cette époque difficile ?", "Comment votre famille a-t-elle traversé les années de guerre ?"],
+  sagesse: ["Quelle est la leçon de vie la plus importante que vous ayez apprise ?", "Quel conseil donneriez-vous à la génération suivante ?"],
+  traditions: ["Quelle fête de famille attendiez-vous avec le plus d'impatience ?", "Y a-t-il une recette familiale qui se transmet depuis des générations ?"],
+};
+
+// ─── RENDER CHAPTERS ───
+function renderChapters() {
+  const grid = document.getElementById('chapters-grid');
+  grid.innerHTML = CHAPTERS.map(ch => {
+    const count = memories.filter(m => m.chapter === ch.id).length;
+    const locked = !ch.free && !isPremium;
+    return `<div class="chapter-card ${locked ? 'locked' : ''}" onclick="${locked ? 'openPaywall()' : `selectChapter('${ch.id}')`}">
+      <div class="chapter-icon">${ch.icon}</div>
+      <div class="chapter-name">${ch.name}</div>
+      <div class="chapter-desc" style="font-size:0.72rem;color:var(--muted);">${ch.desc}</div>
+      <div class="chapter-count">${count} souvenir${count !== 1 ? 's' : ''}</div>
+      ${locked ? '<div class="chapter-lock">🔒 Premium</div>' : ''}
+    </div>`;
+  }).join('');
+}
+
+window.selectChapter = function(id) {
+  currentChapter = CHAPTERS.find(c => c.id === id);
+  document.getElementById('chapter-title').textContent = currentChapter.icon + ' ' + currentChapter.name;
+  document.getElementById('chapter-desc').textContent = currentChapter.desc;
+  uploadedPhotos = [];
+  audioBlob = null;
+  document.getElementById('photo-previews').innerHTML = '';
+  document.getElementById('audio-playback').style.display = 'none';
+  document.getElementById('answer-text').value = '';
+  document.getElementById('rec-status').textContent = 'Appuyez pour enregistrer';
+  document.getElementById('rec-timer').textContent = '0:00';
+  loadNewQuestion();
+  showView('record');
+};
+
+// ─── AI QUESTION ───
+window.loadNewQuestion = async function() {
+  const btn = document.getElementById('btn-new-q');
+  btn.disabled = true;
+  btn.textContent = '↻ Chargement...';
+
+  const localQs = QUESTIONS[currentChapter?.id] || [];
+  const alreadyUsed = memories.filter(m => m.chapter === currentChapter?.id).map(m => m.question);
+  const fresh = localQs.filter(q => !alreadyUsed.includes(q));
+
+  if (fresh.length > 0) {
+    currentQuestion = fresh[Math.floor(Math.random() * fresh.length)];
+    document.getElementById('ai-question').textContent = currentQuestion;
+    btn.disabled = false;
+    btn.textContent = '↻ Autre question';
+    return;
   }
 
-  async function handleSignOut() {
-    await window._signOut(window._auth);
-    showToast('Déconnecté.');
-  }
-
-  async function handlePremium(appId) {
-    const user = window._auth?.currentUser;
-    if (!user) {
-      openModal('login');
-      showToast('Connectez-vous d\'abord pour souscrire.');
-      return;
-    }
-    const link = window._STRIPE_LINKS?.[appId];
-    if (link && link !== 'https://buy.stripe.com/VOTRE_LIEN_HUB_COLOC') {
-      window.open(link + '?prefilled_email=' + encodeURIComponent(user.email), '_blank');
-    } else {
-      showToast('⚙️ Lien Stripe non encore configuré.');
-    }
-  }
-
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
-  }
-
-  // Close modal on overlay click
-  document.getElementById('auth-modal').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) closeModal();
-  });
-
-  // Smooth scroll
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-      e.preventDefault();
-      const el = document.querySelector(a.getAttribute('href'));
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Call Claude API for a new question
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 150,
+        messages: [{
+          role: "user",
+          content: `Génère une seule question ouverte, chaleureuse et bienveillante pour aider quelqu'un à raconter ses souvenirs sur le thème "${currentChapter?.name}". La question doit être simple, en français, et inviter à partager un souvenir précis et personnel. Réponds uniquement avec la question, sans ponctuation finale ni guillemets.`
+        }]
+      })
     });
-  });
-</script>
+    const data = await response.json();
+    currentQuestion = data.content[0]?.text?.trim() || localQs[0];
+    document.getElementById('ai-question').textContent = currentQuestion;
+  } catch {
+    currentQuestion = localQs[Math.floor(Math.random() * localQs.length)];
+    document.getElementById('ai-question').textContent = currentQuestion;
+  }
+  btn.disabled = false;
+  btn.textContent = '↻ Autre question';
+};
 
+// ─── PHOTOS ───
+window.handlePhotos = function(event) {
+  const files = Array.from(event.target.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadedPhotos.push(e.target.result);
+      renderPhotoPreviews();
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
+function renderPhotoPreviews() {
+  const container = document.getElementById('photo-previews');
+  container.innerHTML = uploadedPhotos.map((src, i) => `
+    <div class="photo-thumb">
+      <img src="${src}" alt="Photo ${i+1}" />
+      <button class="remove" onclick="removePhoto(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+window.removePhoto = function(i) {
+  uploadedPhotos.splice(i, 1);
+  renderPhotoPreviews();
+};
+
+// ─── AUDIO RECORDING ───
+window.toggleRecording = async function() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = () => {
+      audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      const url = URL.createObjectURL(audioBlob);
+      const audio = document.getElementById('audio-playback');
+      audio.src = url; audio.style.display = 'block';
+      document.getElementById('rec-btn').textContent = '🎙️';
+      document.getElementById('rec-btn').classList.remove('recording');
+      document.getElementById('rec-status').textContent = 'Enregistrement terminé ✓';
+      clearInterval(recInterval); recSeconds = 0;
+      stream.getTracks().forEach(t => t.stop());
+    };
+    mediaRecorder.start();
+    recSeconds = 0;
+    document.getElementById('rec-btn').classList.add('recording');
+    document.getElementById('rec-btn').textContent = '⏹️';
+    document.getElementById('rec-status').textContent = 'Enregistrement en cours...';
+    recInterval = setInterval(() => {
+      recSeconds++;
+      const m = Math.floor(recSeconds / 60);
+      const s = String(recSeconds % 60).padStart(2, '0');
+      document.getElementById('rec-timer').textContent = `${m}:${s}`;
+    }, 1000);
+  } catch {
+    showToast('Accès au micro refusé');
+  }
+};
+
+// ─── SAVE MEMORY ───
+window.saveMemory = function() {
+  if (!currentUser) { openHmModal(); return; }
+  const text = document.getElementById('answer-text').value.trim();
+  if (!text && uploadedPhotos.length === 0 && !audioBlob) {
+    showToast('Ajoutez au moins un texte ou une photo');
+    return;
+  }
+  const memory = {
+    id: Date.now(),
+    chapter: currentChapter.id,
+    chapterName: currentChapter.name,
+    chapterIcon: currentChapter.icon,
+    question: currentQuestion,
+    text,
+    photos: uploadedPhotos,
+    audioUrl: audioBlob ? URL.createObjectURL(audioBlob) : null,
+    date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+  };
+  memories.unshift(memory);
+  try { localStorage.setItem('hm_memories', JSON.stringify(memories.map(m => ({...m, audioUrl: null})))); } catch {}
+  showToast('✓ Souvenir sauvegardé !');
+  setTimeout(() => showView('memories'), 800);
+};
+
+// ─── RENDER MEMORIES ───
+function renderMemories() {
+  const container = document.getElementById('memories-list');
+  if (memories.length === 0) {
+    container.innerHTML = `<div class="empty-memories">
+      <div class="empty-icon">📜</div>
+      <p>Vos souvenirs apparaîtront ici.<br>Choisissez un chapitre pour commencer !</p>
+    </div>`;
+    return;
+  }
+  container.innerHTML = memories.map(m => `
+    <div class="memory-card">
+      <div class="memory-card-header">
+        <span class="memory-chapter">${m.chapterIcon} ${m.chapterName}</span>
+        <span class="memory-date">${m.date}</span>
+      </div>
+      ${m.question ? `<div class="memory-question">"${m.question}"</div>` : ''}
+      ${m.text ? `<div class="memory-text">${m.text}</div>` : ''}
+      ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p => `<img src="${p}" />`).join('')}</div>` : ''}
+      ${m.audioUrl ? `<div class="memory-audio"><audio controls src="${m.audioUrl}"></audio></div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ─── NAVIGATION ───
+window.showView = function(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  document.querySelectorAll('.bnav, .snav').forEach(b => b.classList.remove('active'));
+  const bnav = document.getElementById('bnav-' + id);
+  const snav = document.getElementById('snav-' + id);
+  if (bnav) bnav.classList.add('active');
+  if (snav) snav.classList.add('active');
+  if (id === 'memories') renderMemories();
+  if (id === 'home') renderChapters();
+  window.scrollTo(0, 0);
+};
+
+// ─── PAYWALL ───
+window.openPaywall = () => document.getElementById('paywall').classList.add('open');
+window.closePaywall = () => document.getElementById('paywall').classList.remove('open');
+window.goPremium = () => {
+  if (!currentUser) { closePaywall(); openHmModal(); return; }
+  if (window.STRIPE_HERITAGE && !window.STRIPE_HERITAGE.includes('VOTRE_LIEN')) {
+    window.open(window.STRIPE_HERITAGE + '?prefilled_email=' + encodeURIComponent(currentUser.email), '_blank');
+  } else {
+    showToast('Lien Stripe non configuré');
+  }
+  closePaywall();
+};
+
+// ─── TOAST ───
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+window.showToast = showToast;
+
+// ─── INIT ───
+renderChapters();
+</script>
 </body>
 </html>
