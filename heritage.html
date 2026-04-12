@@ -8,6 +8,7 @@
   <meta name="theme-color" content="#f9f5ef" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -94,7 +95,6 @@
     .rec-timer { font-size: 1.1rem; font-weight: 500; color: var(--text); margin: 0.25rem 0; }
     .audio-playback { margin-top: 0.75rem; width: 100%; height: 36px; }
     .upload-progress { margin-top: 0.5rem; font-size: 0.78rem; color: var(--gold); text-align: center; display: none; padding: 0.5rem; background: var(--gold-bg); border-radius: var(--radius-sm); }
-    .debug-box { margin-top: 0.5rem; font-size: 0.72rem; color: var(--muted); background: var(--surface); border-radius: var(--radius-sm); padding: 0.5rem; display: none; font-family: monospace; word-break: break-all; }
     .btn-save { width: 100%; padding: 1rem; margin-top: 1.5rem; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
     .btn-save:hover { background: var(--accent-light); }
     .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -117,6 +117,24 @@
     .btn-mem-action { flex: 1; padding: 0.45rem 0; font-size: 0.75rem; font-weight: 500; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--white); color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
     .btn-mem-action:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
     .btn-mem-action.danger:hover { border-color: #c0392b; color: #c0392b; background: #fdf2f2; }
+
+    /* ─── PDF EXPORT SECTION ─── */
+    .pdf-section { margin: 1.5rem 1.5rem 0; padding: 1.25rem; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); }
+    .pdf-section-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 600; margin-bottom: 1rem; color: var(--text); display: flex; align-items: center; gap: 0.5rem; }
+    .pdf-controls { display: flex; flex-direction: column; gap: 0.75rem; }
+    .pdf-label { font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.35rem; display: block; }
+    .pdf-select { width: 100%; padding: 0.65rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; background: var(--bg); color: var(--text); outline: none; cursor: pointer; }
+    .pdf-select:focus { border-color: var(--accent); }
+    .style-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    .style-card { border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 0.5rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+    .style-card:hover { border-color: var(--accent); }
+    .style-card.selected { border-color: var(--accent); background: var(--accent-bg); }
+    .style-card .style-preview { width: 100%; height: 40px; border-radius: 6px; margin-bottom: 0.4rem; }
+    .style-card .style-name { font-size: 0.72rem; font-weight: 500; color: var(--text); }
+    .btn-generate-pdf { width: 100%; padding: 0.85rem; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: background 0.2s; margin-top: 0.25rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .btn-generate-pdf:hover { background: var(--accent-light); }
+    .btn-generate-pdf:disabled { opacity: 0.6; cursor: not-allowed; }
+
     .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 520px; background: var(--white); border-top: 1px solid var(--border); display: flex; padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom)); }
     .bnav { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.15rem; font-size: 0.62rem; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0.4rem; border-radius: var(--radius-sm); transition: all 0.2s; }
     .bnav .bi { font-size: 1.25rem; }
@@ -254,7 +272,6 @@
             <audio id="audio-playback" class="audio-playback" controls style="display:none;"></audio>
           </div>
           <div class="upload-progress" id="upload-progress">⏳ Upload audio en cours...</div>
-          <div class="debug-box" id="debug-box"></div>
         </div>
         <div class="share-section" id="record-share-section" style="display:none;">
           <span class="share-title">Partager avec la famille</span>
@@ -266,6 +283,46 @@
 
     <!-- MEMORIES VIEW -->
     <div class="view" id="view-memories">
+
+      <!-- ─── EXPORT PDF ─── -->
+      <div class="pdf-section">
+        <div class="pdf-section-title">📄 Exporter en PDF</div>
+        <div class="pdf-controls">
+          <div>
+            <span class="pdf-label">Chapitre à exporter</span>
+            <select class="pdf-select" id="pdf-chapter-select">
+              <option value="all">Tous les chapitres</option>
+            </select>
+          </div>
+          <div>
+            <span class="pdf-label">Style de mise en page</span>
+            <div class="style-picker">
+              <div class="style-card selected" data-style="classique" onclick="selectStyle(this)">
+                <div class="style-preview" style="background:white;border:1px solid #e0d5c4;display:flex;align-items:center;justify-content:center;">
+                  <div style="width:60%;height:4px;background:#2c1f0e;border-radius:2px;"></div>
+                </div>
+                <div class="style-name">Classique</div>
+              </div>
+              <div class="style-card" data-style="chaleureux" onclick="selectStyle(this)">
+                <div class="style-preview" style="background:linear-gradient(135deg,#f5e6c8,#ede0c8);border:1px solid #e0d5c4;display:flex;align-items:center;justify-content:center;">
+                  <div style="width:60%;height:4px;background:#8b4513;border-radius:2px;"></div>
+                </div>
+                <div class="style-name">Chaleureux</div>
+              </div>
+              <div class="style-card" data-style="moderne" onclick="selectStyle(this)">
+                <div class="style-preview" style="background:#1a1a2e;border:1px solid #333;display:flex;align-items:center;justify-content:center;">
+                  <div style="width:60%;height:4px;background:#c8922a;border-radius:2px;"></div>
+                </div>
+                <div class="style-name">Moderne</div>
+              </div>
+            </div>
+          </div>
+          <button class="btn-generate-pdf" id="btn-pdf" onclick="generatePDF()">
+            📄 Générer le PDF
+          </button>
+        </div>
+      </div>
+
       <div class="memories-content">
         <p class="memories-title">📖 Mes souvenirs</p>
         <div id="memories-list"></div>
@@ -418,12 +475,7 @@ let uploadedPhotos = [], audioBlob = null;
 let mediaRecorder = null, audioChunks = [], recInterval = null, recSeconds = 0;
 let editingMemoryId = null, deletingMemoryId = null;
 let unsubMemories = null, unsubShared = null, unsubFamille = null;
-
-function debug(msg) {
-  console.log('[HM]', msg);
-  const box = document.getElementById('debug-box');
-  if (box) { box.style.display = 'block'; box.textContent += msg + '\n'; }
-}
+let selectedPdfStyle = 'classique';
 
 function loadLocal() {
   try { memories = JSON.parse(localStorage.getItem('hm_memories') || '[]'); } catch { memories = []; }
@@ -491,7 +543,12 @@ function subscribeMemories() {
   const uid = currentUser.uid;
   unsubMemories = onSnapshot(
     query(collection(db, 'souvenirs'), where('auteurId', '==', uid), orderBy('createdAt', 'desc')),
-    snap => { memories = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderMemories(); renderChapters(); },
+    snap => {
+      memories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderMemories();
+      renderChapters();
+      updatePdfChapterSelect();
+    },
     err => console.error('Erreur souvenirs:', err)
   );
   unsubShared = onSnapshot(
@@ -582,6 +639,13 @@ function renderChapters() {
   }).join('');
 }
 
+function updatePdfChapterSelect() {
+  const sel = document.getElementById('pdf-chapter-select');
+  const chaptersWithMemories = CHAPTERS.filter(ch => memories.some(m => m.chapter === ch.id));
+  sel.innerHTML = '<option value="all">Tous les chapitres</option>' +
+    chaptersWithMemories.map(ch => `<option value="${ch.id}">${ch.icon} ${ch.name}</option>`).join('');
+}
+
 window.selectChapter = function(id) {
   currentChapter = CHAPTERS.find(c => c.id === id);
   document.getElementById('chapter-title').textContent = currentChapter.icon + ' ' + currentChapter.name;
@@ -593,8 +657,6 @@ window.selectChapter = function(id) {
   document.getElementById('rec-status').textContent = 'Appuyez pour enregistrer';
   document.getElementById('rec-timer').textContent = '0:00';
   document.getElementById('upload-progress').style.display = 'none';
-  document.getElementById('debug-box').style.display = 'none';
-  document.getElementById('debug-box').textContent = '';
   document.getElementById('btn-save').disabled = false;
   document.getElementById('btn-save').textContent = '💾 Sauvegarder ce souvenir';
   renderFamilleCheckboxes();
@@ -664,7 +726,6 @@ window.toggleRecording = async function() {
     mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
     mediaRecorder.onstop = () => {
       audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-      debug('Audio blob créé: ' + audioBlob.size + ' bytes, type: ' + audioBlob.type);
       const audio = document.getElementById('audio-playback');
       audio.src = URL.createObjectURL(audioBlob); audio.style.display = 'block';
       document.getElementById('rec-btn').textContent = '🎙️';
@@ -681,32 +742,20 @@ window.toggleRecording = async function() {
       recSeconds++;
       document.getElementById('rec-timer').textContent = `${Math.floor(recSeconds/60)}:${String(recSeconds%60).padStart(2,'0')}`;
     }, 1000);
-  } catch(e) { showToast('Accès au micro refusé'); debug('Erreur micro: ' + e.message); }
+  } catch(e) { showToast('Accès au micro refusé'); }
 };
 
-// ─── UPLOAD AUDIO FIREBASE STORAGE (avec logs) ───
 async function uploadAudio(blob, uid) {
-  debug('Upload démarré — taille: ' + blob.size + ' bytes, type: ' + blob.type);
   const fileName = 'audio_' + Date.now() + '.webm';
   const path = 'audios/' + uid + '/' + fileName;
-  debug('Chemin Storage: ' + path);
-
   const storageRef = ref(storage, path);
   document.getElementById('upload-progress').style.display = 'block';
-
   try {
-    debug('Appel uploadBytes...');
-    const snapshot = await uploadBytes(storageRef, blob);
-    debug('uploadBytes OK — bytes: ' + snapshot.metadata.size);
-
-    debug('Appel getDownloadURL...');
+    await uploadBytes(storageRef, blob);
     const url = await getDownloadURL(storageRef);
-    debug('URL obtenue: ' + url.substring(0, 60) + '...');
-
     document.getElementById('upload-progress').style.display = 'none';
     return { url, path };
   } catch(e) {
-    debug('ERREUR UPLOAD: ' + e.code + ' — ' + e.message);
     document.getElementById('upload-progress').style.display = 'none';
     throw e;
   }
@@ -725,44 +774,182 @@ window.saveMemory = async function() {
 
   let audioUrl = null, audioPath = null;
   if (audioBlob) {
-    debug('Audio détecté, lancement upload...');
     try {
       const result = await uploadAudio(audioBlob, currentUser.uid);
-      audioUrl = result.url;
-      audioPath = result.path;
-      debug('Audio uploadé avec succès !');
-    } catch(e) {
-      debug('Échec upload audio: ' + e.message);
-      showToast('⚠️ Audio non sauvegardé: ' + e.message);
-    }
+      audioUrl = result.url; audioPath = result.path;
+    } catch(e) { showToast('⚠️ Audio non sauvegardé'); }
   }
 
-  debug('Sauvegarde Firestore...');
   try {
     await addDoc(collection(db, 'souvenirs'), {
-      auteurId: currentUser.uid,
-      auteurEmail: currentUser.email,
-      chapter: currentChapter.id,
-      chapterName: currentChapter.name,
-      chapterIcon: currentChapter.icon,
-      question: currentQuestion,
-      text,
-      photos: uploadedPhotos,
-      audioUrl,
-      audioPath,
-      partageAvec,
+      auteurId: currentUser.uid, auteurEmail: currentUser.email,
+      chapter: currentChapter.id, chapterName: currentChapter.name, chapterIcon: currentChapter.icon,
+      question: currentQuestion, text, photos: uploadedPhotos,
+      audioUrl, audioPath, partageAvec,
       date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
       createdAt: serverTimestamp()
     });
-    debug('Firestore OK !');
     showToast('✓ Souvenir sauvegardé !');
     btn.disabled = false; btn.textContent = '💾 Sauvegarder ce souvenir';
     setTimeout(() => showView('memories'), 800);
   } catch(e) {
-    debug('ERREUR Firestore: ' + e.code + ' — ' + e.message);
-    showToast('Erreur Firestore: ' + e.message);
+    showToast('Erreur : ' + e.message);
     btn.disabled = false; btn.textContent = '💾 Sauvegarder ce souvenir';
   }
+};
+
+// ─── PDF EXPORT ───
+window.selectStyle = function(el) {
+  document.querySelectorAll('.style-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPdfStyle = el.dataset.style;
+};
+
+const PDF_STYLES = {
+  classique: {
+    pageBg: '#ffffff',
+    coverBg: '#ffffff',
+    coverColor: '#2c1f0e',
+    coverAccent: '#8b4513',
+    headerBg: '#f5f5f5',
+    headerColor: '#2c1f0e',
+    questionColor: '#8a7660',
+    textColor: '#2c1f0e',
+    borderColor: '#e0e0e0',
+    fontTitle: 'Georgia, serif',
+    fontBody: 'Arial, sans-serif',
+  },
+  chaleureux: {
+    pageBg: '#fdf8f0',
+    coverBg: 'linear-gradient(135deg, #f5e6c8, #ede0c8)',
+    coverColor: '#2c1f0e',
+    coverAccent: '#8b4513',
+    headerBg: '#f5ebe0',
+    headerColor: '#8b4513',
+    questionColor: '#c8922a',
+    textColor: '#2c1f0e',
+    borderColor: '#e0d5c4',
+    fontTitle: 'Georgia, serif',
+    fontBody: 'Arial, sans-serif',
+  },
+  moderne: {
+    pageBg: '#1a1a2e',
+    coverBg: '#0f0f1e',
+    coverColor: '#ffffff',
+    coverAccent: '#c8922a',
+    headerBg: '#16213e',
+    headerColor: '#c8922a',
+    questionColor: '#8a9ab5',
+    textColor: '#eeeae0',
+    borderColor: '#2a2a4e',
+    fontTitle: 'Georgia, serif',
+    fontBody: 'Arial, sans-serif',
+  }
+};
+
+window.generatePDF = async function() {
+  if (!currentUser) { openHmModal(); return; }
+
+  const chapterSel = document.getElementById('pdf-chapter-select').value;
+  const style = PDF_STYLES[selectedPdfStyle];
+  const btn = document.getElementById('btn-pdf');
+  btn.disabled = true; btn.textContent = '⏳ Génération en cours...';
+
+  // Filtrer les souvenirs
+  const filtered = chapterSel === 'all'
+    ? memories
+    : memories.filter(m => m.chapter === chapterSel);
+
+  if (filtered.length === 0) {
+    showToast('Aucun souvenir dans ce chapitre !');
+    btn.disabled = false; btn.textContent = '📄 Générer le PDF';
+    return;
+  }
+
+  // Grouper par chapitre
+  const grouped = {};
+  filtered.forEach(m => {
+    if (!grouped[m.chapter]) grouped[m.chapter] = { name: m.chapterName, icon: m.chapterIcon, items: [] };
+    grouped[m.chapter].items.push(m);
+  });
+
+  // Construire le HTML du PDF
+  const nomFichier = chapterSel === 'all' ? 'Tous mes souvenirs' : (CHAPTERS.find(c=>c.id===chapterSel)?.name || 'Souvenirs');
+  const dateGen = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  let html = `
+    <div style="font-family:${style.fontBody};background:${style.pageBg};color:${style.textColor};padding:0;margin:0;">
+
+      <!-- PAGE DE COUVERTURE -->
+      <div style="background:${style.coverBg};min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 30px;page-break-after:always;border-bottom:3px solid ${style.coverAccent};">
+        <div style="font-size:48px;margin-bottom:16px;">📜</div>
+        <div style="font-family:${style.fontTitle};font-size:28px;font-weight:bold;color:${style.coverColor};margin-bottom:8px;">HéritageMémoire</div>
+        <div style="font-family:${style.fontTitle};font-size:18px;font-style:italic;color:${style.coverAccent};margin-bottom:16px;">${nomFichier}</div>
+        <div style="width:60px;height:2px;background:${style.coverAccent};margin:0 auto 16px;"></div>
+        <div style="font-size:12px;color:${style.questionColor};">Généré le ${dateGen}</div>
+        <div style="font-size:11px;color:${style.questionColor};margin-top:4px;">${currentUser.email}</div>
+      </div>`;
+
+  // Chapitres et souvenirs
+  for (const chapId in grouped) {
+    const chap = grouped[chapId];
+    html += `
+      <!-- CHAPITRE -->
+      <div style="padding:30px 30px 10px;page-break-before:always;">
+        <div style="background:${style.headerBg};border-left:4px solid ${style.coverAccent};padding:16px 20px;border-radius:6px;margin-bottom:24px;">
+          <div style="font-size:24px;margin-bottom:4px;">${chap.icon}</div>
+          <div style="font-family:${style.fontTitle};font-size:22px;color:${style.headerColor};font-weight:bold;">${chap.name}</div>
+          <div style="font-size:11px;color:${style.questionColor};margin-top:4px;">${chap.items.length} souvenir${chap.items.length>1?'s':''}</div>
+        </div>`;
+
+    chap.items.forEach((m, i) => {
+      html += `
+        <div style="border:1px solid ${style.borderColor};border-radius:8px;margin-bottom:20px;overflow:hidden;${i > 0 ? '' : ''}">
+          <div style="background:${style.headerBg};padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid ${style.borderColor};">
+            <div style="font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:0.08em;color:${style.questionColor};">${chap.icon} ${chap.name}</div>
+            <div style="font-size:10px;color:${style.questionColor};">${m.date||''}</div>
+          </div>
+          ${m.question ? `<div style="padding:12px 16px 6px;font-family:${style.fontTitle};font-style:italic;font-size:13px;color:${style.questionColor};border-bottom:1px dashed ${style.borderColor};">"${m.question}"</div>` : ''}
+          ${m.text ? `<div style="padding:12px 16px;font-size:13px;line-height:1.7;color:${style.textColor};">${m.text.replace(/\n/g,'<br>')}</div>` : ''}
+          ${m.photos?.length ? `
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:0 16px 12px;">
+              ${m.photos.map(p => `<img src="${p}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;" />`).join('')}
+            </div>` : ''}
+          ${m.audioUrl ? `<div style="padding:8px 16px;font-size:11px;color:${style.questionColor};border-top:1px solid ${style.borderColor};">🎙️ Enregistrement vocal disponible dans l'application</div>` : ''}
+        </div>`;
+    });
+
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+
+  // Conteneur temporaire
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  container.style.position = 'absolute';
+  container.style.left = '-9999px';
+  container.style.top = '0';
+  document.body.appendChild(container);
+
+  const pdfOptions = {
+    margin: [10, 10, 10, 10],
+    filename: `HéritageMémoire_${nomFichier}_${new Date().getFullYear()}.pdf`,
+    image: { type: 'jpeg', quality: 0.92 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['avoid-all', 'css'] }
+  };
+
+  try {
+    await html2pdf().set(pdfOptions).from(container).save();
+    showToast('✓ PDF téléchargé !');
+  } catch(e) {
+    showToast('Erreur PDF : ' + e.message);
+  }
+
+  document.body.removeChild(container);
+  btn.disabled = false; btn.textContent = '📄 Générer le PDF';
 };
 
 function renderMemories() {
