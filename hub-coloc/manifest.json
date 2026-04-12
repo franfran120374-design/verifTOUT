@@ -1,10 +1,10 @@
 {
-  "id": "/HUB-COLOC/",
+  "id": "/verifTOUT/hub-coloc/",
   "name": "Hub Coloc 2026",
   "short_name": "HubColoc",
   "description": "L'application ultime et bienveillante pour gérer votre colocation : finances, courses, agenda et chat.",
-  "start_url": "/HUB-COLOC/",
-  "scope": "/HUB-COLOC/",
+  "start_url": "/verifTOUT/hub-coloc/",
+  "scope": "/verifTOUT/hub-coloc/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
@@ -27,14 +27,14 @@
       "name": "Ajouter une dépense",
       "short_name": "Dépense",
       "description": "Ajouter une facture à la colocation",
-      "url": "/HUB-COLOC/",
+      "url": "/verifTOUT/hub-coloc/",
       "icons": [{ "src": "icon-512.png", "sizes": "512x512" }]
     },
     {
       "name": "Liste de courses",
       "short_name": "Courses",
       "description": "Voir la liste",
-      "url": "/HUB-COLOC/",
+      "url": "/verifTOUT/hub-coloc/",
       "icons": [{ "src": "icon-512.png", "sizes": "512x512" }]
     }
   ]
