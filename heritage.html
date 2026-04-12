@@ -93,7 +93,8 @@
     .rec-status { font-size: 0.82rem; color: var(--muted); }
     .rec-timer { font-size: 1.1rem; font-weight: 500; color: var(--text); margin: 0.25rem 0; }
     .audio-playback { margin-top: 0.75rem; width: 100%; height: 36px; }
-    .upload-progress { margin-top: 0.5rem; font-size: 0.78rem; color: var(--gold); text-align: center; display: none; }
+    .upload-progress { margin-top: 0.5rem; font-size: 0.78rem; color: var(--gold); text-align: center; display: none; padding: 0.5rem; background: var(--gold-bg); border-radius: var(--radius-sm); }
+    .debug-box { margin-top: 0.5rem; font-size: 0.72rem; color: var(--muted); background: var(--surface); border-radius: var(--radius-sm); padding: 0.5rem; display: none; font-family: monospace; word-break: break-all; }
     .btn-save { width: 100%; padding: 1rem; margin-top: 1.5rem; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
     .btn-save:hover { background: var(--accent-light); }
     .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -252,7 +253,8 @@
             <div class="rec-status" id="rec-status">Appuyez pour enregistrer</div>
             <audio id="audio-playback" class="audio-playback" controls style="display:none;"></audio>
           </div>
-          <div class="upload-progress" id="upload-progress">⏳ Upload de l'audio en cours...</div>
+          <div class="upload-progress" id="upload-progress">⏳ Upload audio en cours...</div>
+          <div class="debug-box" id="debug-box"></div>
         </div>
         <div class="share-section" id="record-share-section" style="display:none;">
           <span class="share-title">Partager avec la famille</span>
@@ -417,6 +419,12 @@ let mediaRecorder = null, audioChunks = [], recInterval = null, recSeconds = 0;
 let editingMemoryId = null, deletingMemoryId = null;
 let unsubMemories = null, unsubShared = null, unsubFamille = null;
 
+function debug(msg) {
+  console.log('[HM]', msg);
+  const box = document.getElementById('debug-box');
+  if (box) { box.style.display = 'block'; box.textContent += msg + '\n'; }
+}
+
 function loadLocal() {
   try { memories = JSON.parse(localStorage.getItem('hm_memories') || '[]'); } catch { memories = []; }
 }
@@ -498,7 +506,9 @@ function subscribeFamille() {
     query(collection(db, 'famille'), where('membres', 'array-contains', currentUser.uid)),
     snap => {
       familleMembers = [];
-      snap.docs.forEach(d => (d.data().invites || []).forEach(inv => { if (inv.uid !== currentUser.uid) familleMembers.push({ ...inv, familleId: d.id }); }));
+      snap.docs.forEach(d => (d.data().invites || []).forEach(inv => {
+        if (inv.uid !== currentUser.uid) familleMembers.push({ ...inv, familleId: d.id });
+      }));
       renderFamilleView();
     }
   );
@@ -583,6 +593,8 @@ window.selectChapter = function(id) {
   document.getElementById('rec-status').textContent = 'Appuyez pour enregistrer';
   document.getElementById('rec-timer').textContent = '0:00';
   document.getElementById('upload-progress').style.display = 'none';
+  document.getElementById('debug-box').style.display = 'none';
+  document.getElementById('debug-box').textContent = '';
   document.getElementById('btn-save').disabled = false;
   document.getElementById('btn-save').textContent = '💾 Sauvegarder ce souvenir';
   renderFamilleCheckboxes();
@@ -652,6 +664,7 @@ window.toggleRecording = async function() {
     mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
     mediaRecorder.onstop = () => {
       audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      debug('Audio blob créé: ' + audioBlob.size + ' bytes, type: ' + audioBlob.type);
       const audio = document.getElementById('audio-playback');
       audio.src = URL.createObjectURL(audioBlob); audio.style.display = 'block';
       document.getElementById('rec-btn').textContent = '🎙️';
@@ -668,17 +681,35 @@ window.toggleRecording = async function() {
       recSeconds++;
       document.getElementById('rec-timer').textContent = `${Math.floor(recSeconds/60)}:${String(recSeconds%60).padStart(2,'0')}`;
     }, 1000);
-  } catch { showToast('Accès au micro refusé'); }
+  } catch(e) { showToast('Accès au micro refusé'); debug('Erreur micro: ' + e.message); }
 };
 
+// ─── UPLOAD AUDIO FIREBASE STORAGE (avec logs) ───
 async function uploadAudio(blob, uid) {
-  const fileName = `audio_${Date.now()}.webm`;
-  const storageRef = ref(storage, `audios/${uid}/${fileName}`);
+  debug('Upload démarré — taille: ' + blob.size + ' bytes, type: ' + blob.type);
+  const fileName = 'audio_' + Date.now() + '.webm';
+  const path = 'audios/' + uid + '/' + fileName;
+  debug('Chemin Storage: ' + path);
+
+  const storageRef = ref(storage, path);
   document.getElementById('upload-progress').style.display = 'block';
-  await uploadBytes(storageRef, blob);
-  const url = await getDownloadURL(storageRef);
-  document.getElementById('upload-progress').style.display = 'none';
-  return { url, path: `audios/${uid}/${fileName}` };
+
+  try {
+    debug('Appel uploadBytes...');
+    const snapshot = await uploadBytes(storageRef, blob);
+    debug('uploadBytes OK — bytes: ' + snapshot.metadata.size);
+
+    debug('Appel getDownloadURL...');
+    const url = await getDownloadURL(storageRef);
+    debug('URL obtenue: ' + url.substring(0, 60) + '...');
+
+    document.getElementById('upload-progress').style.display = 'none';
+    return { url, path };
+  } catch(e) {
+    debug('ERREUR UPLOAD: ' + e.code + ' — ' + e.message);
+    document.getElementById('upload-progress').style.display = 'none';
+    throw e;
+  }
 }
 
 window.saveMemory = async function() {
@@ -694,27 +725,42 @@ window.saveMemory = async function() {
 
   let audioUrl = null, audioPath = null;
   if (audioBlob) {
+    debug('Audio détecté, lancement upload...');
     try {
       const result = await uploadAudio(audioBlob, currentUser.uid);
-      audioUrl = result.url; audioPath = result.path;
-    } catch(e) { console.error('Upload audio:', e); showToast('Audio non sauvegardé, souvenir enregistré sans audio'); }
+      audioUrl = result.url;
+      audioPath = result.path;
+      debug('Audio uploadé avec succès !');
+    } catch(e) {
+      debug('Échec upload audio: ' + e.message);
+      showToast('⚠️ Audio non sauvegardé: ' + e.message);
+    }
   }
 
+  debug('Sauvegarde Firestore...');
   try {
     await addDoc(collection(db, 'souvenirs'), {
-      auteurId: currentUser.uid, auteurEmail: currentUser.email,
-      chapter: currentChapter.id, chapterName: currentChapter.name, chapterIcon: currentChapter.icon,
-      question: currentQuestion, text, photos: uploadedPhotos,
-      audioUrl, audioPath, partageAvec,
+      auteurId: currentUser.uid,
+      auteurEmail: currentUser.email,
+      chapter: currentChapter.id,
+      chapterName: currentChapter.name,
+      chapterIcon: currentChapter.icon,
+      question: currentQuestion,
+      text,
+      photos: uploadedPhotos,
+      audioUrl,
+      audioPath,
+      partageAvec,
       date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
       createdAt: serverTimestamp()
     });
+    debug('Firestore OK !');
     showToast('✓ Souvenir sauvegardé !');
     btn.disabled = false; btn.textContent = '💾 Sauvegarder ce souvenir';
     setTimeout(() => showView('memories'), 800);
   } catch(e) {
-    console.error('Firestore:', e);
-    showToast('Erreur : ' + e.message);
+    debug('ERREUR Firestore: ' + e.code + ' — ' + e.message);
+    showToast('Erreur Firestore: ' + e.message);
     btn.disabled = false; btn.textContent = '💾 Sauvegarder ce souvenir';
   }
 };
