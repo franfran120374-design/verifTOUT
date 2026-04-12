@@ -465,8 +465,38 @@
 <!-- HEADER -->
 <div class="app-layout"><div class="app-sidebar" id="desktop-sidebar" style="display:none;"><div class="logo">Médi<em>Trad</em></div><p class="sidebar-desc">Vos documents médicaux expliqués en langage simple. Aucune donnée sauvegardée.</p><nav class="sidebar-nav"><button class="snav-btn active" id="snav-analyser" onclick="switchTab('analyser',null,true)"><span class="snav-icon">🩺</span> Analyser un document</button><button class="snav-btn" id="snav-historique" onclick="switchTab('historique',null,true)"><span class="snav-icon">📂</span> Historique de session</button></nav><div class="sidebar-footer"><button class="premium-badge-lg" onclick="openPaywall()">✦ Accès illimité — 3,99€</button></div></div><div class="app-main"><header>
   <div class="logo">Médi<em>Trad</em></div>
-  <div class="premium-badge" onclick="openPaywall()">✦ Premium</div>
+  <div style="display:flex;align-items:center;gap:0.5rem;">
+    <div id="premium-indicator" style="display:none;font-size:0.7rem;font-weight:500;color:var(--green);background:var(--green-bg);border-radius:100px;padding:0.25rem 0.6rem;">✓ Premium</div>
+    <div id="auth-bar" style="display:flex;gap:0.5rem;">
+      <button class="btn-ghost" onclick="openMtModal()">Connexion</button>
+    </div>
+    <div id="user-bar" style="display:none;align-items:center;gap:0.5rem;">
+      <span id="user-email-display" style="font-size:0.72rem;color:var(--muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+      <button class="btn-ghost" onclick="handleSignOut()">↪</button>
+    </div>
+    <div class="premium-badge" onclick="openPaywall()">✦ Premium</div>
+  </div>
 </header>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="mt-auth-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeMtModal()">✕</button>
+    <h2>Connexion</h2>
+    <p style="font-size:0.875rem;color:var(--muted);margin-bottom:1.5rem;">Connectez-vous pour accéder au Premium.</p>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="mt-email" placeholder="vous@exemple.fr" />
+    </div>
+    <div class="form-group">
+      <label>Mot de passe</label>
+      <input type="password" id="mt-pwd" placeholder="••••••••" />
+    </div>
+    <div class="error-msg" id="mt-err"></div>
+    <button class="btn-full" onclick="handleSignIn()">Se connecter</button>
+    <button class="btn-full" style="margin-top:0.5rem;background:var(--surface2);color:var(--text);" onclick="handleSignUp()">Créer un compte</button>
+  </div>
+</div>
 
 <!-- HERO -->
 <div class="hero">
@@ -625,6 +655,23 @@ Ou copiez directement le texte de votre document médical."></textarea>
 </div>
 
 <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB1TwbZSkqkAKEPhNJXuwn9zMEz2BqBk48",
+  authDomain: "hub-coloc.firebaseapp.com",
+  databaseURL: "https://hub-coloc-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "hub-coloc",
+  storageBucket: "hub-coloc.firebasestorage.app",
+  messagingSenderId: "1090628612964",
+  appId: "1:1090628612964:web:0ab8977765daf3c8304071"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 // ══════════════════════════════════════════════
 // ⚠️ STRIPE — Remplacez par votre lien
@@ -636,6 +683,63 @@ let analysesUsed = 0;
 let history = []; // Session uniquement
 let selectedType = 'ordonnance';
 let uploadedImageBase64 = null;
+let isPremium = false;
+let currentUser = null;
+
+// ─── AUTH STATE ───
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  if (user) {
+    document.getElementById('auth-bar').style.display = 'none';
+    document.getElementById('user-bar').style.display = 'flex';
+    document.getElementById('user-email-display').textContent = user.email;
+    // Vérifier premium
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      isPremium = snap.exists() && snap.data()?.subscriptions?.meditrad?.premium === true;
+      if (isPremium) document.getElementById('premium-indicator').style.display = 'flex';
+    } catch {}
+  } else {
+    currentUser = null; isPremium = false;
+    document.getElementById('auth-bar').style.display = 'flex';
+    document.getElementById('user-bar').style.display = 'none';
+    document.getElementById('premium-indicator').style.display = 'none';
+  }
+});
+
+window.handleSignIn = async function() {
+  const email = document.getElementById('mt-email').value.trim();
+  const pwd = document.getElementById('mt-pwd').value;
+  const err = document.getElementById('mt-err');
+  err.textContent = '';
+  try {
+    await signInWithEmailAndPassword(auth, email, pwd);
+    closeMtModal();
+  } catch(e) {
+    err.textContent = 'Email ou mot de passe incorrect.';
+  }
+};
+
+window.handleSignUp = async function() {
+  const email = document.getElementById('mt-email').value.trim();
+  const pwd = document.getElementById('mt-pwd').value;
+  const err = document.getElementById('mt-err');
+  err.textContent = '';
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pwd);
+    await setDoc(doc(db, 'users', cred.user.uid), { email, createdAt: new Date().toISOString(), subscriptions: {} });
+    closeMtModal();
+  } catch(e) {
+    err.textContent = 'Erreur : ' + (e.code === 'auth/email-already-in-use' ? 'Email déjà utilisé.' : e.message);
+  }
+};
+
+window.handleSignOut = async function() {
+  await signOut(auth);
+};
+
+window.openMtModal = function() { document.getElementById('mt-auth-modal').classList.add('open'); };
+window.closeMtModal = function() { document.getElementById('mt-auth-modal').classList.remove('open'); };
 
 window.selectType = function(type, el) {
   selectedType = type;
@@ -671,7 +775,7 @@ window.analyser = async function() {
     return;
   }
 
-  if (analysesUsed >= 3) {
+  if (analysesUsed >= 3 && !isPremium) {
     openPaywall();
     return;
   }
@@ -873,8 +977,13 @@ window.closePaywall = function() {
   document.getElementById('paywall-modal').classList.remove('open');
 };
 window.goPremium = function() {
+  if (!currentUser) {
+    closePaywall();
+    openMtModal();
+    return;
+  }
   if (window.STRIPE_MEDITRAD && !window.STRIPE_MEDITRAD.includes('VOTRE_LIEN')) {
-    window.open(window.STRIPE_MEDITRAD, '_blank');
+    window.open(window.STRIPE_MEDITRAD + '?prefilled_email=' + encodeURIComponent(currentUser.email), '_blank');
   } else {
     alert('Lien Stripe non configuré — à remplacer dans le code.');
   }
