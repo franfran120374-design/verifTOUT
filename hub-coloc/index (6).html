@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Hub Coloc 2026</title>
+    
+    <link rel="icon" href="data:,">
+    <link rel="manifest" href="manifest.json">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #25D366; --primary-dark: #075E54; --bg-app: #efeae2;
+            --card-bg: #ffffff; --text-main: #111b21; --text-muted: #667781;
+            --danger: #ea4335; --accent: #34b7f1; --msg-sent: #d9fdd3; --msg-received: #ffffff;
+            --bg-desktop: #d1d7db;
+            --color-elec-hp: #ffd600; --color-elec-hc: #fbc02d; 
+            --color-eau: #03a9f4; --color-gaz: #ff5252;
+        }
+        * { box-sizing: border-box; }
+        
+        html, body { 
+            height: 100%; height: 100dvh; margin: 0; overflow: hidden; 
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif; 
+            background-color: var(--bg-desktop); color: var(--text-main); 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        .app-wrapper {
+            max-width: 1200px; margin: 0 auto; background-color: var(--bg-app); 
+            height: 100%; display: flex; position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 767px) {
+            .app-wrapper { flex-direction: column; }
+            nav { 
+                order: 2; width: 100%; flex-direction: row; border-top: 1px solid #d1d7db; 
+                padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
+                background: #f0f2f5; flex-shrink: 0; overflow-x: auto;
+            }
+            .content-wrapper { 
+                order: 1; width: 100%; flex: 1 1 0; min-height: 0; 
+                display: flex; flex-direction: column; overflow: hidden; 
+            }
+        }
+
+        @media (min-width: 768px) {
+            .app-wrapper { flex-direction: row; }
+            nav { order: 1; width: 100px; flex-direction: column; border-right: 1px solid #d1d7db; justify-content: flex-start !important; padding-top: 20px; gap: 20px; flex-shrink: 0; background: #f0f2f5; }
+            .content-wrapper { order: 2; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; overflow: hidden; width: calc(100% - 100px); }
+        }
+
+        .content-wrapper { background-color: var(--bg-app); }
+
+        header { 
+            flex-shrink: 0; background-color: var(--primary-dark); color: white; 
+            padding: 15px; padding-top: calc(15px + env(safe-area-inset-top)); 
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; 
+        }
+        
+        .container { 
+            flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 15px; 
+            padding-bottom: 100px; scroll-behavior: smooth; 
+            -webkit-overflow-scrolling: touch; 
+        }
+        
+        nav { display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-wrap: break-word; }
+        h2 { font-size: 1.1rem; color: var(--primary-dark); margin: 0 0 10px 0; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e1e1e1; border-radius: 8px; font-size: 16px; outline: none; background: white; transition: 0.2s; }
+        input:focus, select:focus { border-color: var(--primary); }
+        button { background-color: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; }
+        button:active { transform: scale(0.98); }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn-danger { background: #fee; color: var(--danger); border: 1px solid var(--danger); width: auto; padding: 6px 12px; font-size: 0.75rem; border-radius: 6px; margin-top: 5px; }
+
+        nav button { background: none; color: var(--text-muted); width: auto; font-size: 0.6rem; border: none; display: flex; flex-direction: column; align-items: center; cursor: pointer; flex: 1; position: relative; min-width: 50px; }
+        nav button.active { color: var(--primary-dark); font-weight: bold; }
+        @media (min-width: 768px) { nav button { font-size: 0.75rem; flex: none; min-width: auto; } }
+
+        .nav-badge { position: absolute; top: 0px; right: 5px; background-color: red; color: white; border-radius: 50%; font-size: 0.6rem; font-weight: bold; padding: 2px 5px; display: none; }
+
+        #chat-container { display: flex; flex-direction: column; gap: 10px; height: 450px; overflow-y: auto; padding: 10px; background: #e5ddd5; border-radius: 12px; -webkit-overflow-scrolling: touch; }
+        .msg-row { display: flex; gap: 8px; align-items: flex-end; }
+        .msg-row.sent { flex-direction: row-reverse; }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; flex-shrink: 0; }
+        
+        .bubble { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 0.9rem; position: relative; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+        .sent-bubble { background: var(--msg-sent); border-bottom-right-radius: 0; }
+        .received-bubble { background: var(--msg-received); border-bottom-left-radius: 0; }
+        
+        .chat-image { max-width: 100%; border-radius: 8px; margin-top: 5px; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); }
+        .chat-audio { width: 100%; margin-top: 5px; height: 35px; outline: none; }
+        .reactions { display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap; }
+        .react-btn { background: rgba(0,0,0,0.05); border: none; border-radius: 10px; padding: 2px 6px; font-size: 0.75rem; cursor: pointer; }
+
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f5f5f5; }
+        .checked { text-decoration: line-through; opacity: 0.5; }
+        .settled { color: var(--primary); font-weight: bold; }
+
+        .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; display: none; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch; text-align: center; }
+        .img-preview { max-width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid #ddd; cursor: pointer; }
+
+        .badge-fluide { padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; color: white; }
+        .bg-elec { background: var(--color-elec-hp); color: #000; }
+        .bg-eau { background: var(--color-eau); }
+        .bg-gaz { background: var(--color-gaz); }
+        .chart-container { position: relative; height: 300px; width: 100%; margin-bottom: 10px; }
+
+        .agenda-tabs { display: flex; margin-bottom: 15px; border-radius: 8px; overflow: hidden; border: 1px solid var(--primary); }
+        .agenda-tabs button { border-radius: 0; flex: 1; padding: 10px; font-size: 0.9rem; }
+        .meta-info { font-size: 0.7rem; color: #888; margin-top: 4px; }
+        
+        .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+        
+        .msg-vu { font-size: 0.65rem; color: var(--text-muted); text-align: right; margin-top: 4px; display: block; }
+        
+        .recording-pulse { animation: pulse 1.5s infinite; color: red !important; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+        /* ─── PREMIUM ─── */
+        .premium-badge { background: linear-gradient(135deg, #d4a853, #f0c97a); color: #1a0e00; font-size: 0.65rem; font-weight: bold; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.05em; }
+        .premium-card { border-left: 5px solid #d4a853 !important; }
+
+        /* ─── MODE PAYSAGE ─── */
+        @media (max-width: 767px) and (orientation: landscape) {
+            .app-wrapper { flex-direction: row; }
+            nav { 
+                order: 1; width: 70px; flex-direction: column; 
+                border-right: 1px solid #d1d7db; border-top: none;
+                justify-content: flex-start !important; 
+                padding-top: 10px; gap: 8px; 
+                overflow-y: auto; overflow-x: hidden;
+                padding-bottom: 10px;
+            }
+            nav button { font-size: 0.55rem; min-width: auto; }
+            nav button span:first-child { font-size: 1.2rem; }
+            .content-wrapper { 
+                order: 2; width: calc(100% - 70px); 
+                flex: 1 1 0; min-width: 0;
+                display: flex; flex-direction: column; overflow: hidden; 
+            }
+            header { padding: 8px 15px; padding-top: calc(8px + env(safe-area-inset-top)); }
+            #chat-container { height: 250px; }
+            .container { padding-bottom: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+    <div id="auth-modal" class="modal-overlay">
+        <div class="modal-content">
+            <label for="lang-select" class="visually-hidden">Choisir la langue</label>
+            <select id="lang-select" onchange="changeLang(this.value)" style="width:100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd; background: #fff; font-size: 14px; text-align: center;">
+                <option value="fr">🇫🇷 Français</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="es">🇪🇸 Español</option>
+            </select>
+            <h2 style="text-align:center;" data-i18n="titleAuth">🏠 Hub Coloc</h2>
+            <div id="login-fields">
+                <label for="login-name" class="visually-hidden">Votre Prénom</label>
+                <input type="text" id="login-name" data-i18n="phName" placeholder="Votre Prénom">
+                
+                <label for="coloc-token" class="visually-hidden">Nom de la Colocation</label>
+                <input type="text" id="coloc-token" data-i18n="phColoc" placeholder="Nom de la Colocation">
+                
+                <div style="position: relative; width: 100%; margin-bottom: 15px;">
+                    <label for="coloc-password" class="visually-hidden">Mot de passe de la coloc</label>
+                    <input type="password" id="coloc-password" data-i18n="phPassword" placeholder="Mot de passe de la coloc" style="margin-bottom: 0; padding-right: 40px;">
+                    <span id="toggle-pwd-icon" onclick="togglePassword()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.2rem; user-select: none;">👁️</span>
+                </div>
+
+                <button onclick="validerLogin()" data-i18n="btnContinue">Continuer</button>
+            </div>
+            <div id="charte-fields" style="display:none;">
+                <h2 data-i18n="titleCharte">📜 Acceptation de la Charte</h2>
+                <div id="charte-content" style="font-size: 0.9rem; background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 10px; line-height: 1.4; text-align: left;"></div>
+                <button onclick="signerCharte()" data-i18n="btnAccept">J'accepte et je rejoins la coloc</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="news-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 10px;">👋</div>
+            <h2>Bienvenue !</h2>
+            <p id="news-text" style="margin: 15px 0; color: var(--text-main); line-height: 1.5; font-size: 1rem;"></p>
+            <button onclick="document.getElementById('news-modal').style.display = 'none';" style="margin-bottom: 10px;">Voir mes nouveautés</button>
+            <button class="btn-outline" onclick="forceAppRefresh()" style="border-color:var(--accent); color:var(--accent);">🔄 Mettre à jour l'application</button>
+        </div>
+    </div>
+
+    <nav>
+        <button onclick="showTab('accueil')" id="nav-accueil" class="active"><span style="font-size:1.5rem;">🏠</span><span class="nav-badge" id="badge-accueil"></span><span data-i18n="tabHome">Accueil</span></button>
+        <button onclick="showTab('chat')" id="nav-chat"><span style="font-size:1.5rem;">💬</span><span class="nav-badge" id="badge-chat"></span><span data-i18n="tabChat">Chat</span></button>
+        <button onclick="showTab('agenda')" id="nav-agenda"><span style="font-size:1.5rem;">📅</span><span class="nav-badge" id="badge-agenda"></span><span data-i18n="tabAgenda">Agenda</span></button>
+        <button onclick="showTab('courses')" id="nav-courses"><span style="font-size:1.5rem;">🛒</span><span class="nav-badge" id="badge-courses"></span><span data-i18n="tabCourses">Courses</span></button>
+        <button onclick="showTab('finances')" id="nav-finances"><span style="font-size:1.5rem;">💰</span><span class="nav-badge" id="badge-finances"></span><span data-i18n="tabFinances">Finances</span></button>
+        <button onclick="showTab('fluides')" id="nav-fluides"><span style="font-size:1.5rem;">💧</span><span class="nav-badge" id="badge-fluides"></span><span data-i18n="tabFluides">Fluides</span></button>
+        <button onclick="showTab('annonces')" id="nav-annonces"><span style="font-size:1.5rem;">📢</span><span class="nav-badge" id="badge-annonces"></span><span data-i18n="tabAnnonces">Annonces</span></button>
+        <button onclick="showTab('reglages')" id="nav-reglages"><span style="font-size:1.5rem;">⚙️</span><span data-i18n="tabSettings">Colocs</span></button>
+    </nav>
+
+    <div class="content-wrapper">
+        <header>
+            <span id="header-title" style="font-weight:bold; font-size:1.2rem;"></span>
+            <span id="user-badge" style="font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; display:flex; align-items:center; gap:5px;">
+                <img id="header-avatar" src="" style="width:24px; height:24px; border-radius:50%; display:none; object-fit:cover;">
+                <span id="header-name"></span>
+                <span id="premium-badge" class="premium-badge" style="display:none;">⭐ PREMIUM</span>
+            </span>
+        </header>
+
+        <div class="container">
+            <div id="tab-accueil" class="tab-content">
+                <div class="card" style="padding:0; overflow:hidden;">
+                    <img id="coloc-photo-preview" src="" style="display:none; width:100%; height:200px; object-fit:cover;">
+                </div>
+                
+                <div class="card" id="card-google-space" style="display:none; border-left: 5px solid #4285F4;">
+                    <h2>☁️ Espace Google de la Coloc</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">Accès direct aux documents et mails partagés.</p>
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                        <button id="btn-open-drive" class="btn-outline" style="border-color:#4285F4; color:#4285F4; display:none;" onclick="openGoogleLink('drive')">📂 Drive</button>
+                        <button id="btn-open-gmail" class="btn-outline" style="border-color:#EA4335; color:#EA4335; display:none;" onclick="openGoogleLink('gmail')">📧 Gmail</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <label for="lang-select-home" style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;" data-i18n="lblLang">Langue de l'application :</label>
+                    <select id="lang-select-home" onchange="changeLang(this.value)" style="width:100%; padding: 8px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd;">
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="en">🇬🇧 English</option>
+                        <option value="es">🇪🇸 Español</option>
+                    </select>
+                </div>
+                
+                <div class="card" style="border-left: 5px solid var(--accent);">
+                    <h2 data-i18n="memoTitle">💡 Mémo et Engagements</h2>
+                    <ul style="font-size: 0.85rem; color: #555; padding-left: 20px; margin: 0;">
+                        <li data-i18n="memo1"><b>💬 Chat :</b> Pour la communication et le partage de photos.</li>
+                        <li data-i18n="memo2"><b>🔒 Sécurité :</b> Confidentialité totale des données privées.</li>
+                        <li data-i18n="memo3"><b>💰 Finances :</b> Traçabilité garantie de chaque dépense.</li>
+                        <li data-i18n="memo4"><b>📧 Export :</b> Mails de courses compatibles avec Outlook.</li>
+                        <li data-i18n="memo5"><b>💧 Fluides :</b> Suivi des consos avec graphiques.</li>
+                    </ul>
+                </div>
+
+                <div class="card" style="border-left: 5px solid var(--primary);">
+                    <h2 data-i18n="charteTitle">📜 Notre Charte de Vie</h2>
+                    <div id="display-charte" style="font-size: 0.9rem; line-height: 1.6;"></div>
+                    <div style="display:flex; gap:5px; margin-top:10px;">
+                        <label for="nouvelle-charte" class="visually-hidden">Nouvelle règle</label>
+                        <input type="text" id="nouvelle-charte" data-i18n="phNewRule" placeholder="Ex: Sortir les poubelles le mardi">
+                        <button onclick="ajouterRegleCharte()" style="width:50px;">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-chat" class="tab-content" style="display:none;">
+                <div class="card" style="padding:10px;">
+                    <div id="chat-container"></div>
+                    
+                    <div id="chat-file-preview-text" style="font-size:0.75rem; color:var(--primary-dark); display:none; text-align:right; margin-top:5px; font-weight:bold;">📎 <span data-i18n="fileReady">Fichier prêt à l'envoi</span></div>
+                    
+                    <div style="display:flex; gap:5px; margin-top:10px; align-items:center;">
+                        <label for="chat-mention" class="visually-hidden">Mentionner</label>
+                        <select id="chat-mention" style="width: auto; padding: 8px;">
+                            <option value="">Tous</option>
+                        </select>
+                        
+                        <input type="hidden" id="edit-message-id">
+                        
+                        <label for="chat-file" style="cursor:pointer; font-size:1.3rem; padding:5px; margin-bottom:0;">📎</label>
+                        <input type="file" id="chat-file" accept="image/*,application/pdf" style="display:none" onchange="document.getElementById('chat-file-preview-text').style.display='block'">
+                        
+                        <label for="chat-input" class="visually-hidden">Message</label>
+                        <input type="text" id="chat-input" data-i18n="phChatMsg" placeholder="Ex: Coucou les colocs !" style="margin:0; flex-grow:1;">
+                        <button id="btn-mic" onclick="toggleAudioRecord()" style="width:40px; padding:8px; font-size:1.2rem; background:transparent; color:var(--text-muted);">🎤</button>
+                        <button onclick="envoyerMessage()" style="width:50px; padding:8px;">🚀</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-agenda" class="tab-content" style="display:none;">
+                <div class="agenda-tabs">
+                    <button id="btn-agenda-actif" onclick="setAgendaView('actif')" style="background:var(--primary); color:white;" data-i18n="tabAgendaActive">📅 À venir</button>
+                    <button id="btn-agenda-archive" onclick="setAgendaView('archive')" style="background:white; color:var(--primary);" data-i18n="tabAgendaArchive">🗃️ Archives</button>
+                </div>
+
+                <div class="card">
+                    <h2 data-i18n="agendaTitle">📅 Tâche ou Événement</h2>
+                    <label for="evt-titre" class="visually-hidden">Titre</label>
+                    <input type="text" id="evt-titre" data-i18n="phEvtTitle" placeholder="Ex: Sortir les poubelles">
+                    
+                    <label for="evt-date" class="visually-hidden">Date et heure</label>
+                    <input type="datetime-local" id="evt-date">
+                    
+                    <label for="evt-type" class="visually-hidden">Type</label>
+                    <select id="evt-type">
+                        <option value="tache" data-i18n="task">🧹 Tâche (Action à faire)</option>
+                        <option value="evenement" data-i18n="event">🎉 Événement (Présence)</option>
+                    </select>
+                    
+                    <label for="evt-assignee" class="visually-hidden">Assigné à</label>
+                    <select id="evt-assignee"></select>
+                    
+                    <label for="evt-freq" class="visually-hidden">Fréquence</label>
+                    <select id="evt-freq">
+                        <option value="once" data-i18n="once">Ponctuel (1 fois)</option>
+                        <option value="hebdo" data-i18n="weekly">Toutes les semaines</option>
+                        <option value="mensuel" data-i18n="monthly">Tous les mois</option>
+                    </select>
+                    
+                    <button onclick="ajouterAgenda()" data-i18n="btnCreate">Créer</button>
+                    <button class="btn-outline" style="margin-top:10px; border-color: #4285F4; color: #4285F4;" onclick="exporterArchive('agenda')">📂 Exporter Archive Globale (Drive)</button>
+                </div>
+                <div id="liste-agenda"></div>
+            </div>
+
+            <div id="tab-courses" class="tab-content" style="display:none;">
+                <div class="card">
+                    <h2 data-i18n="coursesTitle">🛒 Ajouter aux courses</h2>
+                    <div id="catalogue-list" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:15px;"></div>
+                    <div style="display:flex; gap:5px;">
+                        <label for="course-nom" class="visually-hidden">Article</label>
+                        <input type="text" id="course-nom" data-i18n="phArticle" placeholder="Ex: Lait, Beurre..." style="width:40%;">
+                        
+                        <label for="course-qte" class="visually-hidden">Quantité</label>
+                        <input type="number" id="course-qte" value="1" style="width:20%;">
+                        
+                        <label for="course-unite" class="visually-hidden">Unité</label>
+                        <select id="course-unite" style="width:40%;">
+                            <option value="unité(s)" data-i18n="unit">Unité(s)</option>
+                            <option value="kg" data-i18n="kg">Kilo(s)</option>
+                            <option value="L" data-i18n="L">Litre(s)</option>
+                            <option value="pack(s)" data-i18n="pack">Pack(s)</option>
+                        </select>
+                    </div>
+                    <button onclick="ajouterCourse()" data-i18n="btnAddToCart">Ajouter au panier</button>
+                    <button class="btn-outline" onclick="exportCourses()" style="margin-top:8px;" data-i18n="btnExportMail">📧 Exporter (Outlook/Mail)</button>
+                </div>
+                <div id="liste-courses"></div>
+            </div>
+
+            <div id="tab-finances" class="tab-content" style="display:none;">
+                <div class="card">
+                    <h2 data-i18n="financesTitle">💰 Ajouter une Dépense</h2>
+                    <label for="fin-desc" class="visually-hidden">Description</label>
+                    <input type="text" id="fin-desc" data-i18n="phFinDesc" placeholder="Objet (ex: Électricité, Courses...)">
+                    
+                    <label for="fin-montant" class="visually-hidden">Montant</label>
+                    <input type="number" id="fin-montant" data-i18n="phFinAmount" placeholder="Montant Total (€)">
+                    
+                    <label for="fin-payeur" style="font-size: 0.8rem;" data-i18n="lblPaidBy">Payé par :</label>
+                    <select id="fin-payeur"></select>
+                    
+                    <div style="font-size: 0.8rem; margin-top: 10px; display: block; font-weight: bold;" data-i18n="lblDivide">Diviser entre (cochez les concernés) :</div>
+                    <div id="fin-involves" style="display:flex; flex-wrap:wrap; gap:10px; margin: 8px 0;"></div>
+
+                    <label for="fin-photo" style="font-size:0.75rem; color:var(--text-muted);" data-i18n="lblJoinFile">Joindre Facture/Photo (Optionnel) :</label>
+                    <label for="fin-photo" class="btn-outline" style="display:block; text-align:center; padding:5px; border-radius:6px; cursor:pointer; font-size:0.8rem; margin-bottom:5px;" data-i18n="btnChooseFile">📂 Choisir un fichier</label>
+                    <span id="fin-photo-name" style="font-size:0.7rem; color:var(--primary-dark); display:block; margin-bottom:10px; text-align:right;"></span>
+                    <input type="file" id="fin-photo" accept="image/*,application/pdf" style="display:none" onchange="document.getElementById('fin-photo-name').innerText = this.files[0] ? '📎 ' + this.files[0].name : ''">
+
+                    <button onclick="ajouterDépense()" data-i18n="btnCalcDiv">Calculer & Diviser</button>
+                    <button class="btn-outline" style="margin-top:10px; border-color: #4285F4; color: #4285F4;" onclick="exporterArchive('finances')">📂 Exporter Archive Globale (Drive)</button>
+                </div>
+                <div id="historique-finances"></div>
+            </div>
+
+            <div id="tab-fluides" class="tab-content" style="display:none;">
+                <div class="card">
+                    <h2 data-i18n="fluidesEvol">📊 Évolution annuelle</h2>
+                    <div style="display:flex; gap:10px; margin-bottom:15px; align-items:center;">
+                        <label for="filter-fluide-year" style="font-weight:bold; font-size:0.9rem;" data-i18n="lblYear">Année :</label>
+                        <select id="filter-fluide-year" onchange="renderAll()" style="margin:0; flex-grow:1;"></select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="fluideChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2 data-i18n="fluidesAdd">💧 Ajouter un relevé d'Index</h2>
+                    <label for="fluide-type" class="visually-hidden">Type</label>
+                    <select id="fluide-type" onchange="toggleFluideInputs()">
+                        <option value="Électricité" data-i18n="elec">⚡ Électricité</option>
+                        <option value="Eau" data-i18n="water">💧 Eau</option>
+                        <option value="Gaz" data-i18n="gas">🔥 Gaz</option>
+                    </select>
+                    
+                    <label for="fluide-mois" class="visually-hidden">Mois</label>
+                    <input type="month" id="fluide-mois" data-i18n="phMonth" placeholder="Mois de relevé">
+                    
+                    <div id="input-standard" style="display:none;">
+                        <label for="fluide-index" class="visually-hidden">Index</label>
+                        <input type="number" id="fluide-index" data-i18n="phIndex" placeholder="Valeur de l'Index (kWh ou m³)">
+                    </div>
+                    
+                    <div id="input-elec">
+                        <label for="fluide-index-hp" class="visually-hidden">HP</label>
+                        <input type="number" id="fluide-index-hp" data-i18n="phIndexHP" placeholder="Heures Pleines (kWh)">
+                        <label for="fluide-index-hc" class="visually-hidden">HC</label>
+                        <input type="number" id="fluide-index-hc" data-i18n="phIndexHC" placeholder="Heures Creuses (kWh)">
+                    </div>
+                    
+                    <label for="fluide-facture" style="font-size:0.75rem; color:var(--text-muted); margin-top:10px; display:block;" data-i18n="lblJoinFile">Joindre Facture/Photo (Optionnel) :</label>
+                    <label for="fluide-facture" class="btn-outline" style="display:block; text-align:center; padding:5px; border-radius:6px; cursor:pointer; font-size:0.8rem; margin-bottom:5px;" data-i18n="btnChooseFile">📂 Choisir un fichier</label>
+                    <span id="fluide-facture-name" style="font-size:0.7rem; color:var(--primary-dark); display:block; margin-bottom:10px; text-align:right;"></span>
+                    <input type="file" id="fluide-facture" accept="image/*,application/pdf" style="display:none" onchange="document.getElementById('fluide-facture-name').innerText = this.files[0] ? '📎 ' + this.files[0].name : ''">
+                    
+                    <button onclick="ajouterFluide()" data-i18n="btnSaveRecord">Enregistrer le relevé</button>
+                </div>
+                <div id="archive-fluides"></div>
+            </div>
+
+            <div id="tab-annonces" class="tab-content" style="display:none;">
+                <div class="agenda-tabs">
+                    <button id="btn-annonces-gen" onclick="setAnnoncesView('gen')" style="background:var(--primary); color:white;">📝 Générer Annonce</button>
+                    <button id="btn-annonces-crm" onclick="setAnnoncesView('crm')" style="background:white; color:var(--primary);">👥 Suivi Candidats</button>
+                </div>
+
+                <div id="annonces-gen-view">
+                    <div class="card">
+                        <h2>📢 Générateur de texte</h2>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0;">Cochez les chambres à libérer, choisissez la date, et copiez le texte parfait pour LeBonCoin ou La Carte des Colocs.</p>
+                        
+                        <label style="font-size:0.85rem; font-weight:bold;">Chambres disponibles :</label>
+                        <div style="display:flex; flex-direction:column; gap:8px; margin:10px 0;">
+                            <label><input type="checkbox" id="chk-ch1" value="1"> Chambre 1 (14,30m2 - 470€)</label>
+                            <label><input type="checkbox" id="chk-ch2" value="2"> Chambre 2 (12,44m2 - 465€)</label>
+                            <label><input type="checkbox" id="chk-ch3" value="3"> Chambre 3 (13,19m2 - 435€)</label>
+                            <label><input type="checkbox" id="chk-ch4" value="4"> Chambre 4 (12,52m2 - 430€)</label>
+                        </div>
+                        
+                        <label for="annonce-date" style="font-size:0.85rem; font-weight:bold;">Disponible à partir du :</label>
+                        <input type="date" id="annonce-date">
+
+                        <button onclick="genererTexteAnnonce()" style="margin-top:10px;">🪄 Générer le texte et l'aperçu photos</button>
+                        
+                        <textarea id="annonce-resultat" rows="10" style="margin-top:15px; display:none; font-size:0.85rem;"></textarea>
+                        <button id="btn-copy-annonce" class="btn-outline" style="display:none; margin-top:5px;" onclick="copierAnnonce()">📋 Copier le texte</button>
+                        
+                        <div id="annonce-photos-preview" style="display:none; margin-top:15px; padding-top:10px; border-top:1px solid #eee;">
+                            <label style="font-size:0.85rem; font-weight:bold;">📸 Photos à utiliser pour cette annonce :</label>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0;">(Parties communes + la/les chambre(s) sélectionnée(s))</p>
+                            <div id="photos-container" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:5px;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="border-left: 5px solid var(--accent);">
+                        <h2>🚀 Liens de Publication</h2>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0;">Publiez l'annonce sur ces sites, collez le texte généré, et ajoutez vos photos manuellement.</p>
+                        <button onclick="window.open('https://www.leboncoin.fr/deposer-une-annonce', '_blank')" style="background:#f56b2a; margin-bottom:8px;">Publier sur LeBonCoin</button>
+                        <button onclick="window.open('https://www.lacartedescolocs.fr/logements/nouveau', '_blank')" style="background:#20b2aa;">Publier sur La Carte des Colocs</button>
+                    </div>
+                </div>
+
+                <div id="annonces-crm-view" style="display:none;">
+                    <div class="card">
+                        <h2>👤 Ajouter un Candidat</h2>
+                        <input type="text" id="cand-nom" placeholder="Nom ou Prénom du candidat">
+                        <input type="text" id="cand-contact" placeholder="Email ou Téléphone">
+                        <select id="cand-chambre">
+                            <option value="">Quelle chambre l'intéresse ?</option>
+                            <option value="Chambre 1">Chambre 1</option>
+                            <option value="Chambre 2">Chambre 2</option>
+                            <option value="Chambre 3">Chambre 3</option>
+                            <option value="Chambre 4">Chambre 4</option>
+                            <option value="Toutes">Indifférent / Toutes</option>
+                        </select>
+                        <button onclick="ajouterCandidat()">Ajouter au suivi</button>
+                    </div>
+                    <div id="liste-candidats"></div>
+                </div>
+            </div>
+
+            <div id="tab-reglages" class="tab-content" style="display:none;">
+                <div class="card">
+                    <h2 data-i18n="configGlobal">⚙️ Configuration Globale</h2>
+                    <p id="cloud-status" style="font-size:0.8rem; font-weight:bold; color:orange;" data-i18n="syncStatus">🟡 Synchronisation...</p>
+                    
+                    <label for="lang-select-config" style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:10px;" data-i18n="lblLang">Langue de l'application :</label>
+                    <select id="lang-select-config" onchange="changeLang(this.value)" style="width:100%; padding: 8px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="en">🇬🇧 English</option>
+                        <option value="es">🇪🇸 Español</option>
+                    </select>
+                    
+                    <label for="config-cover" style="font-size:0.75rem; color:var(--text-muted);" data-i18n="lblCoverPhoto">Photo de couverture de la coloc :</label>
+                    <label for="config-cover" class="btn-outline" style="display:block; text-align:center; padding:5px; border-radius:6px; cursor:pointer; font-size:0.8rem;" data-i18n="btnChooseFile">📂 Choisir un fichier</label>
+                    <span id="config-cover-name" style="font-size:0.7rem; color:var(--primary-dark); display:block; text-align:right;"></span>
+                    <input type="file" id="config-cover" accept="image/*" style="display:none" onchange="updatePhoto(event)">
+
+                    <button class="btn-outline" onclick="activerNotifications()" style="margin-top:10px;" data-i18n="btnPushAuth">🔔 Activer les Notifications Push</button>
+                </div>
+
+                <div class="card" style="border-left: 5px solid var(--accent);">
+                    <h2>ℹ️ Support & Mise à jour</h2>
+                    <div style="font-size:0.85rem; color:var(--text-main); margin-bottom:10px;">
+                        <b>Version de l'App :</b> 1.6.0<br>
+                        <b>Mise à jour légale :</b> 08 Avril 2026
+                    </div>
+                    <button class="btn-outline" onclick="forceAppRefresh()" style="width:100%; border-color:var(--accent); color:var(--accent); margin-bottom:10px;">🔄 Rafraîchir l'application (Mise à jour)</button>
+                    
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px;">Un problème technique ? Envoyez-nous un message avec vos captures d'écran.</p>
+                    <button onclick="window.location.href='mailto:franfran120374@gmail.com?subject=support%20hubcoloc%202026'" style="width:100%; background:var(--accent);">✉️ Contacter le support technique</button>
+                </div>
+                
+                <div class="card">
+                    <h2>☁️ Liens Espace Google</h2>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">Collez ici les liens vers le Drive et le Gmail partagés de votre colocation.</p>
+                    
+                    <label for="config-drive-link" style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">Lien du dossier Google Drive partagé :</label>
+                    <input type="text" id="config-drive-link" placeholder="Ex: https://drive.google.com/drive/folders/..." onchange="saveGoogleLinks()">
+                    
+                    <label for="config-gmail-link" style="font-size:0.75rem; color:var(--text-muted); font-weight:bold; margin-top:5px; display:block;">Lien vers la boîte Gmail commune :</label>
+                    <input type="text" id="config-gmail-link" placeholder="Ex: lacolocdubonheur@gmail.com" onchange="saveGoogleLinks()">
+                    <div style="font-size: 0.7rem; color: #888; text-align: right; margin-top: 2px;">(Sauvegarde automatique)</div>
+                </div>
+
+                <div class="card premium-card" id="premium-panel">
+                    <h2>⭐ Abonnement Premium</h2>
+                    <div id="premium-status-display" style="font-size:0.9rem; margin-bottom:10px;"></div>
+                    <div id="premium-activate-form">
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0;">Entrez l'adresse e-mail utilisée sur VérifTOUT pour activer le Premium (colocataires illimités, historique illimité, export PDF).</p>
+                        <label for="premium-email" style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">E-mail VérifTOUT :</label>
+                        <input type="email" id="premium-email" placeholder="votre@email.fr" style="margin-bottom:5px;">
+                        <button onclick="activerPremium()" style="background: linear-gradient(135deg, #d4a853, #f0c97a); color:#1a0e00;">⭐ Vérifier et Activer le Premium</button>
+                    </div>
+                </div>
+
+                <div class="card" id="admin-panel" style="display:none; border-left: 5px solid var(--danger);">
+                    <h2 data-i18n="adminTitle">👑 Espace Administrateur</h2>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0;" data-i18n="adminDesc">Vous êtes l'administrateur de cette colocation.</p>
+                    
+                    <div style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #eee;">
+                        <div style="font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center;">
+                            <b data-i18n="adminName">Nom de la coloc :</b> 
+                            <span id="admin-coloc-name" style="color: var(--primary-dark); font-weight: bold;"></span>
+                        </div>
+                        <div style="font-size: 0.85rem; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <b data-i18n="adminPass">Mot de passe :</b> 
+                            <span id="admin-coloc-pass" style="color: var(--danger); font-family: monospace; font-size: 1rem; font-weight: bold;"></span>
+                        </div>
+                        <button class="btn-outline" style="width: 100%; margin-top: 15px; border-color: var(--danger); color: var(--danger);" onclick="modifierAccesAdmin()">✏️ Modifier Nom / Mot de passe</button>
+                    </div>
+                    <p style="font-size: 0.7rem; color: #888; font-style: italic;" data-i18n="adminPrivilege">En tant qu'admin, vous seul pouvez indiquer qu'un membre a quitté la coloc ci-dessous.</p>
+                </div>
+
+                <div class="card">
+                    <h2 data-i18n="myProfile">👤 Mon Profil</h2>
+                    <div style="display:flex; gap:15px; align-items:center;">
+                        <img id="my-profile-preview" src="" style="width:60px; height:60px; border-radius:50%; object-fit:cover; background:#eee; display:none;">
+                        <div style="flex-grow:1;">
+                            <label for="config-profile" style="font-size:0.75rem; color:var(--text-muted);" data-i18n="lblMyPhoto">Changer ma photo de profil :</label>
+                            <label for="config-profile" class="btn-outline" style="display:block; text-align:center; padding:5px; border-radius:6px; cursor:pointer; font-size:0.8rem; margin-top:5px;" data-i18n="btnChooseFile">📂 Choisir un fichier</label>
+                            <span id="config-profile-name" style="font-size:0.7rem; color:var(--primary-dark); display:block; text-align:right;"></span>
+                            <input type="file" id="config-profile" accept="image/*" style="display:none" onchange="updateProfilePhoto(event)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="border-left: 5px solid #ff9800;">
+                    <h2>🎂 Anniversaires</h2>
+                    <div id="liste-annifs" style="margin-bottom:10px;"></div>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Mon anniversaire :</p>
+                    <div style="display:flex; gap:5px; align-items:center;">
+                        <input type="date" id="mon-annif" style="margin:0; flex-grow:1;">
+                        <button onclick="sauvegarderAnnif()" style="width:auto; padding:12px 15px;">💾</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2 data-i18n="membersTitle">👥 Membres</h2>
+                    <div id="liste-membres"></div>
+                    <div style="display:flex; gap:5px; margin-top:10px; align-items: stretch;">
+                        <label for="new-membre" class="visually-hidden">Nouveau membre</label>
+                        <input type="text" id="new-membre" data-i18n="phFirstName" placeholder="Prénom" style="margin:0; flex-grow:1;" onkeypress="if(event.key === 'Enter') ajouterMembreBtn()">
+                        <button onclick="ajouterMembreBtn()" style="width:auto; padding: 12px 20px;">Ajouter</button>
+                    </div>
+                    <div id="reclamer-admin-section" style="margin-top:10px; display:none;">
+                        <button class="btn-outline" onclick="reclamerAdmin()" style="border-color:#fbc02d; color:#fbc02d;">🙋 Réclamer le rôle d'administrateur</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // =========================================================================
+    // 🛡️ BOUCLIER ANTI-CRASH FIREBASE (getSafeArray)
+    // =========================================================================
+    function getSafeArray(data) {
+        if (!data) return [];
+        if (Array.isArray(data)) return data.filter(Boolean);
+        return Object.values(data).filter(Boolean);
+    }
+
+    // --- TRADUCTIONS COMPLETES ---
+    const translations = {
+        fr: {
+            titleAuth: "🏠 Hub Coloc", phName: "Votre Prénom", phColoc: "Nom de la Colocation", phPassword: "Mot de passe de la coloc", btnContinue: "Continuer",
+            titleCharte: "📜 Acceptation de la Charte", btnAccept: "J'accepte et je rejoins la coloc",
+            tabHome: "Accueil", tabChat: "Chat", tabAgenda: "Agenda", tabCourses: "Courses", tabFinances: "Finances", tabFluides: "Fluides", tabSettings: "Colocs",
+            memoTitle: "💡 Mémo et Engagements", memo1: "<b>💬 Chat :</b> Pour la communication et le partage de photos.", memo2: "<b>🔒 Sécurité :</b> Confidentialité totale des données privées.", memo3: "<b>💰 Finances :</b> Traçabilité garantie de chaque dépense.", memo4: "<b>📧 Export :</b> Mails de courses compatibles avec Outlook.", memo5: "<b>💧 Fluides :</b> Suivi des consos avec graphiques.",
+            charteTitle: "📜 Notre Charte de Vie", phNewRule: "Ex: Sortir les poubelles le mardi", phChatMsg: "Ex: Coucou les colocs !", fileReady: "Fichier prêt à l'envoi",
+            agendaTitle: "📅 Tâche ou Événement", phEvtTitle: "Ex: Sortir les poubelles", btnCreate: "Créer", tabAgendaActive: "📅 À venir", tabAgendaArchive: "🗃️ Archives",
+            coursesTitle: "🛒 Ajouter aux courses", phArticle: "Ex: Lait, Beurre...", btnAddToCart: "Ajouter au panier", btnExportMail: "📧 Exporter (Outlook/Mail)",
+            financesTitle: "💰 Ajouter une Dépense", phFinDesc: "Objet (ex: Électricité, Courses...)", phFinAmount: "Montant Total (€)", lblPaidBy: "Payé par :", lblDivide: "Diviser entre (cochez les concernés) :", lblJoinFile: "Joindre Facture/Photo (Optionnel) :", btnCalcDiv: "Calculer & Diviser", btnChooseFile: "📂 Choisir un fichier",
+            fluidesEvol: "📊 Évolution annuelle", lblYear: "Année :", fluidesAdd: "💧 Ajouter un relevé d'Index", phMonth: "Mois de relevé", phIndex: "Valeur de l'Index (kWh ou m³)", phIndexHP: "Heures Pleines (kWh)", phIndexHC: "Heures Creuses (kWh)", btnSaveRecord: "Enregistrer le relevé",
+            configGlobal: "⚙️ Configuration Globale", lblLang: "Langue de l'application :", lblCoverPhoto: "Photo de couverture de la coloc :", btnPushAuth: "🔔 Activer les Notifications Push",
+            myProfile: "👤 Mon Profil", lblMyPhoto: "Changer ma photo de profil :", membersTitle: "👥 Membres", phFirstName: "Prénom",
+            allColocs: "Tous", task: "🧹 Tâche (Action à faire)", event: "🎉 Événement (Présence)", once: "Ponctuel (1 fois)", weekly: "Toutes les semaines", monthly: "Tous les mois",
+            unit: "Unité(s)", kg: "Kilo(s)", L: "Litre(s)", pack: "Pack(s)", elec: "⚡ Électricité", elecHP: "⚡ Élec (HP)", elecHC: "⚡ Élec (HC)", water: "💧 Eau", gas: "🔥 Gaz",
+            mailSubject: "Liste de Courses Coloc", mailBody: "À acheter :",
+            alertNameColoc: "Prénom, Nom et Mot de passe requis.", alertTitleDate: "Titre et Date requis.", alertObjAmount: "Objet et Montant requis.", alertSelectColoc: "Sélectionnez au moins un colocataire.", alertMonthIndex: "Mois et Index(s) sont requis.", alertPushSuccess: "Notifications activées ! (Si l'app est bien sur l'écran d'accueil)", alertPushDenied: "Permission refusée.", alertWrongPass: "Ce nom est déjà pris et le mot de passe est incorrect !", alertError: "Erreur technique : ",
+            syncStatus: "🟡 Synchronisation...", cloudConnected: "Cloud Connecté", edited: " (modifié)", downloadFile: "Télécharger le fichier",
+            charte1: "Respecter le calme et l'intimité de chacun.", charte2: "Laver sa vaisselle.", charte3: "Faire attention à sa santé (laver dents et yeux !).", charte4: "Bienveillance avant tout.",
+            addedBy: "ajouté par", createdBy: "Créé par", on: "le", assignedTo: "Assigné :", doneBy: "Fait par", markDone: "Marquer comme fait", present: "Present", absent: "Absent", paidBy: "Payé par", toSettle: "À régler", deleteInvoice: "Supprimer la facture", index: "Index :", indexHP: "Index HP :", indexHC: "Index HC :", month: "Mois :", invoicePhoto: "Facture / Photo", deleteRecord: "Supprimer ce relevé", noData: "Aucun relevé trouvé.", allYears: "Toutes les années",
+            adminTitle: "👑 Espace Administrateur", adminDesc: "Vous êtes l'administrateur de cette colocation.", adminName: "Nom de la coloc :", adminPass: "Mot de passe :", adminPrivilege: "En tant qu'admin, vous seul pouvez indiquer qu'un membre a quitté la coloc ci-dessous.", adminBadge: "👑 (Admin)", btnKick: "✖ A quitté la coloc"
+        },
+        en: {
+            titleAuth: "🏠 Co-living Hub", phName: "Your Name", phColoc: "Co-living Name", phPassword: "Co-living Password", btnContinue: "Continue",
+            titleCharte: "📜 Charter Acceptance", btnAccept: "I accept and join",
+            tabHome: "Home", tabChat: "Chat", tabAgenda: "Agenda", tabCourses: "Groceries", tabFinances: "Finances", tabFluides: "Utilities", tabSettings: "Roomies",
+            memoTitle: "💡 Memo & Commitments", memo1: "<b>💬 Chat:</b> Communication and photo sharing.", memo2: "<b>🔒 Security:</b> Total privacy of personal data.", memo3: "<b>💰 Finances:</b> Guaranteed traceability of expenses.", memo4: "<b>📧 Export:</b> Outlook-compatible grocery emails.", memo5: "<b>💧 Utilities:</b> Consumption tracking with charts.",
+            charteTitle: "📜 Our Living Charter", phNewRule: "New rule...", phChatMsg: "Message...", fileReady: "File ready to send",
+            agendaTitle: "📅 Task or Event", phEvtTitle: "Ex: Take out the trash", btnCreate: "Create", tabAgendaActive: "📅 Upcoming", tabAgendaArchive: "🗃️ Archives",
+            coursesTitle: "🛒 Add to Groceries", phArticle: "Item", btnAddToCart: "Add to cart", btnExportMail: "📧 Export (Outlook/Mail)",
+            financesTitle: "💰 Add an Expense", phFinDesc: "Object (e.g. Electricity, Groceries...)", phFinAmount: "Total Amount (€)", lblPaidBy: "Paid by:", lblDivide: "Divide among (check concerned):", lblJoinFile: "Attach Receipt/Photo (Optional):", btnCalcDiv: "Calculate & Divide", btnChooseFile: "📂 Choose a file",
+            fluidesEvol: "📊 Annual Evolution", lblYear: "Year:", fluidesAdd: "💧 Add Meter Reading", phMonth: "Reading Month", phIndex: "Index Value (kWh or m³)", phIndexHP: "Peak Hours (kWh)", phIndexHC: "Off-Peak Hours (kWh)", btnSaveRecord: "Save Reading",
+            configGlobal: "⚙️ Global Configuration", lblLang: "App Language:", lblCoverPhoto: "Co-living cover photo:", btnPushAuth: "🔔 Enable Push Notifications",
+            myProfile: "👤 My Profile", lblMyPhoto: "Change my profile photo:", membersTitle: "👥 Members", phFirstName: "First Name",
+            allColocs: "All", task: "🧹 Task (To do)", event: "🎉 Event (Attendance)", once: "One-time", weekly: "Weekly", monthly: "Monthly",
+            unit: "Unit(s)", kg: "Kilo(s)", L: "Liter(s)", pack: "Pack(s)", elec: "⚡ Electricity", elecHP: "⚡ Elec (Peak)", elecHC: "⚡ Elec (Off-Peak)", water: "💧 Water", gas: "🔥 Gas",
+            mailSubject: "Co-living Grocery List", mailBody: "To buy:",
+            alertNameColoc: "Name, Co-living Name and Password required.", alertTitleDate: "Title and Date required.", alertObjAmount: "Object and Amount required.", alertSelectColoc: "Select at least one roomie.", alertMonthIndex: "Month and Index required.", alertPushSuccess: "Notifications enabled!", alertPushDenied: "Permission denied.", alertWrongPass: "Name already taken and wrong password!", alertError: "Technical error: ",
+            syncStatus: "🟡 Synchronizing...", cloudConnected: "Cloud Connected", edited: " (edited)", downloadFile: "Download file",
+            charte1: "Respect everyone's peace and privacy.", charte2: "Wash your dishes.", charte3: "Take care of your health (brush teeth and wash eyes!).", charte4: "Kindness above all.",
+            addedBy: "added by", createdBy: "Created by", on: "on", assignedTo: "Assigned:", doneBy: "Done by", markDone: "Mark as done", present: "Present", absent: "Absent", paidBy: "Paid by", toSettle: "To settle", deleteInvoice: "Delete invoice", index: "Index:", indexHP: "Peak Index:", indexHC: "Off-Peak Index:", month: "Month:", invoicePhoto: "Invoice / Photo", deleteRecord: "Delete record", noData: "No records found.", allYears: "All years",
+            adminTitle: "👑 Admin Space", adminDesc: "You are the administrator of this co-living.", adminName: "Room name:", adminPass: "Password:", adminPrivilege: "As an admin, only you can indicate that a member has left the co-living below.", adminBadge: "👑 (Admin)", btnKick: "✖ Left the co-living"
+        },
+        es: {
+            titleAuth: "🏠 Hub Coliving", phName: "Tu Nombre", phColoc: "Nombre del Coliving", phPassword: "Contraseña del coliving", btnContinue: "Continuar",
+            titleCharte: "📜 Aceptación de la Carta", btnAccept: "Acepto y me uno",
+            tabHome: "Inicio", tabChat: "Chat", tabAgenda: "Agenda", tabCourses: "Compras", tabFinances: "Finanzas", tabFluides: "Servicios", tabSettings: "Ajustes",
+            memoTitle: "💡 Memo y Compromisos", memo1: "<b>💬 Chat:</b> Para comunicación y compartir fotos.", memo2: "<b>🔒 Seguridad:</b> Privacidad total de los datos.", memo3: "<b>💰 Finanzas:</b> Trazabilidad de cada gasto.", memo4: "<b>📧 Exportar:</b> Correos compatibles con Outlook.", memo5: "<b>💧 Servicios:</b> Gráficos de consumo.",
+            charteTitle: "📜 Nuestra Carta de Convivencia", phNewRule: "Nueva regla...", phChatMsg: "Mensaje...", fileReady: "Archivo listo para enviar",
+            agendaTitle: "📅 Tarea o Evento", phEvtTitle: "Ej: Sacar la basura", btnCreate: "Crear", tabAgendaActive: "📅 Próximos", tabAgendaArchive: "🗃️ Archivos",
+            coursesTitle: "🛒 Añadir a Compras", phArticle: "Artículo", btnAddToCart: "Añadir al carrito", btnExportMail: "📧 Exportar (Outlook/Mail)",
+            financesTitle: "💰 Añadir Gasto", phFinDesc: "Objeto (ej. Luz, Compras...)", phFinAmount: "Monto Total (€)", lblPaidBy: "Pagado por:", lblDivide: "Dividir entre (marca involucrados):", lblJoinFile: "Adjuntar Recibo/Foto (Opcional):", btnCalcDiv: "Calculer et Diviser", btnChooseFile: "📂 Elegir un archivo",
+            fluidesEvol: "📊 Evolución Anual", lblYear: "Año:", fluidesAdd: "💧 Añadir Lectura de Medidor", phMonth: "Mes de lectura", phIndex: "Valor del Índice (kWh o m³)", phIndexHP: "Horas Pico (kWh)", phIndexHC: "Horas Valle (kWh)", btnSaveRecord: "Guardar Lectura",
+            configGlobal: "⚙️ Configuration Globale", lblLang: "Idioma de la app:", lblCoverPhoto: "Foto de portada del coliving:", btnPushAuth: "🔔 Activer les Notifications Push",
+            myProfile: "👤 Mi Perfil", lblMyPhoto: "Cambiar mi foto de perfil:", membersTitle: "👥 Miembros", phFirstName: "Nombre",
+            allColocs: "Todos", task: "🧹 Tarea (Hacer)", event: "🎉 Evento (Asistencia)", once: "Puntual (1 vez)", weekly: "Semanal", monthly: "Mensual",
+            unit: "Unidad(es)", kg: "Kilo(s)", L: "Litro(s)", pack: "Pack(s)", elec: "⚡ Electricidad", elecHP: "⚡ Elec (Pico)", elecHC: "⚡ Elec (Valle)", water: "💧 Agua", gas: "🔥 Gas",
+            mailSubject: "Lista de Compras Coliving", mailBody: "Para comprar:",
+            alertNameColoc: "Nombre, Coliving y Contraseña requeridos.", alertTitleDate: "Título y Fecha requeridos.", alertObjAmount: "Objeto y Monto requeridos.", alertSelectColoc: "Selecciona al menos un compañero.", alertMonthIndex: "Mes e Índice requeridos.", alertPushSuccess: "¡Notificaciones activadas!", alertPushDenied: "Permiso denegado.", alertWrongPass: "¡Nombre ya en uso y contraseña incorrecta!", alertError: "Error técnico: ",
+            syncStatus: "🟡 Sincronizando...", cloudConnected: "Nube Conectada", edited: " (editado)", downloadFile: "Descargar archivo",
+            charte1: "Respetar la paz y privacidad de todos.", charte2: "Lavar tus platos.", charte3: "Cuidar tu salud (¡lavar dientes y ojos!).", charte4: "Amabilidad ante todo.",
+            addedBy: "añadido por", createdBy: "Creado por", on: "el", assignedTo: "Asignado:", doneBy: "Hecho por", markDone: "Marcar como hecho", present: "Presente", absent: "Ausente", paidBy: "Pagado por", toSettle: "A pagar", deleteInvoice: "Eliminar factura", index: "Índice:", indexHP: "Índice Pico:", indexHC: "Índice Valle:", month: "Mes:", invoicePhoto: "Facture / Foto", deleteRecord: "Eliminar registro", noData: "No hay registros.", allYears: "Todos los años",
+            adminTitle: "👑 Espacio Administrador", adminDesc: "Eres el administrador de este coliving.", adminName: "Nombre del coliving:", adminPass: "Contraseña:", adminPrivilege: "Como administrador, solo tú puedes indicar que un miembro ha dejado el coliving a continuación.", adminBadge: "👑 (Admin)", btnKick: "✖ Dejó el coliving"
+        }
+    };
+
+    let currentLang = localStorage.getItem('hub_lang') || 'fr';
+    let currentAgendaView = 'actif'; 
+    let currentAnnoncesView = 'gen';
+
+    function t(key) { return translations[currentLang] && translations[currentLang][key] ? translations[currentLang][key] : (translations['fr'][key] || key); }
+
+    function translateRule(rule) {
+        if (!rule) return rule;
+        if(rule.includes("Respecter le calme") || rule.includes("intimité")) return t('charte1');
+        if(rule.includes("Laver sa vaisselle")) return t('charte2');
+        if(rule.includes("Faire attention à sa santé") || rule.includes("dents et yeux")) return t('charte3');
+        if(rule.includes("Bienveillance avant tout")) return t('charte4');
+        return rule;
+    }
+
+    function tCat(item) {
+        const catTrans = {
+            "Papier Toilette": {en: "Toilet Paper", es: "Papel Higiénico"}, "Sopalin": {en: "Paper Towel", es: "Toallas de papel"},
+            "Liquide Vaisselle": {en: "Dish Soap", es: "Jabón de platos"}, "Éponge": {en: "Sponge", es: "Esponja"},
+            "Sel": {en: "Salt", es: "Sal"}, "Huile": {en: "Oil", es: "Aceite"}, "Sac Poubelle": {en: "Trash Bag", es: "Bolsa de basura"}
+        };
+        return catTrans[item] && catTrans[item][currentLang] ? catTrans[item][currentLang] : item;
+    }
+    
+    function getMonthName(monthStr) {
+        if (!monthStr) return "";
+        const str = String(monthStr);
+        if (!str.includes('-')) return str;
+        const parts = str.split('-'); const y = parts[0]; const m = parseInt(parts[1], 10) - 1;
+        if (isNaN(m) || m < 0 || m > 11) return str;
+        const monthNames = {
+            fr: ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
+            en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+            es: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+        };
+        return monthNames[currentLang][m] + " " + y;
+    }
+
+    function getChartMonths() {
+        const shortNames = {
+            fr: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"],
+            en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+            es: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
+        };
+        return shortNames[currentLang];
+    }
+
+    function changeLang(lang) {
+        currentLang = lang; localStorage.setItem('hub_lang', lang);
+        document.getElementById('lang-select').value = lang; 
+        document.getElementById('lang-select-home').value = lang;
+        document.getElementById('lang-select-config').value = lang;
+        applyTranslations(); if(isSigned) renderAll();
+    }
+
+    function applyTranslations() {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') { el.placeholder = t(key); } else { el.innerHTML = t(key); }
+        });
+        document.querySelector('#nav-accueil span:last-child').innerText = t('tabHome');
+        document.querySelector('#nav-chat span:last-child').innerText = t('tabChat');
+        document.querySelector('#nav-agenda span:last-child').innerText = t('tabAgenda');
+        document.querySelector('#nav-courses span:last-child').innerText = t('tabCourses');
+        document.querySelector('#nav-finances span:last-child').innerText = t('tabFinances');
+        document.querySelector('#nav-fluides span:last-child').innerText = t('tabFluides');
+        document.querySelector('#nav-annonces span:last-child').innerText = t('tabAnnonces');
+        document.querySelector('#nav-reglages span:last-child').innerText = t('tabSettings');
+        toggleFluideInputs();
+    }
+
+    // --- FIREBASE INIT ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyB1TwbZSkqkAKEPhNJXuwn9zMEz2BqBk48",
+        authDomain: "hub-coloc.firebaseapp.com",
+        databaseURL: "https://hub-coloc-default-rtdb.europe-west1.firebasedatabase.app/",
+        projectId: "hub-coloc",
+        storageBucket: "hub-coloc.firebasestorage.app",
+        messagingSenderId: "1090628612964",
+        appId: "1:1090628612964:web:0ab8977765daf3c8304071"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const firestore = firebase.firestore();
+
+    // --- FONCTION DE RAFRAICHISSEMENT APPLI ---
+    function forceAppRefresh() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) { registration.update(); }
+            });
+        }
+        window.location.href = window.location.pathname + '?refresh=' + new Date().getTime();
+    }
+
+    if ('serviceWorker' in navigator) { 
+        navigator.serviceWorker.register('sw.js').then(registration => {
+            registration.update();
+            registration.onupdatefound = () => {
+                const installingWorker = registration.installing;
+                installingWorker.onstatechange = () => {
+                    if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        window.location.href = window.location.pathname + '?refresh=' + new Date().getTime();
+                    }
+                };
+            };
+        }).catch(err => console.error("Erreur SW:", err));
+    }
+
+    let currentUser = localStorage.getItem('hub_user') || "";
+    let colocPath = localStorage.getItem('hub_path') || "";
+    let isSigned = localStorage.getItem('hub_signed') === "true";
+    let fluideChart = null; 
+    let currentTab = 'accueil';
+    let lastSeenCounts = JSON.parse(localStorage.getItem('hub_last_seen')) || { agenda: 0, courses: 0, finances: 0, fluides: 0, annonces: 0 };
+    let hasShownWelcome = false;
+    
+    let db = { 
+        name: "", admin: "", password: "",
+        agenda: [], finances: [], membres: ["Mehdi"], messages: [], courses: [], fluides: [], candidats: [], membresPhotos: {},
+        catalogue: ["Papier Toilette", "Sopalin", "Liquide Vaisselle", "Éponge", "Sel", "Huile", "Sac Poubelle"],
+        charte: ["Respecter le calme et l'intimité de chacun.", "Laver sa vaisselle.", "Faire attention à sa santé (laver dents et yeux !)."],
+        driveLink: "", gmailLink: "lacolocdubonheur10rueebacquie@gmail.com"
+    };
+
+    function slugify(t) { return String(t).toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '_').replace(/[^\w-]+/g, ''); }
+    
+    function sync() { 
+        if(colocPath) { database.ref('colocs/' + colocPath).set(db).then(() => { document.getElementById('cloud-status').innerText = "🟢 " + t('cloudConnected'); document.getElementById('cloud-status').style.color = "green"; renderAll(); }); }
+    }
+
+    function listen() {
+        if(colocPath) {
+            database.ref('colocs/' + colocPath).on('value', (snap) => {
+                const data = snap.val();
+                if(data && data.migrated) {
+                    alert("L'administrateur a changé le nom ou le mot de passe de la colocation. Veuillez vous reconnecter avec les nouveaux accès.");
+                    localStorage.removeItem('hub_path');
+                    localStorage.removeItem('hub_signed');
+                    window.location.reload();
+                    return;
+                }
+                
+                if(data) { 
+                    // NOTIFICATIONS PUSH NATIVES (SÉCURISÉES)
+                    try {
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                            if (db.messages && data.messages) {
+                                const oldLen = getSafeArray(db.messages).length;
+                                const newMsgs = getSafeArray(data.messages);
+                                if (newMsgs.length > oldLen && oldLen > 0) {
+                                    const lastMsg = newMsgs[newMsgs.length - 1];
+                                    if (lastMsg.user !== currentUser) {
+                                        if (currentTab !== 'chat' || document.visibilityState === 'hidden') {
+                                            let notifText = lastMsg.text || (lastMsg.audio ? "🎤 Message vocal" : (lastMsg.file ? "📎 Fichier/Photo" : "Nouveau message"));
+                                            notifText = notifText.replace(/<[^>]*>?/gm, '');
+                                            new Notification("Coloc - " + lastMsg.user, { body: notifText });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch(e) { console.warn("Erreur Notification silencieuse gérée", e); }
+
+                    db = data; 
+                    db.membres = getSafeArray(db.membres); 
+                    db.charte = getSafeArray(db.charte); if(db.charte.length === 0) db.charte = ["Bienveillance avant tout."];
+                    db.courses = getSafeArray(db.courses);
+                    db.finances = getSafeArray(db.finances); 
+                    db.agenda = getSafeArray(db.agenda); 
+                    db.messages = getSafeArray(db.messages);
+                    db.fluides = getSafeArray(db.fluides); 
+                    db.candidats = getSafeArray(db.candidats);
+                    if(!db.membresPhotos) db.membresPhotos = {};
+                    db.catalogue = getSafeArray(db.catalogue); if(db.catalogue.length === 0) db.catalogue = ["Papier Toilette", "Sopalin", "Liquide Vaisselle", "Éponge", "Sel", "Huile", "Sac Poubelle"];
+                    if(db.driveLink === undefined) db.driveLink = "";
+                    if(db.gmailLink === undefined) db.gmailLink = "lacolocdubonheur10rueebacquie@gmail.com";
+
+                    document.getElementById('config-drive-link').value = db.driveLink;
+                    document.getElementById('config-gmail-link').value = db.gmailLink;
+
+                    checkNotifications(); 
+                    renderAll(); 
+                    if(currentTab === 'chat') markMessagesAsRead();
+                } else if(!isSigned) { 
+                    sync(); 
+                }
+            });
+        }
+    }
+
+    // --- ACCUSÉS DE LECTURE (VUES) ---
+    function markMessagesAsRead() {
+        let modified = false;
+        db.messages = getSafeArray(db.messages);
+        db.messages.forEach(m => {
+            if (m.user !== currentUser) {
+                if (!m.seenBy) m.seenBy = [];
+                if (!m.seenBy.includes(currentUser)) {
+                    m.seenBy.push(currentUser);
+                    modified = true;
+                }
+            }
+        });
+        if (modified) sync();
+    }
+
+    function saveGoogleLinks() {
+        db.driveLink = document.getElementById('config-drive-link').value.trim();
+        db.gmailLink = document.getElementById('config-gmail-link').value.trim();
+        sync();
+    }
+
+    function openGoogleLink(type) {
+        if(type === 'drive' && db.driveLink) window.open(db.driveLink, '_blank');
+        if(type === 'gmail' && db.gmailLink) {
+            let link = db.gmailLink;
+            if (link.includes('@') && !link.startsWith('http') && !link.startsWith('mailto:')) {
+                link = 'https://accounts.google.com/AccountChooser?Email=' + encodeURIComponent(link) + '&continue=https://mail.google.com/mail/';
+            }
+            window.open(link, '_blank');
+        }
+    }
+
+    function modifierAccesAdmin() {
+        const passSlug = slugify(db.password || "");
+        let calcSlug = colocPath;
+        if (passSlug && colocPath.endsWith("_" + passSlug)) {
+            calcSlug = colocPath.substring(0, colocPath.length - passSlug.length - 1);
+        }
+        
+        let nomParDefaut = db.name || calcSlug.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+        const newName = prompt("Nouveau NOM de la colocation :", nomParDefaut);
+        if (!newName) return;
+        
+        const newPass = prompt("Nouveau MOT DE PASSE de la colocation :", db.password);
+        if (!newPass) return;
+
+        const oldSlug = calcSlug; 
+        const newSlug = slugify(newName);
+        const newPath = newSlug + "_" + slugify(newPass);
+
+        if (newPath === colocPath) {
+            alert("Aucune modification détectée.");
+            return;
+        }
+
+        if (newSlug !== oldSlug) {
+            database.ref('noms_reserves/' + newSlug).once('value').then(snap => {
+                if (snap.exists()) {
+                    alert("Ce nom de colocation est déjà pris ! Choisissez-en un autre.");
+                    return;
+                }
+                executerMigration(newName, newPass, oldSlug, newSlug, newPath);
+            });
+        } else {
+            executerMigration(newName, newPass, oldSlug, newSlug, newPath);
+        }
+    }
+
+    function executerMigration(newName, newPass, oldSlug, newSlug, newPath) {
+        db.name = newName;
+        db.password = newPass; 
+        
+        database.ref('colocs/' + newPath).set(db).then(() => {
+            if (newSlug !== oldSlug) {
+                database.ref('noms_reserves/' + newSlug).set(true);
+                database.ref('noms_reserves/' + oldSlug).remove();
+            }
+            database.ref('colocs/' + colocPath).set({ migrated: true }).then(() => {
+                colocPath = newPath;
+                localStorage.setItem('hub_path', colocPath);
+                alert("Les accès ont été modifiés avec succès !");
+                window.location.reload();
+            });
+        }).catch(err => {
+            alert("Erreur lors de la modification : " + err.message);
+        });
+    }
+
+    // --- LOGIQUE NOTIFICATION CORRIGÉE ET FIABLE ---
+    async function activerNotifications() {
+        if (!('Notification' in window)) {
+            alert("⚠️ Votre navigateur bloque cette option. \n\nASTUCE : Si vous êtes sur iPhone, vous DEVEZ appuyer sur le bouton 'Partager' (carré avec flèche) puis 'Sur l'écran d'accueil'. Ouvrez ensuite l'appli depuis votre écran d'accueil, et ce bouton fonctionnera !");
+            return;
+        }
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                alert(t('alertPushSuccess'));
+            } else { 
+                alert(t('alertPushDenied')); 
+            }
+        } catch (err) { console.error("Erreur Notification:", err); }
+    }
+
+    // --- COMPTAGE INDIVIDUEL ET POP-UP NOUVEAUTÉS ---
+    function checkNotifications() {
+        let dbMessages = getSafeArray(db.messages);
+        
+        // On cherche précisément les messages que TU n'as pas vus
+        const unreadChatMsgs = dbMessages.filter(m => m.user !== currentUser && (!m.seenBy || !m.seenBy.includes(currentUser)));
+        const newChatCount = unreadChatMsgs.length;
+
+        const badgeChat = document.getElementById('badge-chat');
+        if (badgeChat) {
+            badgeChat.style.display = newChatCount > 0 ? 'block' : 'none';
+            badgeChat.innerText = newChatCount;
+        }
+
+        const counts = { 
+            agenda: getSafeArray(db.agenda).length, 
+            courses: getSafeArray(db.courses).length, 
+            finances: getSafeArray(db.finances).length, 
+            fluides: getSafeArray(db.fluides).length,
+            annonces: getSafeArray(db.candidats).length
+        };
+        
+        let otherNewCount = 0;
+        for (let key in counts) { 
+            if (counts[key] > (lastSeenCounts[key] || 0) && currentTab !== key) { 
+                const badge = document.getElementById(`badge-${key}`);
+                if(badge) { badge.style.display = 'block'; badge.innerText = "!"; }
+                otherNewCount++;
+            } 
+        }
+
+        if (isSigned && !hasShownWelcome) {
+            if (newChatCount > 0 || otherNewCount > 0) {
+                const txt = document.getElementById('news-text');
+                let msgs = [];
+                if(newChatCount > 0) msgs.push(`<b>${newChatCount}</b> message(s) non lu(s) dans le chat`);
+                if(otherNewCount > 0) msgs.push("des nouveautés dans les autres onglets");
+                
+                txt.innerHTML = `Tu as ` + msgs.join(' et ') + ` !<br><br>Vérifie les pastilles rouges dans le menu.`;
+                document.getElementById('news-modal').style.display = 'flex';
+            }
+            hasShownWelcome = true;
+        }
+    }
+
+    function updateLastSeen(tab) {
+        if (['agenda', 'courses', 'finances', 'fluides', 'annonces'].includes(tab)) {
+            let catLength = tab === 'annonces' ? getSafeArray(db.candidats).length : getSafeArray(db[tab]).length;
+            lastSeenCounts[tab] = catLength; 
+            localStorage.setItem('hub_last_seen', JSON.stringify(lastSeenCounts)); 
+            const badge = document.getElementById(`badge-${tab}`);
+            if(badge) badge.style.display = 'none';
+        }
+    }
+
+    let tempIsNew = false;
+    let tempPassword = "";
+    let tempName = "";
+
+    function validerLogin() {
+        const u = document.getElementById('login-name').value.trim();
+        const c = document.getElementById('coloc-token').value.trim();
+        const p = document.getElementById('coloc-password').value.trim();
+
+        if(!u || !c || !p) return alert(t('alertNameColoc'));
+
+        const slugName = slugify(c);
+        const secretPath = slugName + "_" + slugify(p);
+
+        database.ref('noms_reserves/' + slugName).once('value').then((snap) => {
+            if (snap.exists()) {
+                database.ref('colocs/' + secretPath).once('value').then((colocSnap) => {
+                    if (colocSnap.exists()) { 
+                        if (colocSnap.val().migrated) {
+                            alert("Ces identifiants sont obsolètes (modifiés par l'administrateur). Veuillez demander les nouveaux codes.");
+                            return;
+                        }
+                        validerAcces(u, secretPath, false, "", c); 
+                    } else { alert(t('alertWrongPass')); }
+                });
+            } else {
+                database.ref('noms_reserves/' + slugName).set(true).then(() => {
+                    database.ref('colocs/' + secretPath + '/created').set(true).then(() => { validerAcces(u, secretPath, true, p, c); });
+                }).catch(err => alert(t('alertError') + err.message));
+            }
+        });
+    }
+
+    function validerAcces(user, path, isNew = false, rawPass = "", rawName = "") {
+        currentUser = user; colocPath = path;
+        tempIsNew = isNew; tempPassword = rawPass; tempName = rawName;
+        
+        localStorage.setItem('hub_user', currentUser); localStorage.setItem('hub_path', colocPath);
+        document.getElementById('login-fields').style.display = 'none';
+        document.getElementById('lang-select').style.display = 'none';
+        document.getElementById('charte-fields').style.display = 'block';
+        
+        database.ref('colocs/' + colocPath + '/charte').once('value').then(snap => {
+            const serverCharte = snap.exists() ? getSafeArray(snap.val()) : getSafeArray(db.charte);
+            document.getElementById('charte-content').innerHTML = serverCharte.map(i => `• ${translateRule(i)}<br>`).join('');
+        }).catch(() => {
+            document.getElementById('charte-content').innerHTML = getSafeArray(db.charte).map(i => `• ${translateRule(i)}<br>`).join('');
+        });
+    }
+
+    function togglePassword() {
+        const pwdInput = document.getElementById('coloc-password');
+        const pwdIcon = document.getElementById('toggle-pwd-icon');
+        if (pwdInput.type === "password") {
+            pwdInput.type = "text";
+            pwdIcon.innerText = "🙈"; 
+        } else {
+            pwdInput.type = "password";
+            pwdIcon.innerText = "👁️";
+        }
+    }
+
+    function signerCharte() {
+        localStorage.setItem('hub_signed', "true"); isSigned = true;
+        document.getElementById('auth-modal').style.display = 'none';
+        
+        database.ref('colocs/' + colocPath).once('value').then(snap => {
+            if(snap.exists() && snap.val().membres) {
+                db = snap.val(); 
+            } else {
+                if (tempIsNew) {
+                    db.admin = currentUser;
+                    db.password = tempPassword;
+                    db.name = tempName;
+                }
+            }
+            db.membres = getSafeArray(db.membres);
+            // ✅ VÉRIFICATION PREMIUM à l'entrée
+            if (!db.isPremium && db.membres.length >= 4 && !db.membres.includes(currentUser)) {
+                alert("⭐ Cette colocation a atteint la limite de 4 colocataires (version gratuite).\n\nL'administrateur doit passer au Premium sur VérifTOUT pour accueillir plus de membres.");
+                localStorage.removeItem('hub_signed');
+                isSigned = false;
+                document.getElementById('auth-modal').style.display = 'flex';
+                return;
+            }
+            if(!db.membres.includes(currentUser)) { db.membres.push(currentUser); }
+            sync(); init(); 
+        }).catch(() => { init(); });
+    }
+
+    function ajouterRegleCharte() { const n = document.getElementById('nouvelle-charte').value.trim(); if(n) { db.charte = getSafeArray(db.charte); db.charte.push(n); document.getElementById('nouvelle-charte').value = ""; sync(); } }
+    function supprimerRegleCharte(index) { db.charte = getSafeArray(db.charte); db.charte.splice(index, 1); if (db.charte.length === 0) db.charte = ["Bienveillance avant tout."]; sync(); }
+
+    function showTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.tab-content').forEach(x => x.style.display = 'none');
+        document.querySelectorAll('nav button').forEach(x => x.classList.remove('active'));
+        document.getElementById('tab-' + tab).style.display = 'block'; document.getElementById('nav-' + tab).classList.add('active');
+        
+        updateLastSeen(tab);
+
+        if(tab === 'chat') { 
+            markMessagesAsRead();
+            setTimeout(() => { const c = document.getElementById('chat-container'); if(c) c.scrollTop = c.scrollHeight; }, 100);
+        }
+        if(tab === 'fluides') { toggleFluideInputs(); renderAll(); setTimeout(renderFluideStats, 100); } 
+    }
+
+    function setAgendaView(view) {
+        currentAgendaView = view;
+        document.getElementById('btn-agenda-actif').style.background = view === 'actif' ? 'var(--primary)' : 'white';
+        document.getElementById('btn-agenda-actif').style.color = view === 'actif' ? 'white' : 'var(--primary)';
+        document.getElementById('btn-agenda-archive').style.background = view === 'archive' ? 'var(--primary)' : 'white';
+        document.getElementById('btn-agenda-archive').style.color = view === 'archive' ? 'white' : 'var(--primary)';
+        renderAll();
+    }
+    
+    function setAnnoncesView(view) {
+        currentAnnoncesView = view;
+        document.getElementById('btn-annonces-gen').style.background = view === 'gen' ? 'var(--primary)' : 'white';
+        document.getElementById('btn-annonces-gen').style.color = view === 'gen' ? 'white' : 'var(--primary)';
+        document.getElementById('btn-annonces-crm').style.background = view === 'crm' ? 'var(--primary)' : 'white';
+        document.getElementById('btn-annonces-crm').style.color = view === 'crm' ? 'white' : 'var(--primary)';
+        document.getElementById('annonces-gen-view').style.display = view === 'gen' ? 'block' : 'none';
+        document.getElementById('annonces-crm-view').style.display = view === 'crm' ? 'block' : 'none';
+    }
+
+    // --- ENREGISTREMENT AUDIO CHAT ---
+    let mediaRecorder; let audioChunks = []; let isRecording = false; let audioStream;
+    async function toggleAudioRecord() {
+        const btn = document.getElementById('btn-mic');
+        if (!isRecording) {
+            try {
+                audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                let options = {};
+                if (MediaRecorder.isTypeSupported('audio/webm')) { options = { mimeType: 'audio/webm' }; } 
+                else if (MediaRecorder.isTypeSupported('audio/mp4')) { options = { mimeType: 'audio/mp4' }; }
+                
+                mediaRecorder = new MediaRecorder(audioStream, options);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
+                
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: options.mimeType || 'audio/webm' });
+                    const reader = new FileReader();
+                    reader.onloadend = () => { envoyerMessageAudio(reader.result); };
+                    reader.readAsDataURL(audioBlob);
+                    
+                    if (audioStream) audioStream.getTracks().forEach(track => track.stop());
+                };
+                
+                mediaRecorder.start(250); 
+                isRecording = true;
+                btn.classList.add('recording-pulse'); btn.innerText = '⏹️';
+            } catch (err) { 
+                console.error("Erreur Micro:", err);
+                alert("Impossible d'activer le micro. Vérifiez vos autorisations système pour le navigateur."); 
+            }
+        } else {
+            if(mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+            isRecording = false;
+            btn.classList.remove('recording-pulse'); btn.innerText = '🎤';
+        }
+    }
+
+    function envoyerMessageAudio(base64Audio) {
+        const currentDateTime = new Date().toLocaleString([], {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+        db.messages = getSafeArray(db.messages);
+        db.messages.push({ id: Date.now(), user: currentUser, audio: base64Audio, time: currentDateTime, reactions: [], seenBy: [currentUser] });
+        sync(); setTimeout(() => { const c = document.getElementById('chat-container'); if(c) c.scrollTop = c.scrollHeight; }, 100);
+    }
+
+    async function envoyerMessage() {
+        const input = document.getElementById('chat-input'); const mention = document.getElementById('chat-mention').value; const editId = document.getElementById('edit-message-id').value; const fileInput = document.getElementById('chat-file');
+        let texte = input.value.trim(); let fileData = ""; let fileName = "";
+        
+        if(fileInput.files.length > 0) { const file = fileInput.files[0]; fileName = file.name; fileData = await new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(file); }); }
+        if(!texte && !fileData) return;
+        if(mention && texte) texte = `<b>@${mention}</b> ` + texte;
+        
+        const currentDateTime = new Date().toLocaleString([], {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+
+        db.messages = getSafeArray(db.messages);
+        if(editId && texte) { const m = db.messages.find(x => String(x.id) === String(editId)); if(m && m.user === currentUser) { m.text = texte + " <i>" + t('edited') + "</i>"; } document.getElementById('edit-message-id').value = ""; } 
+        else { db.messages.push({ id: Date.now(), user: currentUser, text: texte, file: fileData, fileName: fileName, time: currentDateTime, reactions: [], seenBy: [currentUser] }); }
+        
+        input.value = ""; document.getElementById('chat-mention').value = ""; fileInput.value = ""; document.getElementById('chat-file-preview-text').style.display = 'none'; 
+        sync();
+        setTimeout(() => { const c = document.getElementById('chat-container'); if(c) c.scrollTop = c.scrollHeight; }, 100);
+    }
+
+    function editMsg(id) {
+        const m = getSafeArray(db.messages).find(x => String(x.id) === String(id));
+        if(m && m.user === currentUser) {
+            document.getElementById('edit-message-id').value = m.id;
+            let cleanText = (m.text || "").replace(/ <i>\(modifié\)<\/i>$/, "");
+            document.getElementById('chat-input').value = cleanText;
+            document.getElementById('chat-input').focus();
+        }
+    }
+
+    function quoteMsg(id) { 
+        const m = getSafeArray(db.messages).find(x => String(x.id) === String(id)); 
+        if(m) { 
+            const extra = m.file ? "[📎]" : (m.audio ? "[🎤]" : ""); 
+            const cleanText = (m.text || "").replace(/<[^>]*>?/gm, '');
+            document.getElementById('chat-input').value = `> "${cleanText} ${extra}".trim() + "\n`; 
+            document.getElementById('chat-input').focus(); 
+        } 
+    }
+
+    function addReact(id, emo) { const m = getSafeArray(db.messages).find(x => String(x.id) === String(id)); if(!m.reactions) m.reactions = []; m.reactions.push(emo); sync(); }
+    
+    function updateProfilePhoto(e) { 
+        const file = e.target.files[0]; if(!file) return; 
+        document.getElementById('config-profile-name').innerText = "📎 " + file.name;
+        const r = new FileReader(); r.onload = () => { if(!db.membresPhotos) db.membresPhotos = {}; db.membresPhotos[currentUser] = r.result; sync(); }; r.readAsDataURL(file); 
+    }
+
+    function ajouterAgenda() { 
+        const t_val = document.getElementById('evt-titre').value; const d = document.getElementById('evt-date').value; const type = document.getElementById('evt-type').value; const a = document.getElementById('evt-assignee').value; const f = document.getElementById('evt-freq').value; 
+        if(!t_val || !d) return alert(t('alertTitleDate')); 
+        const createdAtStr = new Date().toLocaleString([], {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+        db.agenda = getSafeArray(db.agenda);
+        db.agenda.push({ id: Date.now(), t: t_val, d, type, a, f, done: false, creator: currentUser, createdAt: createdAtStr, responses: {} }); 
+        document.getElementById('evt-titre').value = ""; sync(); 
+    }
+    
+    function toggleDone(id) { const item = getSafeArray(db.agenda).find(x => String(x.id) === String(id)); if(item) { item.done = !item.done; item.doneBy = item.done ? currentUser : ""; item.doneAt = item.done ? new Date().toLocaleString([], {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : ""; sync(); } }
+    function respondEvt(id, res) { const item = getSafeArray(db.agenda).find(x => String(x.id) === String(id)); if(item) { if(!item.responses) item.responses = {}; item.responses[currentUser] = res; sync(); } }
+    function getCalLink(item) { const start = new Date(item.d).toISOString().replace(/-|:|\.\d\d\d/g, ""); return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(item.t)}&dates=${start}/${start}`; }
+
+    function exporterItem(type, id) {
+        let content = ""; let filename = "";
+        if (type === 'finances') {
+            const f = getSafeArray(db.finances).find(x => String(x.id) === String(id));
+            if (!f) return;
+            content = `ARCHIVE DÉPENSE - ${new Date().toLocaleDateString()}\n==========================================\nDate/Heure : ${f.d}\nMontant : ${f.m}€\nPayé par : ${f.p}\nDivision :\n`;
+            (f.owers || f.parts || []).forEach(o => { content += ` - ${o.name} : ${o.amount}€ (${o.settled ? 'Réglé' : 'En attente'})\n`; });
+            filename = `Facture_${slugify(f.d)}_${f.id}.txt`;
+        }
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+    }
+
+    function exporterArchive(type) {
+        let content = `ARCHIVES HUB COLOC (GLOBAL) - ${type.toUpperCase()} - ${new Date().toLocaleDateString()}\n==========================================================\n\n`;
+        
+        if (type === 'finances') {
+            const finished = getSafeArray(db.finances).filter(f => (f.owers || f.parts || []).every(o => o.settled));
+            if (finished.length === 0) return alert("Aucune dépense entièrement réglée à archiver.");
+            finished.forEach(f => content += `[${f.d}] Montant : ${f.m}€ - Payé par ${f.p}\n`);
+        }
+        if (type === 'agenda') {
+            const finished = getSafeArray(db.agenda).filter(a => isEventArchived(a));
+            if (finished.length === 0) return alert("Aucune tâche terminée à archiver.");
+            finished.forEach(a => content += `[${a.createdAt || a.d}] ${a.t} - Fait par: ${a.doneBy || 'Personne'}\n`);
+        }
+        
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `Archive_Globale_${type}.txt`; a.click();
+        
+        setTimeout(() => {
+            if (confirm("Votre fichier d'archive a été téléchargé.\nVoulez-vous ouvrir Google Drive maintenant pour le déposer dans le dossier commun de la coloc ?")) {
+                openGoogleLink('drive');
+            }
+        }, 1000);
+    }
+
+    function ajouterCourse(nom = null) { 
+        const n = nom || document.getElementById('course-nom').value.trim(); const q = document.getElementById('course-qte').value || 1; const u = document.getElementById('course-unite').value; 
+        if(!n) return; const nCap = n.charAt(0).toUpperCase() + n.slice(1); 
+        db.catalogue = getSafeArray(db.catalogue);
+        if (!db.catalogue.some(item => item.toLowerCase() === n.toLowerCase())) { db.catalogue.push(nCap); } 
+        db.courses = getSafeArray(db.courses);
+        db.courses.push({ id: Date.now(), n: nCap, q, u, checked: false, creator: currentUser }); 
+        document.getElementById('course-nom').value = ""; sync(); 
+    }
+    
+    function toggleCourse(id) { const c = getSafeArray(db.courses).find(x => String(x.id) === String(id)); if(c) { c.checked = !c.checked; sync(); } }
+    function exportCourses() { const txt = getSafeArray(db.courses).filter(c => !c.checked).map(c => `- ${c.n} (${c.q} ${t(c.u) || c.u})`).join('%0D%0A'); const subj = encodeURIComponent(t('mailSubject')); const bdy = encodeURIComponent(t('mailBody') + '\n\n') + txt; window.location.href = `mailto:?subject=${subj}&body=${bdy}`; }
+
+    async function ajouterDépense() { 
+        const d_val = document.getElementById('fin-desc').value; const m = parseFloat(document.getElementById('fin-montant').value); const p = document.getElementById('fin-payeur').value; const file = document.getElementById('fin-photo').files[0]; 
+        if(!d_val || isNaN(m)) return alert(t('alertObjAmount')); 
+        const checkboxes = document.querySelectorAll('.fin-check:checked'); const involved = Array.from(checkboxes).map(cb => cb.value); 
+        if(involved.length === 0) return alert(t('alertSelectColoc')); 
+        let imgData = ""; if(file) { imgData = await new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(file); }); } 
+        const partAmount = (m / involved.length).toFixed(2); const owers = involved.filter(mName => mName !== p).map(mName => ({ name: mName, amount: partAmount, settled: false })); 
+        db.finances = getSafeArray(db.finances);
+        db.finances.push({ id: Date.now(), d: d_val, m, p, img: imgData, owers }); 
+        document.getElementById('fin-desc').value = ""; document.getElementById('fin-montant').value = ""; document.getElementById('fin-photo').value = ""; document.getElementById('fin-photo-name').innerText = ""; sync(); 
+    }
+    
+    function settleDebt(fid, oName) { const f = getSafeArray(db.finances).find(x => String(x.id) === String(fid)); if(f) { const debts = f.owers || f.parts || []; const o = debts.find(x => x.name === oName); if(o) { o.settled = !o.settled; sync(); } } }
+
+    function toggleFluideInputs() {
+        const type = document.getElementById('fluide-type').value;
+        if (type === 'Électricité' || type === 'elec') {
+            document.getElementById('input-standard').style.display = 'none';
+            document.getElementById('input-elec').style.display = 'block';
+        } else {
+            document.getElementById('input-standard').style.display = 'block';
+            document.getElementById('input-elec').style.display = 'none';
+        }
+    }
+
+    async function ajouterFluide() { 
+        const type = document.getElementById('fluide-type').value; const mois = document.getElementById('fluide-mois').value; const file = document.getElementById('fluide-facture').files[0]; 
+        let index = 0, indexHP = 0, indexHC = 0;
+        if (type === 'Électricité' || type === 'elec') {
+            indexHP = parseFloat(document.getElementById('fluide-index-hp').value); indexHC = parseFloat(document.getElementById('fluide-index-hc').value);
+            if (!mois) return alert(t('alertMonthIndex'));
+        } else {
+            index = parseFloat(document.getElementById('fluide-index').value); if (!mois) return alert(t('alertMonthIndex'));
+        }
+        let docData = ""; if(file) { docData = await new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(file); }); } 
+        db.fluides = getSafeArray(db.fluides);
+        db.fluides.push({ id: Date.now(), type: type, mois: String(mois), index: index, indexHP: indexHP, indexHC: indexHC, doc: docData, creator: currentUser, createdAt: new Date().toLocaleDateString() }); 
+        sync(); 
+    }
+    
+    function renderFluideStats() { 
+        try {
+            const canvas = document.getElementById('fluideChart'); if(!canvas) return; 
+            const ctx = canvas.getContext('2d'); const yearSelect = document.getElementById('filter-fluide-year'); 
+            const selectedYear = yearSelect.value || "Tous"; const labels = getChartMonths(); 
+            const datasetElecHP = new Array(12).fill(null); const datasetElecHC = new Array(12).fill(null); const datasetEau = new Array(12).fill(null); const datasetGaz = new Array(12).fill(null); 
+            getSafeArray(db.fluides).forEach(f => { 
+                if (selectedYear !== "Tous" && (!f.mois || !String(f.mois).startsWith(selectedYear))) return;
+                if (f && f.mois) {
+                    const parts = String(f.mois).split('-');
+                    if(parts.length >= 2) {
+                        const monthIdx = parseInt(parts[1], 10) - 1; 
+                        if(!isNaN(monthIdx) && monthIdx >= 0 && monthIdx <= 11) {
+                            if(f.type === 'Électricité' || f.type === 'elec') { datasetElecHP[monthIdx] = f.indexHP !== undefined ? f.indexHP : (f.index || 0); datasetElecHC[monthIdx] = f.indexHC || 0; }
+                            if(f.type === 'Eau' || f.type === 'water') datasetEau[monthIdx] = f.index !== undefined ? f.index : 0; 
+                            if(f.type === 'Gaz' || f.type === 'gas') datasetGaz[monthIdx] = f.index !== undefined ? f.index : 0; 
+                        }
+                    }
+                }
+            }); 
+            if(fluideChart) { try { fluideChart.destroy(); } catch(e) {} } 
+            fluideChart = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [ { label: t('elecHP') + ' (kWh)', data: datasetElecHP, borderColor: '#ffd600', backgroundColor: '#ffd600', tension: 0.3, spanGaps: true }, { label: t('elecHC') + ' (kWh)', data: datasetElecHC, borderColor: '#fbc02d', backgroundColor: '#fbc02d', borderDash: [5, 5], tension: 0.3, spanGaps: true }, { label: t('water') + ' (m³)', data: datasetEau, borderColor: '#03a9f4', backgroundColor: '#03a9f4', tension: 0.3, spanGaps: true }, { label: t('gas') + ' (kWh)', data: datasetGaz, borderColor: '#ff9800', backgroundColor: '#ff9800', tension: 0.3, spanGaps: true } ] }, options: { responsive: true, maintainAspectRatio: false } }); 
+        } catch(e) { console.error("Erreur Graphique Fluides:", e); }
+    }
+
+    function genererTexteAnnonce() {
+        const dateDispoInput = document.getElementById('annonce-date').value;
+        const dateStr = dateDispoInput ? new Date(dateDispoInput).toLocaleDateString() : "immédiatement";
+        
+        let roomsStr = "";
+        let photosHtml = "";
+        
+        const commonPhotos = [
+            {src: '1770784993056-iifxkm.jpg', alt: 'Salon'},
+            {src: '1770784992971-g6sp4g.jpg', alt: 'Cuisine'},
+            {src: 'téléchargement.jpg', alt: 'Entrée'},
+            {src: '1770784993076-px6stf.jpg', alt: 'Buanderie'},
+            {src: '1770784993013-xphleh.jpg', alt: 'Cellier'}
+        ];
+
+        commonPhotos.forEach(p => {
+            photosHtml += `<div style="text-align:center;"><img src="${p.src}" style="width:80px; height:80px; object-fit:cover; border-radius:8px; border:1px solid #ccc;" alt="${p.alt}"><div style="font-size:0.6rem; color:#666;">${p.alt}</div></div>`;
+        });
+
+        if(document.getElementById('chk-ch1').checked) { 
+            roomsStr += "Chambre 1 : 14,30 m2 - prix 470 euros charges comprises\nGrande chambre exposition ouest. Possède 1 dressing et 1 meuble de rangement ainsi que la climatisation réversible.\n\n"; 
+            photosHtml += `<div style="text-align:center;"><img src="chambre470€.jpg" style="width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid var(--primary);" alt="Ch. 1"><div style="font-size:0.6rem; font-weight:bold; color:var(--primary-dark);">Ch. 1 (470€)</div></div>`;
+        }
+        if(document.getElementById('chk-ch2').checked) { 
+            roomsStr += "Chambre 2 : 12.44m2 - prix 465 euros charges comprises\nCette chambre possède un évier et une douche indépendante ainsi qu'un grand placard pour ranger ses affaires.\n\n"; 
+            photosHtml += `<div style="text-align:center;"><img src="chambre465€.jpg" style="width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid var(--primary);" alt="Ch. 2"><div style="font-size:0.6rem; font-weight:bold; color:var(--primary-dark);">Ch. 2 (465€)</div></div>`;
+        }
+        if(document.getElementById('chk-ch3').checked) { 
+            roomsStr += "Chambre 3 : 13,19m2 - prix 435 euros charges comprises\nChambre possédant un grand placard de rangement.\n\n"; 
+            photosHtml += `<div style="text-align:center;"><img src="chambre435€.jpg" style="width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid var(--primary);" alt="Ch. 3"><div style="font-size:0.6rem; font-weight:bold; color:var(--primary-dark);">Ch. 3 (435€)</div></div>`;
+        }
+        if(document.getElementById('chk-ch4').checked) { 
+            roomsStr += "Chambre 4 : 12.52m2 - 430 euros charges comprises\nExposition plein sud, Grand dressing pour ranger toutes vos affaires, accès direct au balcon.\n\n"; 
+            photosHtml += `<div style="text-align:center;"><img src="chambre430€.jpg" style="width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid var(--primary);" alt="Ch. 4"><div style="font-size:0.6rem; font-weight:bold; color:var(--primary-dark);">Ch. 4 (430€)</div></div>`;
+        }
+        
+        if (!roomsStr) return alert("Veuillez cocher au moins une chambre.");
+
+        const finalTexte = `Spacieux appartement pour la coloc du bonheur à Toulouse.
+
+Une nouvelle colocation se propose à vous. C'est une nouvelle colocation de 4 personnes qui se créée, venez imaginer un nouveau nid, tout seul ou à plusieurs, un nouveau lieu vous attend pour poser vos valises. Nous venons de finir des travaux pour vous offrir un bel espace, visite possible de suite !
+
+Dans une résidence sécurisée, une colocation meublée de 4 chambres se crée dans un bel appartement de double exposition lumineux, au 3eme étage sans ascenseur de 100m2. DPE C.
+Dans chaque chambre il y a un lit double 140x200cm, table et lampe de chevet, couette, oreillers, linge de lit et serviettes. Chaque colocataire aura son propre Bail, donc chacun pourra faire une demande d'APL, si vous y avez le droit (éligible CAF). Pas de caution solidaire. Chaque chambre ferme à clé. Garantie VISALE privilégiée.
+
+Compris dans les charges :
+- Box internet
+- Eau
+- Ordure ménagère
+
+Charge à prévoir et à repartir à 4 :
+- Gaz et Électricité
+
+Disponible à partir du ${dateStr}
+
+Localisation :
+- Oncopole, Pierre Fabre et Clinique Médipôle à 5 minutes en vélo de la coloc
+- Une station Vélo à 100 mètres de la coloc
+- Université du Mirail à 10 minutes à Vélo
+- Facultés de Médecines, Pharmacie, Dentaire, Université Paul Sabatier et hôpital de Rangueil à moins de 15 minutes de la coloc via le Téléphérique Téléo
+- Institut National Supérieur du Professorat et de l'Éducation à 3 minutes à vélo
+- Berges de la Garonne à 200 mètres
+- Accès voiture rocade facile en 2 minutes
+- Hyper centre-ville de Toulouse à 15 minutes en vélo et par les bords de Garonne sans voitures :)
+- Station de TER Gallieni Cancéropôle au bout de la rue
+- Supermarché, primeur, pharmacie, restaurant, salle de sport, laboratoire d’analyses médicales à 5 minutes à pied.
+- Boulangerie, tabac/presse à 10 min à pied
+
+CHAMBRE(S) DISPONIBLE(S) :
+${roomsStr}
+Dans les parties communes :
+Toilettes séparées, Salle de bain avec baignoire. Un grand cellier, dans lequel vous pourrez trouver une grande étagère du sol au plafond ainsi qu'un congélateur colonne et un réfrigérateur. Une buanderie avec une machine à laver. Une cuisine toute équipée avec lave-vaisselle, four, micro-ondes, bouilloire. Salon avec un vidéoprojecteur. Un piano droit accordé en 2025. Une terrasse de 6,5m2. Un local à vélo à l'entrée de la résidence. Une place de parking (au premier demandeur).
+
+PRÉSENTATION DES COLOCS ACTUELS :
+Vous partagerez l'appartement avec Raphaël et Mehdi ! Nous sommes deux colocs sympas et ouverts, aimant la vie en communauté, partager un repas ou une soirée de temps en temps, tout en respectant l'intimité et le rythme de chacun. La bonne humeur et la bienveillance sont les maîtres-mots de la Coloc du Bonheur !
+
+N'hésitez pas à me contacter pour plus d'informations et organiser une visite.
+Raphaël`;
+
+        document.getElementById('annonce-resultat').value = finalTexte;
+        document.getElementById('annonce-resultat').style.display = 'block';
+        document.getElementById('btn-copy-annonce').style.display = 'block';
+        
+        document.getElementById('photos-container').innerHTML = photosHtml;
+        document.getElementById('annonce-photos-preview').style.display = 'block';
+    }
+
+    function copierAnnonce() {
+        const copyText = document.getElementById("annonce-resultat");
+        copyText.select(); document.execCommand("copy");
+        alert("Texte copié ! Tu peux maintenant le coller sur LeBonCoin ou La Carte des Colocs. N'oublie pas d'utiliser les photos affichées en dessous !");
+    }
+
+    function ajouterCandidat() {
+        const nom = document.getElementById('cand-nom').value.trim();
+        const contact = document.getElementById('cand-contact').value.trim();
+        const chambre = document.getElementById('cand-chambre').value;
+        if(!nom) return alert("Le nom du candidat est requis.");
+        
+        db.candidats = getSafeArray(db.candidats);
+        db.candidats.push({ id: Date.now(), nom, contact, chambre, statut: 'Nouveau', notes: '', date: new Date().toLocaleDateString() });
+        
+        document.getElementById('cand-nom').value = ""; document.getElementById('cand-contact').value = "";
+        sync();
+    }
+
+    function modifierStatutCandidat(id, statut) {
+        const c = getSafeArray(db.candidats).find(x => String(x.id) === String(id));
+        if(c) { c.statut = statut; sync(); }
+    }
+    
+    function modifierNoteCandidat(id) {
+        const c = getSafeArray(db.candidats).find(x => String(x.id) === String(id));
+        if(c) { const n = prompt("Note / Compte-rendu pour ce candidat :", c.notes || ""); if(n !== null) { c.notes = n; sync(); } }
+    }
+
+    // ✅ FONCTIONS PREMIUM
+    async function checkPremiumStatus(email) {
+        try {
+            const snapshot = await firestore.collection('users').where('email', '==', email).get();
+            if (!snapshot.empty) {
+                const userData = snapshot.docs[0].data();
+                return !!(userData.subscriptions && userData.subscriptions['hub-coloc'] && userData.subscriptions['hub-coloc'].premium === true);
+            }
+        } catch(e) { console.warn("Erreur vérification premium:", e); }
+        return false;
+    }
+
+    async function activerPremium() {
+        const email = document.getElementById('premium-email').value.trim();
+        if (!email) return alert("Entrez votre adresse e-mail VérifTOUT.");
+        
+        const btn = document.querySelector('#premium-panel button');
+        btn.textContent = "⏳ Vérification...";
+        btn.disabled = true;
+        
+        const isPremium = await checkPremiumStatus(email);
+        
+        if (isPremium) {
+            db.isPremium = true;
+            db.premiumEmail = email;
+            sync();
+            alert("⭐ Premium activé ! Colocataires illimités débloqués.");
+        } else {
+            alert("❌ Aucun abonnement Premium trouvé pour cet e-mail.\n\nAbonnez-vous d'abord sur VérifTOUT.");
+        }
+        
+        btn.textContent = "⭐ Vérifier et Activer le Premium";
+        btn.disabled = false;
+    }
+
+    function del(cat, id) { db[cat] = getSafeArray(db[cat]).filter(x => String(x.id) !== String(id)); sync(); }
+    
+    function ajouterMembreBtn() { 
+        let n = document.getElementById('new-membre').value.trim(); if(!n) return;
+        n = n.charAt(0).toUpperCase() + n.slice(1).toLowerCase(); 
+        db.membres = getSafeArray(db.membres);
+        // ✅ VÉRIFICATION PREMIUM : max 4 membres en version gratuite
+        if (!db.isPremium && db.membres.length >= 4) {
+            alert("⭐ Version gratuite limitée à 4 colocataires.\n\nPassez au Premium sur VérifTOUT pour ajouter des colocataires illimités !");
+            return;
+        }
+        if(!db.membres.some(m => m.toLowerCase() === n.toLowerCase())) { db.membres.push(n); document.getElementById('new-membre').value = ""; sync(); } 
+    }
+    
+    function supprimerMembre(nom) { db.membres = getSafeArray(db.membres).filter(m => m !== nom); sync(); }
+
+    // ✅ ANNIVERSAIRES
+    function sauvegarderAnnif() {
+        const date = document.getElementById('mon-annif').value;
+        if (!date) return alert("Sélectionnez votre date d'anniversaire.");
+        if (!db.annifs) db.annifs = {};
+        db.annifs[currentUser] = date;
+        sync();
+        alert("🎂 Anniversaire sauvegardé !");
+    }
+
+    function renderAnnifs() {
+        const annifs = db.annifs || {};
+        const today = new Date();
+        const annifEl = document.getElementById('liste-annifs');
+        const monAnnif = document.getElementById('mon-annif');
+        if (monAnnif && annifs[currentUser]) monAnnif.value = annifs[currentUser];
+
+        const items = getSafeArray(db.membres).map(m => {
+            if (!annifs[m]) return null;
+            const parts = annifs[m].split('-');
+            const annifCetteAnnee = new Date(today.getFullYear(), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            if (annifCetteAnnee < today) annifCetteAnnee.setFullYear(today.getFullYear() + 1);
+            const joursRestants = Math.ceil((annifCetteAnnee - today) / (1000 * 60 * 60 * 24));
+            return { nom: m, date: annifs[m], jours: joursRestants };
+        }).filter(Boolean).sort((a, b) => a.jours - b.jours);
+
+        if (items.length === 0) {
+            annifEl.innerHTML = `<p style="font-size:0.8rem; color:var(--text-muted);">Aucun anniversaire renseigné pour l'instant.</p>`;
+            return;
+        }
+
+        annifEl.innerHTML = items.map(i => {
+            const label = i.jours === 0 ? "🎉 C'est aujourd'hui !" : (i.jours === 1 ? "Demain !" : `Dans ${i.jours} jours`);
+            const color = i.jours <= 7 ? 'var(--danger)' : (i.jours <= 30 ? '#fbc02d' : 'var(--text-muted)');
+            return `<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #f5f5f5;">
+                <span>🎂 <b>${i.nom}</b> — ${new Date(i.date + 'T00:00:00').toLocaleDateString('fr-FR', {day:'numeric', month:'long'})}</span>
+                <span style="color:${color}; font-size:0.8rem; font-weight:bold;">${label}</span>
+            </div>`;
+        }).join('');
+    }
+
+    // ✅ GESTION ADMIN
+    function promouvoirAdmin(nom) {
+        if (!confirm(`Voulez-vous vraiment donner le rôle d'administrateur à ${nom} ?`)) return;
+        db.admin = nom;
+        sync();
+        alert(`👑 ${nom} est maintenant administrateur.`);
+    }
+
+    function reclamerAdmin() {
+        if (!confirm("Voulez-vous réclamer le rôle d'administrateur ? L'admin actuel sera notifié au prochain accès.")) return;
+        if (!db.demandesAdmin) db.demandesAdmin = [];
+        if (!db.demandesAdmin.includes(currentUser)) {
+            db.demandesAdmin.push(currentUser);
+            sync();
+            alert("✅ Demande envoyée ! L'administrateur pourra vous promouvoir depuis la liste des membres.");
+        } else {
+            alert("Vous avez déjà une demande en cours.");
+        }
+    }
+    
+    function updatePhoto(e) { 
+        const file = e.target.files[0]; if(!file) return;
+        document.getElementById('config-cover-name').innerText = "📎 " + file.name;
+        const r = new FileReader(); r.onload = () => { localStorage.setItem('hub_photo', r.result); init(); }; r.readAsDataURL(file); 
+    }
+    
+    function isEventArchived(a) { return a.type === 'tache' ? a.done === true : new Date(a.d) < new Date(); }
+
+    function renderAll() {
+        document.getElementById('display-charte').innerHTML = getSafeArray(db.charte).map((regle, index) => `<div class="item-row" style="padding: 4px 0; border: none;"><span>• ${translateRule(regle)}</span><span onclick="supprimerRegleCharte(${index})" style="cursor:pointer; color:var(--text-muted); padding:0 10px;">✖</span></div>`).join('');
+        
+        if(db.membresPhotos && db.membresPhotos[currentUser]) { document.getElementById('my-profile-preview').src = db.membresPhotos[currentUser]; document.getElementById('my-profile-preview').style.display = 'block'; document.getElementById('header-avatar').src = db.membresPhotos[currentUser]; document.getElementById('header-avatar').style.display = 'inline-block'; } 
+        
+        const membresArr = getSafeArray(db.membres); const currentAdmin = db.admin || (membresArr.length > 0 ? membresArr[0] : currentUser); const isAdmin = (currentUser === currentAdmin);
+        const passSlug = slugify(db.password || ""); let calcSlug = colocPath; if (passSlug && colocPath.endsWith("_" + passSlug)) { calcSlug = colocPath.substring(0, colocPath.length - passSlug.length - 1); }
+        
+        // Affichage Admin dans Profil
+        document.getElementById('admin-coloc-name').innerText = db.name || calcSlug.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        document.getElementById('admin-coloc-pass').innerText = db.password || "Non défini";
+        
+        let nomAffichage = db.name || calcSlug.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        document.getElementById('header-title').innerText = nomAffichage.toUpperCase();
+        
+        if (isAdmin) { document.getElementById('admin-panel').style.display = 'block'; } else { document.getElementById('admin-panel').style.display = 'none'; }
+        
+        // ✅ AFFICHAGE PREMIUM
+        const premiumBadge = document.getElementById('premium-badge');
+        const premiumStatusDisplay = document.getElementById('premium-status-display');
+        const premiumActivateForm = document.getElementById('premium-activate-form');
+        if (db.isPremium) {
+            if (premiumBadge) premiumBadge.style.display = 'inline-block';
+            if (premiumStatusDisplay) premiumStatusDisplay.innerHTML = `<span style="color:#25D366; font-weight:bold;">✅ Premium actif</span> — Colocataires illimités débloqués !<br><span style="font-size:0.75rem; color:var(--text-muted);">Compte : ${db.premiumEmail || ''}</span>`;
+            if (premiumActivateForm) premiumActivateForm.style.display = 'none';
+        } else {
+            if (premiumBadge) premiumBadge.style.display = 'none';
+            if (premiumStatusDisplay) premiumStatusDisplay.innerHTML = `<span style="color:var(--text-muted);">Version gratuite — <b>${getSafeArray(db.membres).length}/4</b> colocataires</span>`;
+            if (premiumActivateForm) premiumActivateForm.style.display = 'block';
+        }
+        
+        document.getElementById('liste-membres').innerHTML = membresArr.map(m => {
+            const isThisAdmin = m === currentAdmin;
+            const hasDemande = (db.demandesAdmin || []).includes(m);
+            return `<div class="item-row" style="flex-wrap:wrap; gap:5px;">
+                <span>👤 <b>${m}</b> ${isThisAdmin ? '<span style="color:var(--danger); font-weight:bold;">👑 Admin</span>' : ''}</span>
+                <div style="display:flex; gap:5px; margin-left:auto; flex-wrap:wrap;">
+                    ${m === currentUser ? '<span style="font-size:0.75rem; color:var(--text-muted);">(Moi)</span>' : ''}
+                    ${isAdmin && m !== currentUser && m !== currentAdmin ? `<button class="btn-outline" onclick="promouvoirAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#fbc02d; color:#fbc02d;">👑 Admin</button>` : ''}
+                    ${isAdmin && hasDemande && m !== currentAdmin ? `<span style="font-size:0.65rem; color:#fbc02d; font-weight:bold;">🙋 Demande admin</span>` : ''}
+                    ${isAdmin && m !== currentUser ? `<button class="btn-danger" onclick="supprimerMembre('${m}')" style="font-size:0.65rem; padding:3px 8px;">✖ Retrait</button>` : ''}
+                </div>
+            </div>`;
+        }).join('');
+
+        // Bouton réclamer admin (visible pour les non-admins)
+        const reclamerSection = document.getElementById('reclamer-admin-section');
+        if (reclamerSection) reclamerSection.style.display = !isAdmin ? 'block' : 'none';
+
+        // Anniversaires
+        renderAnnifs();
+        
+        // Chat avec Vues 
+        const chatC = document.getElementById('chat-container'); chatC.innerHTML = getSafeArray(db.messages).map(m => {
+            let vus = (m.seenBy && m.seenBy.length > 0) ? m.seenBy.filter(v => v !== m.user).join(', ') : '';
+            let vuText = vus ? `<span class="msg-vu">👁️ Vu par : ${vus}</span>` : '';
+            const photoUrl = db.membresPhotos && db.membresPhotos[m.user] ? db.membresPhotos[m.user] : null;
+            const avatarHtml = photoUrl 
+                ? `<img src="${photoUrl}" class="avatar" style="display:flex;">` 
+                : `<div class="avatar">${m.user.charAt(0).toUpperCase()}</div>`;
+            return `
+            <div class="msg-row ${m.user === currentUser ? 'sent' : ''}">
+                ${avatarHtml}
+                <div class="bubble ${m.user === currentUser ? 'sent-bubble' : 'received-bubble'}">
+                    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+                        <small style="color:${m.user === currentUser ? '#075E54' : 'var(--danger)'}; font-weight:bold; font-size:0.7rem;">${m.user}</small>
+                        <small style="font-size:0.6rem; color:#888; margin-left:10px;">${m.time || ''}</small>
+                    </div>
+                    ${m.text ? `<div>${m.text}</div>` : ''}
+                    ${m.file ? `<img src="${m.file}" class="chat-image" onclick="window.open('${m.file}')">` : ''}
+                    ${m.audio ? `<audio controls class="chat-audio" src="${m.audio}"></audio>` : ''}
+                    <div class="reactions">
+                        ${(m.reactions || []).map(r => `<span class="react-btn">${r}</span>`).join('')}
+                        <button class="react-btn" onclick="addReact(${m.id}, '👍')">👍</button>
+                        <button class="react-btn" onclick="addReact(${m.id}, '❤️')">❤️</button>
+                        <button class="react-btn" onclick="addReact(${m.id}, '😂')">😂</button>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:5px; margin-top:5px;">
+                        <span style="font-size:0.7rem; color:var(--text-muted); cursor:pointer;" onclick="quoteMsg(${m.id})">↪️ Répondre</span>
+                        ${m.user === currentUser ? `
+                            <span style="font-size:0.7rem; color:var(--text-muted); cursor:pointer;" onclick="editMsg(${m.id})">✏️ Éditer</span>
+                            <span style="font-size:0.7rem; color:var(--danger); cursor:pointer;" onclick="del('messages', ${m.id})">🗑️</span>
+                        ` : ''}
+                    </div>
+                    ${vuText}
+                </div>
+            </div>`
+        }).join('');
+        
+        document.getElementById('chat-mention').innerHTML = `<option value="">Tous</option>` + membresArr.filter(m => m !== currentUser).map(m => `<option value="${m}">@${m}</option>`).join('');
+        document.getElementById('evt-assignee').innerHTML = `<option value="Tous">${t('allColocs')}</option>` + membresArr.map(m => `<option value="${m}">${m}</option>`).join('');
+        
+        document.getElementById('liste-agenda').innerHTML = getSafeArray(db.agenda).filter(a => currentAgendaView === 'actif' ? !isEventArchived(a) : isEventArchived(a)).sort((a,b) => new Date(a.d) - new Date(b.d)).map(a => `
+            <div class="card" style="border-left: 5px solid ${a.type === 'evenement' ? '#ea4335' : '#34b7f1'}; margin-bottom: 8px;">
+                <div class="item-row" style="padding:0; border:none;">
+                    <div>
+                        <strong style="font-size: 1rem; color: var(--primary-dark);">${a.t}</strong>
+                        <div class="meta-info">
+                            📅 ${new Date(a.d).toLocaleString([], {weekday:'short', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})} 
+                            | 👤 ${t('assignedTo')} <b>${a.a || t('allColocs')}</b> 
+                            ${a.f !== 'once' ? `| 🔄 ${t(a.f) || a.f}` : ''}
+                        </div>
+                        <div class="meta-info"><i>${t('createdBy')} ${a.creator} ${a.createdAt ? t('on') + ' ' + a.createdAt : ''}</i></div>
+                    </div>
+                    ${a.creator === currentUser || isAdmin ? `<button class="btn-danger" style="margin:0;" onclick="del('agenda', ${a.id})">✖</button>` : ''}
+                </div>
+                ${a.type === 'tache' ? `
+                    <div style="margin-top: 10px; display:flex; justify-content:space-between; align-items:center;">
+                        <button onclick="toggleDone(${a.id})" style="background:${a.done ? 'var(--text-muted)' : 'var(--primary)'}; width:auto; padding: 6px 12px; font-size:0.8rem;">
+                            ${a.done ? '✅ ' + t('doneBy') + ' ' + (a.doneBy || currentUser) : '☐ ' + t('markDone')}
+                        </button>
+                    </div>
+                ` : `
+                    <div style="margin-top: 10px; display:flex; gap:5px;">
+                        <button onclick="respondEvt(${a.id}, 'yes')" style="background:${a.responses && a.responses[currentUser]==='yes' ? '#25D366' : '#ddd'}; width:auto; padding: 6px 12px; font-size:0.8rem; color:#000;">✅ ${t('present')}</button>
+                        <button onclick="respondEvt(${a.id}, 'no')" style="background:${a.responses && a.responses[currentUser]==='no' ? '#ea4335' : '#ddd'}; width:auto; padding: 6px 12px; font-size:0.8rem; color:#000;">❌ ${t('absent')}</button>
+                        <a href="${getCalLink(a)}" target="_blank" style="margin-left:auto; text-decoration:none; font-size:1.2rem;" title="Ajouter à Google Agenda">📅</a>
+                    </div>
+                    ${a.responses ? `<div style="font-size:0.7rem; margin-top:5px; color:#555;"><b>Présents :</b> ${Object.entries(a.responses).filter(([k,v])=>v==='yes').map(([k,v])=>k).join(', ') || 'Aucun'}</div>` : ''}
+                `}
+            </div>
+        `).join('');
+        
+        document.getElementById('catalogue-list').innerHTML = getSafeArray(db.catalogue).map(c => `<span class="react-btn" onclick="document.getElementById('course-nom').value='${c}'">${tCat(c)} +</span>`).join('');
+        
+        document.getElementById('liste-courses').innerHTML = getSafeArray(db.courses).map(c => `
+            <div class="item-row ${c.checked ? 'checked' : ''}">
+                <span onclick="toggleCourse(${c.id})" style="flex-grow:1; cursor:pointer;">
+                    ${c.checked ? '✅' : '☐'} <b>${c.n}</b> <span style="font-size:0.8rem; color:var(--text-muted);">(${c.q} ${t(c.u) || c.u})</span>
+                    <div style="font-size:0.6rem; color:#aaa; margin-top:2px;">${t('addedBy')} ${c.creator}</div>
+                </span>
+                ${c.creator === currentUser || isAdmin || c.checked ? `<span style="cursor:pointer; color:var(--danger); font-weight:bold; padding:0 10px;" onclick="del('courses', ${c.id})">✖</span>` : ''}
+            </div>
+        `).join('');
+        
+        document.getElementById('fin-payeur').innerHTML = membresArr.map(m => `<option value="${m}">${m}</option>`).join('');
+        document.getElementById('fin-involves').innerHTML = membresArr.map(m => `<label><input type="checkbox" class="fin-check" value="${m}" checked> ${m}</label>`).join('');
+        
+        document.getElementById('historique-finances').innerHTML = getSafeArray(db.finances).slice().reverse().map(f => {
+            const isSettled = (f.owers || f.parts || []).every(o => o.settled);
+            return `
+            <div class="card" style="border-left: 5px solid ${isSettled ? '#25D366' : '#ea4335'}; margin-bottom: 8px;">
+                <div class="item-row" style="padding:0; border:none; align-items:flex-start;">
+                    <div style="flex-grow:1;">
+                        <strong style="font-size: 1rem; color: var(--primary-dark);">${f.d}</strong>
+                        <div class="meta-info" style="font-size: 0.9rem; color: #000;">
+                            <b>${f.m} €</b> — ${t('paidBy')} <span style="color:var(--primary-dark); font-weight:bold;">${f.p}</span>
+                        </div>
+                        ${f.img ? `<div style="margin-top:5px;"><span class="btn-outline" style="font-size:0.7rem; padding:2px 6px; cursor:pointer;" onclick="window.open('${f.img}')">📎 ${t('invoicePhoto')}</span></div>` : ''}
+                    </div>
+                    ${f.p === currentUser || isAdmin ? `<button class="btn-danger" style="margin:0;" onclick="del('finances', ${f.id})">✖</button>` : ''}
+                </div>
+                <div style="margin-top: 10px; font-size: 0.85rem; background: #f9f9f9; padding: 8px; border-radius: 6px;">
+                    ${(f.owers || f.parts || []).map(o => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span>${o.name} : <b>${o.amount}€</b></span>
+                            ${o.settled 
+                                ? `<span class="settled">✅ Réglé</span>` 
+                                : (o.name === currentUser 
+                                    ? `<button onclick="settleDebt(${f.id}, '${o.name}')" style="width:auto; padding:4px 8px; font-size:0.7rem; background:var(--danger);">Payer</button>` 
+                                    : `<span style="color:var(--danger); font-size:0.75rem;">⏳ ${t('toSettle')}</span>`
+                                  )
+                            }
+                        </div>
+                    `).join('')}
+                </div>
+                ${isAdmin ? `<div style="text-align:right; margin-top:5px;"><span style="font-size:0.6rem; color:var(--text-muted); cursor:pointer;" onclick="exporterItem('finances', ${f.id})">💾 Exporter TXT</span></div>` : ''}
+            </div>
+            `;
+        }).join('');
+        
+        const fluidesArr = getSafeArray(db.fluides);
+        const yearsSet = new Set(); fluidesArr.forEach(f => { if (f && f.mois) { yearsSet.add(String(f.mois).split('-')[0]); } });
+        let years = [...yearsSet].sort().reverse(); years.unshift("Tous"); 
+        
+        const yearSelect = document.getElementById('filter-fluide-year');
+        let selectedYear = yearSelect.value || "Tous";
+        yearSelect.innerHTML = years.map(y => `<option value="${y}" ${y === selectedYear ? 'selected' : ''}>${y === "Tous" ? t('allYears') : y}</option>`).join('');
+
+        document.getElementById('archive-fluides').innerHTML = fluidesArr.filter(f => selectedYear === "Tous" || String(f.mois).startsWith(selectedYear)).sort((a,b) => String(b.mois).localeCompare(String(a.mois))).map(f => {
+            const isElec = (f.type === 'Électricité' || f.type === 'elec');
+            let badgeClass = 'bg-elec';
+            if (f.type === 'Eau' || f.type === 'water') badgeClass = 'bg-eau';
+            if (f.type === 'Gaz' || f.type === 'gas') badgeClass = 'bg-gaz';
+            
+            return `
+            <div class="card" style="margin-bottom: 8px; padding: 10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <span class="badge-fluide ${badgeClass}">${t(f.type) || f.type}</span>
+                        <strong style="margin-left: 8px;">${getMonthName(f.mois)}</strong>
+                    </div>
+                    ${f.creator === currentUser || isAdmin ? `<span style="color:var(--danger); cursor:pointer; font-weight:bold;" onclick="del('fluides', ${f.id})">✖</span>` : ''}
+                </div>
+                <div style="margin-top: 8px; font-size: 0.9rem;">
+                    ${isElec ? `
+                        <div><b>${t('indexHP')}</b> ${f.indexHP} kWh</div>
+                        <div><b>${t('indexHC')}</b> ${f.indexHC} kWh</div>
+                    ` : `
+                        <div><b>${t('index')}</b> ${f.index}</div>
+                    `}
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top: 8px;">
+                    <div style="font-size:0.6rem; color:var(--text-muted);">
+                        Saisi par ${f.creator} le ${f.createdAt || ''}
+                    </div>
+                    ${f.doc ? `<span class="btn-outline" style="font-size:0.7rem; padding:2px 6px; cursor:pointer;" onclick="window.open('${f.doc}')">📎 ${t('invoicePhoto')}</span>` : ''}
+                </div>
+            </div>
+            `;
+        }).join('') || `<div style="text-align:center; color:#888; font-size:0.8rem; margin-top:20px;">${t('noData')}</div>`;
+        
+        // Candidats CRM
+        document.getElementById('liste-candidats').innerHTML = getSafeArray(db.candidats).map(c => {
+            let badgeColor = c.statut === 'Nouveau' ? '#34b7f1' : (c.statut === 'Visite' ? '#fbc02d' : (c.statut === 'Validé' ? '#25D366' : '#ea4335'));
+            return `
+            <div class="card" style="border-left: 5px solid ${badgeColor}; margin-bottom: 8px;">
+                <div style="display:flex; justify-content:space-between;">
+                    <strong style="font-size: 1.1rem;">${c.nom}</strong>
+                    <span style="font-size:0.8rem; background:${badgeColor}; color:${c.statut==='Visite'?'#000':'#fff'}; padding:2px 6px; border-radius:4px; font-weight:bold;">${c.statut}</span>
+                </div>
+                <div style="font-size:0.85rem; color:#555; margin-top:5px;">
+                    📞 ${c.contact || 'Pas de contact'}<br>
+                    🛏️ ${c.chambre || 'Indifférent'}<br>
+                    <i>Ajouté le ${c.date}</i>
+                </div>
+                ${c.notes ? `<div style="font-size:0.85rem; margin-top:8px; padding:8px; background:#f0f2f5; border-radius:6px;">📝 ${c.notes}</div>` : ''}
+                <div style="display:flex; gap:5px; margin-top:10px; flex-wrap:wrap;">
+                    <button class="btn-outline" style="font-size:0.7rem; padding:4px; width:auto; flex:1;" onclick="modifierStatutCandidat(${c.id}, 'Nouveau')">Nouveau</button>
+                    <button class="btn-outline" style="font-size:0.7rem; padding:4px; width:auto; flex:1;" onclick="modifierStatutCandidat(${c.id}, 'Visite')">Visite</button>
+                    <button class="btn-outline" style="font-size:0.7rem; padding:4px; width:auto; flex:1;" onclick="modifierStatutCandidat(${c.id}, 'Validé')">Validé</button>
+                    <button class="btn-outline" style="font-size:0.7rem; padding:4px; width:auto; flex:1;" onclick="modifierStatutCandidat(${c.id}, 'Refusé')">Refusé</button>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:8px;">
+                    <button class="btn-outline" style="font-size:0.7rem; padding:4px 8px; width:auto;" onclick="modifierNoteCandidat(${c.id})">📝 Annoter</button>
+                    <button class="btn-danger" onclick="del('candidats', ${c.id})">Supprimer</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function init() {
+        document.getElementById('lang-select').value = currentLang; 
+        document.getElementById('lang-select-home').value = currentLang;
+        document.getElementById('lang-select-config').value = currentLang;
+        applyTranslations();
+        listen();
+        const photo = localStorage.getItem('hub_photo');
+        if(photo) { document.getElementById('coloc-photo-preview').src = photo; document.getElementById('coloc-photo-preview').style.display = 'block'; }
+        document.getElementById('header-name').innerText = currentUser;
+    }
+
+    if(currentUser && colocPath) { 
+        if(isSigned) { 
+            init(); 
+        } else { 
+            document.getElementById('auth-modal').style.display = 'flex'; 
+            applyTranslations(); 
+        } 
+    } else { 
+        applyTranslations(); 
+        document.getElementById('auth-modal').style.display = 'flex'; 
+    }
+</script>
+</body>
+</html>
