@@ -359,7 +359,8 @@
           <li><span class="check" style="color:var(--muted)">✗</span> Export PDF des comptes</li>
           <li><span class="check" style="color:var(--muted)">✗</span> Colocs illimitées</li>
         </ul>
-        <a href="https://VOTRE-LIEN-HUB-COLOC.github.io" target="_blank" class="btn-plan btn-plan-free">
+        <!-- ✅ LIEN CORRIGÉ -->
+        <a href="hub-coloc/" class="btn-plan btn-plan-free">
           Utiliser gratuitement
         </a>
       </div>
@@ -397,7 +398,6 @@
     </div>
 
     <div class="pricing-grid">
-      <!-- GRATUIT -->
       <div class="plan">
         <div class="plan-name">Gratuit</div>
         <div class="plan-price">0€ <span>/ toujours</span></div>
@@ -415,7 +415,6 @@
         </a>
       </div>
 
-      <!-- PREMIUM -->
       <div class="plan featured">
         <div class="plan-name">Premium</div>
         <div class="plan-price">3,99€ <span>/ accès à vie</span></div>
@@ -493,12 +492,6 @@
       <span class="coming-tag">Q1 2026</span>
     </div>
     <div class="coming-card">
-      <div class="icon">📖</div>
-      <h3>HéritageMémoire</h3>
-      <p>Archivez la mémoire familiale</p>
-      <span class="coming-tag">Q1 2026</span>
-    </div>
-    <div class="coming-card">
       <div class="icon">🤝</div>
       <h3>ProcheAidant</h3>
       <p>Coordonnez les soins en famille</p>
@@ -524,7 +517,6 @@
     <button class="modal-close" onclick="closeModal()">✕</button>
     <h2 id="modal-title">Connexion</h2>
     <p id="modal-subtitle">Accédez à vos applications et abonnements.</p>
-
     <div class="form-group">
       <label>Adresse e-mail</label>
       <input type="email" id="auth-email" placeholder="vous@exemple.fr" />
@@ -533,7 +525,6 @@
       <label>Mot de passe</label>
       <input type="password" id="auth-password" placeholder="••••••••" />
     </div>
-
     <button class="btn-full" id="auth-submit-btn" onclick="handleAuth()">Se connecter</button>
     <div class="error-msg" id="auth-error"></div>
     <div class="modal-switch" id="modal-switch">
@@ -545,9 +536,6 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- ══════════════════════════════════════════════
-     🔥 FIREBASE CONFIG — Remplacez ces valeurs
-     ══════════════════════════════════════════════ -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
   import {
@@ -557,7 +545,6 @@
     getFirestore, doc, getDoc, setDoc
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-  // ⚠️ REMPLACEZ PAR VOTRE CONFIG FIREBASE
   const firebaseConfig = {
     apiKey: "AIzaSyB1TwbZSkqkAKEPhNJXuwn9zMEz2BqBk48",
     authDomain: "hub-coloc.firebaseapp.com",
@@ -572,16 +559,12 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // ══════════════════════════════════════════════
-  // 💳 STRIPE PAYMENT LINKS — Remplacez ces URLs
-  // ══════════════════════════════════════════════
   const STRIPE_LINKS = {
     "hub-coloc": "https://buy.stripe.com/6oU6oAbJP9Nlduo6XC4Vy00",
-    "meditrad": "https://buy.stripe.com/eVq6oAbJPcZxduo1Di4Vy01",
-    "heritage": "https://buy.stripe.com/4gMcMY15b0cLfCw81G4Vy02"
+    "meditrad":  "https://buy.stripe.com/eVq6oAbJPcZxduo1Di4Vy01",
+    "heritage":  "https://buy.stripe.com/4gMcMY15b0cLfCw81G4Vy02"
   };
 
-  // ─── Auth state ───
   onAuthStateChanged(auth, (user) => {
     if (user) {
       document.getElementById('user-info').style.display = 'flex';
@@ -593,7 +576,6 @@
     }
   });
 
-  // ─── Expose functions to global scope ───
   window._auth = auth;
   window._db = db;
   window._STRIPE_LINKS = STRIPE_LINKS;
@@ -606,7 +588,6 @@
 </script>
 
 <script>
-  // ─── Modal state ───
   let currentMode = 'login';
 
   function openModal(mode) {
@@ -644,16 +625,9 @@
     const password = document.getElementById('auth-password').value;
     const errorEl = document.getElementById('auth-error');
     errorEl.textContent = '';
-
-    if (!email || !password) {
-      errorEl.textContent = 'Merci de remplir tous les champs.';
-      return;
-    }
-
+    if (!email || !password) { errorEl.textContent = 'Merci de remplir tous les champs.'; return; }
     const btn = document.getElementById('auth-submit-btn');
-    btn.textContent = '...';
-    btn.disabled = true;
-
+    btn.textContent = '...'; btn.disabled = true;
     try {
       if (currentMode === 'login') {
         await window._signInWithEmailAndPassword(window._auth, email, password);
@@ -687,13 +661,9 @@
 
   async function handlePremium(appId) {
     const user = window._auth?.currentUser;
-    if (!user) {
-      openModal('login');
-      showToast('Connectez-vous d\'abord pour souscrire.');
-      return;
-    }
+    if (!user) { openModal('login'); showToast('Connectez-vous d\'abord pour souscrire.'); return; }
     const link = window._STRIPE_LINKS?.[appId];
-    if (link && link !== 'https://buy.stripe.com/VOTRE_LIEN_HUB_COLOC') {
+    if (link) {
       window.open(link + '?prefilled_email=' + encodeURIComponent(user.email), '_blank');
     } else {
       showToast('⚙️ Lien Stripe non encore configuré.');
@@ -702,17 +672,14 @@
 
   function showToast(msg) {
     const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
+    t.textContent = msg; t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3000);
   }
 
-  // Close modal on overlay click
   document.getElementById('auth-modal').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeModal();
   });
 
-  // Smooth scroll
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
