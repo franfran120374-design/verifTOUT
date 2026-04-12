@@ -821,12 +821,10 @@ Ne donne jamais de conseil médical direct. Reste informatif et bienveillant.`;
   ];
 
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const response = await fetch("https://analysedocument-q55rtq26la-uc.a.run.app", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
         system: systemPrompt,
         messages: [{ role: "user", content: userContent }]
       })
