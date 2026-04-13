@@ -837,15 +837,6 @@ window.toggleRecording = async function() {
 window.transcribeAudio = async function(memoryId) {
   showToast('💡 La transcription fonctionne pendant l\'enregistrement. Ré-enregistrez ce souvenir pour l\'obtenir.');
 };
-    // Sauvegarder dans Firestore
-    await updateDoc(doc(db, 'souvenirs', memoryId), { transcription, updatedAt: serverTimestamp() });
-    showToast('✓ Transcription terminée !');
-  } catch(e) {
-    console.error('Erreur transcription:', e);
-    showToast('Erreur transcription : ' + e.message);
-    if (btn) { btn.disabled = false; btn.textContent = '🎙️ Transcrire'; }
-  }
-};
 
 // ─── SELECTION MODE ───
 window.toggleSelectionMode = function() {
