@@ -495,6 +495,8 @@ let unsubMemories = null, unsubShared = null, unsubFamille = null;
 let selectedPdfStyle = 'classique';
 let selectionMode = false;
 let selectedIds = new Set();
+let speechRecognition = null;
+let liveTranscript = '';
 
 function loadLocal() { try { memories = JSON.parse(localStorage.getItem('hm_memories') || '[]'); } catch { memories = []; } }
 
@@ -721,34 +723,6 @@ function renderPhotoPreviews() {
 }
 window.removePhoto = (i) => { uploadedPhotos.splice(i, 1); renderPhotoPreviews(); };
 
-window.toggleRecording = async function() {
-  if (mediaRecorder && mediaRecorder.state === 'recording') { mediaRecorder.stop(); return; }
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
-    audioChunks = [];
-    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-    mediaRecorder.onstop = () => {
-      audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-      const audio = document.getElementById('audio-playback');
-      audio.src = URL.createObjectURL(audioBlob); audio.style.display = 'block';
-      document.getElementById('rec-btn').textContent = '🎙️';
-      document.getElementById('rec-btn').classList.remove('recording');
-      document.getElementById('rec-status').textContent = 'Enregistrement terminé ✓';
-      clearInterval(recInterval); recSeconds = 0;
-      stream.getTracks().forEach(t => t.stop());
-    };
-    mediaRecorder.start(); recSeconds = 0;
-    document.getElementById('rec-btn').classList.add('recording');
-    document.getElementById('rec-btn').textContent = '⏹️';
-    document.getElementById('rec-status').textContent = 'Enregistrement en cours...';
-    recInterval = setInterval(() => {
-      recSeconds++;
-      document.getElementById('rec-timer').textContent = `${Math.floor(recSeconds/60)}:${String(recSeconds%60).padStart(2,'0')}`;
-    }, 1000);
-  } catch(e) { showToast('Accès au micro refusé'); }
-};
-
 async function uploadAudio(blob, uid) {
   const fileName = 'audio_' + Date.now() + '.webm';
   const path = 'audios/' + uid + '/' + fileName;
@@ -787,6 +761,7 @@ window.saveMemory = async function() {
       date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
       createdAt: serverTimestamp()
     });
+    liveTranscript = '';
     showToast('✓ Souvenir sauvegardé !');
     btn.disabled = false; btn.textContent = '💾 Sauvegarder ce souvenir';
     setTimeout(() => showView('memories'), 800);
@@ -797,9 +772,6 @@ window.saveMemory = async function() {
 };
 
 // ─── TRANSCRIPTION WEB SPEECH API (live pendant enregistrement) ───
-let speechRecognition = null;
-let liveTranscript = '';
-
 window.toggleRecording = async function() {
   if (mediaRecorder && mediaRecorder.state === 'recording') {
     mediaRecorder.stop();
@@ -818,14 +790,11 @@ window.toggleRecording = async function() {
       audio.src = URL.createObjectURL(audioBlob); audio.style.display = 'block';
       document.getElementById('rec-btn').textContent = '🎙️';
       document.getElementById('rec-btn').classList.remove('recording');
-      // Copier la transcription dans le textarea si disponible et textarea vide
-      if (liveTranscript.trim()) {
-        if (!document.getElementById('answer-text').value.trim()) {
-          document.getElementById('answer-text').value = liveTranscript.trim();
-        }
-        document.getElementById('rec-status').textContent = '✓ Enregistrement terminé — transcription disponible';
-      } else {
-        document.getElementById('rec-status').textContent = 'Enregistrement terminé ✓';
+      document.getElementById('rec-status').textContent = 'Enregistrement terminé ✓';
+      // Afficher la transcription live dans le textarea si vide
+      if (liveTranscript && !document.getElementById('answer-text').value.trim()) {
+        document.getElementById('answer-text').value = liveTranscript;
+        document.getElementById('rec-status').textContent = '✓ Transcription ajoutée automatiquement';
       }
       clearInterval(recInterval); recSeconds = 0;
       stream.getTracks().forEach(t => t.stop());
@@ -862,6 +831,20 @@ window.toggleRecording = async function() {
       document.getElementById('rec-timer').textContent = `${Math.floor(recSeconds/60)}:${String(recSeconds%60).padStart(2,'0')}`;
     }, 1000);
   } catch(e) { showToast('Accès au micro refusé'); }
+};
+
+// Garder transcribeAudio pour les anciens souvenirs (sans transcription live)
+window.transcribeAudio = async function(memoryId) {
+  showToast('💡 La transcription fonctionne pendant l\'enregistrement. Ré-enregistrez ce souvenir pour l\'obtenir.');
+};
+    // Sauvegarder dans Firestore
+    await updateDoc(doc(db, 'souvenirs', memoryId), { transcription, updatedAt: serverTimestamp() });
+    showToast('✓ Transcription terminée !');
+  } catch(e) {
+    console.error('Erreur transcription:', e);
+    showToast('Erreur transcription : ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '🎙️ Transcrire'; }
+  }
 };
 
 // ─── SELECTION MODE ───
@@ -919,10 +902,11 @@ function renderMemories() {
       ${m.text ? `<div class="memory-text">${m.text}</div>` : ''}
       ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p=>`<img src="${p}"/>`).join('')}</div>` : ''}
       ${m.audioUrl ? `<div class="memory-audio"><audio controls src="${m.audioUrl}"></audio></div>` : ''}
-      ${m.transcription ? `<div class="memory-transcription"><strong>📝 Transcription vocale</strong>${m.transcription}</div>` : ''}
+      ${m.transcription ? `<div class="memory-transcription"><strong>🎙️ Transcription</strong>${m.transcription}</div>` : ''}
       ${m.partageAvec?.length ? `<div style="padding:0.5rem 1.25rem;font-size:0.72rem;color:var(--gold);">🔗 Partagé avec ${m.partageAvec.length} membre${m.partageAvec.length>1?'s':''}</div>` : ''}
       <div class="memory-actions">
         <button class="btn-mem-action" onclick="openEditMemory('${m.id}')">✏️ Modifier</button>
+        ${m.audioUrl && !m.transcription ? `<button class="btn-mem-action transcribe" id="btn-transcribe-${m.id}" onclick="transcribeAudio('${m.id}')">🎙️ Transcrire</button>` : ''}
         <button class="btn-mem-action danger" onclick="openDeleteMemory('${m.id}')">🗑 Supprimer</button>
       </div>
     </div>`).join('');
