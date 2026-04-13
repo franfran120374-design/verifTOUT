@@ -457,6 +457,15 @@
 
 <div class="toast" id="toast"></div>
 
+<script>
+// Pre-load stubs to prevent "not defined" errors while module loads
+window.openHmModal = window.openHmModal || function() { console.log('Loading...'); };
+window.showView = window.showView || function() { console.log('Loading...'); };
+window.openPaywall = window.openPaywall || function() { console.log('Loading...'); };
+window.closePaywall = window.closePaywall || function() {};
+window.closeHmModal = window.closeHmModal || function() {};
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
