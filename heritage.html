@@ -783,7 +783,7 @@ window.saveMemory = async function() {
       auteurId: currentUser.uid, auteurEmail: currentUser.email,
       chapter: currentChapter.id, chapterName: currentChapter.name, chapterIcon: currentChapter.icon,
       question: currentQuestion, text, photos: uploadedPhotos, audioUrl, audioPath, partageAvec,
-      transcription: null,
+      transcription: (audioUrl && liveTranscript.trim()) ? liveTranscript.trim() : null,
       date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
       createdAt: serverTimestamp()
     });
@@ -796,8 +796,7 @@ window.saveMemory = async function() {
   }
 };
 
-// ─── TRANSCRIPTION WHISPER ───
-// ─── TRANSCRIPTION WEB SPEECH API ───
+// ─── TRANSCRIPTION WEB SPEECH API (live pendant enregistrement) ───
 let speechRecognition = null;
 let liveTranscript = '';
 
@@ -819,11 +818,14 @@ window.toggleRecording = async function() {
       audio.src = URL.createObjectURL(audioBlob); audio.style.display = 'block';
       document.getElementById('rec-btn').textContent = '🎙️';
       document.getElementById('rec-btn').classList.remove('recording');
-      document.getElementById('rec-status').textContent = 'Enregistrement terminé ✓';
-      // Afficher la transcription live dans le textarea si vide
-      if (liveTranscript && !document.getElementById('answer-text').value.trim()) {
-        document.getElementById('answer-text').value = liveTranscript;
-        document.getElementById('rec-status').textContent = '✓ Transcription ajoutée automatiquement';
+      // Copier la transcription dans le textarea si disponible et textarea vide
+      if (liveTranscript.trim()) {
+        if (!document.getElementById('answer-text').value.trim()) {
+          document.getElementById('answer-text').value = liveTranscript.trim();
+        }
+        document.getElementById('rec-status').textContent = '✓ Enregistrement terminé — transcription disponible';
+      } else {
+        document.getElementById('rec-status').textContent = 'Enregistrement terminé ✓';
       }
       clearInterval(recInterval); recSeconds = 0;
       stream.getTracks().forEach(t => t.stop());
@@ -860,11 +862,6 @@ window.toggleRecording = async function() {
       document.getElementById('rec-timer').textContent = `${Math.floor(recSeconds/60)}:${String(recSeconds%60).padStart(2,'0')}`;
     }, 1000);
   } catch(e) { showToast('Accès au micro refusé'); }
-};
-
-// Transcription via Web Speech API (pendant l'enregistrement)
-window.transcribeAudio = async function(memoryId) {
-  showToast('💡 La transcription fonctionne pendant l\'enregistrement. Ré-enregistrez ce souvenir pour l\'obtenir.');
 };
 
 // ─── SELECTION MODE ───
@@ -922,11 +919,10 @@ function renderMemories() {
       ${m.text ? `<div class="memory-text">${m.text}</div>` : ''}
       ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p=>`<img src="${p}"/>`).join('')}</div>` : ''}
       ${m.audioUrl ? `<div class="memory-audio"><audio controls src="${m.audioUrl}"></audio></div>` : ''}
-      ${m.transcription ? `<div class="memory-transcription"><strong>🎙️ Transcription</strong>${m.transcription}</div>` : ''}
+      ${m.transcription ? `<div class="memory-transcription"><strong>📝 Transcription vocale</strong>${m.transcription}</div>` : ''}
       ${m.partageAvec?.length ? `<div style="padding:0.5rem 1.25rem;font-size:0.72rem;color:var(--gold);">🔗 Partagé avec ${m.partageAvec.length} membre${m.partageAvec.length>1?'s':''}</div>` : ''}
       <div class="memory-actions">
         <button class="btn-mem-action" onclick="openEditMemory('${m.id}')">✏️ Modifier</button>
-        ${m.audioUrl && !m.transcription ? `<button class="btn-mem-action transcribe" id="btn-transcribe-${m.id}" onclick="transcribeAudio('${m.id}')">🎙️ Transcrire</button>` : ''}
         <button class="btn-mem-action danger" onclick="openDeleteMemory('${m.id}')">🗑 Supprimer</button>
       </div>
     </div>`).join('');
