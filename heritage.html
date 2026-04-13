@@ -85,15 +85,6 @@
     .photo-thumb { position: relative; border-radius: var(--radius-sm); overflow: hidden; aspect-ratio: 1; }
     .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
     .photo-thumb .remove { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.55); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 0.65rem; cursor: pointer; }
-    .audio-section { margin-top: 1.25rem; }
-    .recorder-box { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.25rem; text-align: center; }
-    .rec-btn { width: 60px; height: 60px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 1.4rem; cursor: pointer; margin: 0 auto 0.75rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-    .rec-btn.recording { background: #c0392b; animation: pulse-rec 1s infinite; }
-    @keyframes pulse-rec { 0%,100% { box-shadow: 0 0 0 0 rgba(192,57,43,0.4); } 50% { box-shadow: 0 0 0 10px rgba(192,57,43,0); } }
-    .rec-status { font-size: 0.82rem; color: var(--muted); }
-    .rec-timer { font-size: 1.1rem; font-weight: 500; color: var(--text); margin: 0.25rem 0; }
-    .audio-playback { margin-top: 0.75rem; width: 100%; height: 36px; }
-    .upload-progress { margin-top: 0.5rem; font-size: 0.78rem; color: var(--gold); text-align: center; display: none; padding: 0.5rem; background: var(--gold-bg); border-radius: var(--radius-sm); }
     .btn-save { width: 100%; padding: 1rem; margin-top: 1.5rem; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
     .btn-save:hover { background: var(--accent-light); }
     .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -114,10 +105,6 @@
     .memory-text { padding: 0 1.25rem 1rem; font-size: 0.9rem; line-height: 1.7; }
     .memory-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
     .memory-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; }
-    .memory-audio { padding: 0.75rem 1.25rem; border-top: 1px solid var(--border); }
-    .memory-audio audio { width: 100%; height: 32px; }
-    .memory-transcription { padding: 0.5rem 1.25rem 1rem; font-size: 0.85rem; color: var(--muted); font-style: italic; border-top: 1px dashed var(--border); background: var(--surface); line-height: 1.6; }
-    .memory-transcription strong { color: var(--accent); font-style: normal; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.35rem; }
     .empty-memories { text-align: center; padding: 4rem 1.5rem; }
     .empty-memories .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.35; }
     .empty-memories p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
@@ -274,15 +261,6 @@
           </div>
           <div class="photo-previews" id="photo-previews"></div>
         </div>
-        <div class="audio-section">
-          <label class="input-label">Enregistrement vocal (optionnel)</label>
-          <div class="recorder-box">
-            <button class="rec-btn" id="rec-btn" onclick="toggleRecording()">🎙️</button>
-            <div class="rec-timer" id="rec-timer">0:00</div>
-            <div class="rec-status" id="rec-status">Appuyez pour enregistrer</div>
-            <audio id="audio-playback" class="audio-playback" controls style="display:none;"></audio>
-          </div>
-          <div class="upload-progress" id="upload-progress">⏳ Upload audio en cours...</div>
         </div>
         <div class="share-section" id="record-share-section" style="display:none;">
           <span class="share-title">Partager avec la famille</span>
@@ -327,10 +305,6 @@
               </div>
             </div>
           </div>
-          <label class="pdf-option-row">
-            <input type="checkbox" id="pdf-exclude-audio" checked />
-            Exclure les souvenirs audio sans transcription
-          </label>
           <label class="pdf-option-row">
             <input type="checkbox" id="pdf-selection-only" />
             N'inclure que les souvenirs sélectionnés
@@ -489,23 +463,15 @@ const storage = getStorage(app);
 
 window.STRIPE_HERITAGE = "https://buy.stripe.com/4gMcMY15b0cLfCw81G4Vy02";
 
-// ══════════════════════════════════════════
-// ⚠️ REMPLACEZ PAR VOTRE CLÉ OPENAI WHISPER
-// ══════════════════════════════════════════
-const OPENAI_API_KEY = "sk-ant-api03-H4_...jQAA";
-
 let memories = [], sharedMemories = [], familleMembers = [];
 let isPremium = false, isAccesGratuit = false;
 let currentUser = null, currentChapter = null, currentQuestion = '';
-let uploadedPhotos = [], audioBlob = null;
-let mediaRecorder = null, audioChunks = [], recInterval = null, recSeconds = 0;
+let uploadedPhotos = [];
 let editingMemoryId = null, deletingMemoryId = null;
 let unsubMemories = null, unsubShared = null, unsubFamille = null;
 let selectedPdfStyle = 'classique';
 let selectionMode = false;
 let selectedIds = new Set();
-let speechRecognition = null;
-let liveTranscript = '';
 
 function loadLocal() { try { memories = JSON.parse(localStorage.getItem('hm_memories') || '[]'); } catch { memories = []; } }
 
@@ -732,45 +698,22 @@ function renderPhotoPreviews() {
 }
 window.removePhoto = (i) => { uploadedPhotos.splice(i, 1); renderPhotoPreviews(); };
 
-async function uploadAudio(blob, uid) {
-  const fileName = 'audio_' + Date.now() + '.webm';
-  const path = 'audios/' + uid + '/' + fileName;
-  const storageRef = ref(storage, path);
-  document.getElementById('upload-progress').style.display = 'block';
-  try {
-    await uploadBytes(storageRef, blob);
-    const url = await getDownloadURL(storageRef);
-    document.getElementById('upload-progress').style.display = 'none';
-    return { url, path };
-  } catch(e) {
-    document.getElementById('upload-progress').style.display = 'none';
-    throw e;
-  }
-}
-
 window.saveMemory = async function() {
   if (!currentUser) { openHmModal(); return; }
   const text = document.getElementById('answer-text').value.trim();
-  if (!text && uploadedPhotos.length === 0 && !audioBlob) { showToast('Ajoutez au moins un texte ou une photo'); return; }
+  if (!text && uploadedPhotos.length === 0) { showToast('Ajoutez au moins un texte ou une photo'); return; }
   const btn = document.getElementById('btn-save');
   btn.disabled = true; btn.textContent = '⏳ Sauvegarde...';
   const partageAvec = [];
   document.querySelectorAll('#record-famille-membres .membre-check:checked').forEach(cb => partageAvec.push(cb.dataset.uid));
-  let audioUrl = null, audioPath = null;
-  if (audioBlob) {
-    try { const r = await uploadAudio(audioBlob, currentUser.uid); audioUrl = r.url; audioPath = r.path; }
-    catch(e) { showToast('⚠️ Audio non sauvegardé'); }
-  }
   try {
     await addDoc(collection(db, 'souvenirs'), {
       auteurId: currentUser.uid, auteurEmail: currentUser.email,
       chapter: currentChapter.id, chapterName: currentChapter.name, chapterIcon: currentChapter.icon,
-      question: currentQuestion, text, photos: uploadedPhotos, audioUrl, audioPath, partageAvec,
-      transcription: (audioUrl && liveTranscript.trim()) ? liveTranscript.trim() : null,
+      question: currentQuestion, text, photos: uploadedPhotos, partageAvec,
       date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
       createdAt: serverTimestamp()
     });
-    liveTranscript = '';
     showToast('✓ Souvenir sauvegardé !');
     btn.disabled = false; btn.textContent = '💾 Sauvegarder ce souvenir';
     setTimeout(() => showView('memories'), 800);
@@ -778,73 +721,6 @@ window.saveMemory = async function() {
     showToast('Erreur : ' + e.message);
     btn.disabled = false; btn.textContent = '💾 Sauvegarder ce souvenir';
   }
-};
-
-// ─── TRANSCRIPTION WEB SPEECH API (live pendant enregistrement) ───
-window.toggleRecording = async function() {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    mediaRecorder.stop();
-    if (speechRecognition) speechRecognition.stop();
-    return;
-  }
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
-    audioChunks = [];
-    liveTranscript = '';
-    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-    mediaRecorder.onstop = () => {
-      audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-      const audio = document.getElementById('audio-playback');
-      audio.src = URL.createObjectURL(audioBlob); audio.style.display = 'block';
-      document.getElementById('rec-btn').textContent = '🎙️';
-      document.getElementById('rec-btn').classList.remove('recording');
-      document.getElementById('rec-status').textContent = 'Enregistrement terminé ✓';
-      // Afficher la transcription live dans le textarea si vide
-      if (liveTranscript && !document.getElementById('answer-text').value.trim()) {
-        document.getElementById('answer-text').value = liveTranscript;
-        document.getElementById('rec-status').textContent = '✓ Transcription ajoutée automatiquement';
-      }
-      clearInterval(recInterval); recSeconds = 0;
-      stream.getTracks().forEach(t => t.stop());
-    };
-
-    // Démarrer Web Speech API en parallèle
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      speechRecognition = new SpeechRecognition();
-      speechRecognition.lang = 'fr-FR';
-      speechRecognition.continuous = true;
-      speechRecognition.interimResults = true;
-      speechRecognition.onresult = (event) => {
-        let interim = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          if (event.results[i].isFinal) {
-            liveTranscript += event.results[i][0].transcript + ' ';
-          } else {
-            interim += event.results[i][0].transcript;
-          }
-        }
-        document.getElementById('rec-status').textContent = '🎙️ ' + (liveTranscript + interim).slice(-60) + '...';
-      };
-      speechRecognition.onerror = () => {};
-      speechRecognition.start();
-    }
-
-    mediaRecorder.start(); recSeconds = 0;
-    document.getElementById('rec-btn').classList.add('recording');
-    document.getElementById('rec-btn').textContent = '⏹️';
-    document.getElementById('rec-status').textContent = 'Enregistrement en cours...';
-    recInterval = setInterval(() => {
-      recSeconds++;
-      document.getElementById('rec-timer').textContent = `${Math.floor(recSeconds/60)}:${String(recSeconds%60).padStart(2,'0')}`;
-    }, 1000);
-  } catch(e) { showToast('Accès au micro refusé'); }
-};
-
-// Garder transcribeAudio pour les anciens souvenirs (sans transcription live)
-window.transcribeAudio = async function(memoryId) {
-  showToast('💡 La transcription fonctionne pendant l\'enregistrement. Ré-enregistrez ce souvenir pour l\'obtenir.');
 };
 
 // ─── SELECTION MODE ───
@@ -901,12 +777,9 @@ function renderMemories() {
       ${m.question ? `<div class="memory-question">"${m.question}"</div>` : ''}
       ${m.text ? `<div class="memory-text">${m.text}</div>` : ''}
       ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p=>`<img src="${p}"/>`).join('')}</div>` : ''}
-      ${m.audioUrl ? `<div class="memory-audio"><audio controls src="${m.audioUrl}"></audio></div>` : ''}
-      ${m.transcription ? `<div class="memory-transcription"><strong>🎙️ Transcription</strong>${m.transcription}</div>` : ''}
       ${m.partageAvec?.length ? `<div style="padding:0.5rem 1.25rem;font-size:0.72rem;color:var(--gold);">🔗 Partagé avec ${m.partageAvec.length} membre${m.partageAvec.length>1?'s':''}</div>` : ''}
       <div class="memory-actions">
         <button class="btn-mem-action" onclick="openEditMemory('${m.id}')">✏️ Modifier</button>
-        ${m.audioUrl && !m.transcription ? `<button class="btn-mem-action transcribe" id="btn-transcribe-${m.id}" onclick="transcribeAudio('${m.id}')">🎙️ Transcrire</button>` : ''}
         <button class="btn-mem-action danger" onclick="openDeleteMemory('${m.id}')">🗑 Supprimer</button>
       </div>
     </div>`).join('');
@@ -928,7 +801,6 @@ window.selectStyle = function(el) {
 window.generatePDF = async function() {
   if (!currentUser) { openHmModal(); return; }
   const chapterSel = document.getElementById('pdf-chapter-select').value;
-  const excludeAudio = document.getElementById('pdf-exclude-audio').checked;
   const selectionOnly = document.getElementById('pdf-selection-only').checked;
   const style = PDF_STYLES[selectedPdfStyle];
   const btn = document.getElementById('btn-pdf');
@@ -938,9 +810,6 @@ window.generatePDF = async function() {
 
   // Filtre sélection manuelle
   if (selectionOnly && selectedIds.size > 0) filtered = filtered.filter(m => selectedIds.has(m.id));
-
-  // Exclure les audios sans transcription
-  if (excludeAudio) filtered = filtered.filter(m => !m.audioUrl || m.transcription);
 
   if (filtered.length === 0) {
     showToast('Aucun souvenir à exporter avec ces critères !');
@@ -980,8 +849,6 @@ window.generatePDF = async function() {
       .memory-date-txt { font-size: 11px; color: ${style.questionColor}; font-family: Arial, sans-serif; }
       .memory-q { padding: 14px 18px 8px; font-style: italic; font-size: 14px; color: ${style.questionColor}; border-bottom: 1px dashed ${style.borderColor}; line-height: 1.5; }
       .memory-t { padding: 14px 18px; font-size: 14px; line-height: 1.8; color: ${style.textColor}; white-space: pre-wrap; }
-      .memory-transcription { padding: 12px 18px; font-size: 13px; line-height: 1.7; color: ${style.questionColor}; border-top: 1px dashed ${style.borderColor}; font-style: italic; }
-      .memory-transcription-label { font-size: 10px; font-weight: bold; text-transform: uppercase; color: ${style.coverAccent}; font-style: normal; display: block; margin-bottom: 6px; font-family: Arial, sans-serif; }
       .memory-photos { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 14px; }
       .memory-photos img { width: 31%; border-radius: 6px; object-fit: cover; aspect-ratio: 1; }
       .footer { text-align: center; padding: 30px; font-size: 11px; color: ${style.questionColor}; font-family: Arial, sans-serif; border-top: 1px solid ${style.borderColor}; margin-top: 40px; }
@@ -1018,7 +885,6 @@ window.generatePDF = async function() {
         ${m.question ? `<div class="memory-q">"${m.question}"</div>` : ''}
         ${m.text ? `<div class="memory-t">${m.text}</div>` : ''}
         ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p=>`<img src="${p}" />`).join('')}</div>` : ''}
-        ${m.transcription ? `<div class="memory-transcription"><span class="memory-transcription-label">🎙️ Transcription vocale</span>${m.transcription}</div>` : ''}
       </div>`;
     });
 
@@ -1086,8 +952,6 @@ window.openDeleteMemory = function(id) { deletingMemoryId = id; document.getElem
 window.confirmDelete = async function() {
   if (!deletingMemoryId) return;
   try {
-    const m = memories.find(x => x.id === deletingMemoryId);
-    if (m?.audioPath) { try { await deleteObject(ref(storage, m.audioPath)); } catch {} }
     await deleteDoc(doc(db, 'souvenirs', deletingMemoryId));
     document.getElementById('confirm-delete-modal').classList.remove('open');
     showToast('Souvenir supprimé');
@@ -1126,8 +990,6 @@ function renderSharedMemories() {
       ${m.question ? `<div class="memory-question">"${m.question}"</div>` : ''}
       ${m.text ? `<div class="memory-text">${m.text}</div>` : ''}
       ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p=>`<img src="${p}"/>`).join('')}</div>` : ''}
-      ${m.audioUrl ? `<div class="memory-audio"><audio controls src="${m.audioUrl}"></audio></div>` : ''}
-      ${m.transcription ? `<div class="memory-transcription"><strong>🎙️ Transcription</strong>${m.transcription}</div>` : ''}
     </div>`).join('');
 }
 
