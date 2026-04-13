@@ -884,7 +884,17 @@ window.generatePDF = async function() {
 
   win.document.write(`<div class="footer">HéritageMémoire — ${dateGen}</div></body></html>`);
   win.document.close();
+win.document.close();
 
+// Forcer l'impression après chargement des images
+setTimeout(() => {
+  win.focus();
+  win.print();
+  btn.disabled = false;
+  btn.textContent = '📄 Générer le PDF';
+}, 2000);
+
+showToast('📄 Fenêtre d\'impression ouverte !');
   // Attendre que les images chargent puis imprimer
   win.onload = () => {
     setTimeout(() => {
