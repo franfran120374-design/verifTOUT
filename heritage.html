@@ -8,7 +8,6 @@
   <meta name="theme-color" content="#f9f5ef" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -117,10 +116,9 @@
     .btn-mem-action { flex: 1; padding: 0.45rem 0; font-size: 0.75rem; font-weight: 500; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--white); color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
     .btn-mem-action:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
     .btn-mem-action.danger:hover { border-color: #c0392b; color: #c0392b; background: #fdf2f2; }
-
-    /* ─── PDF EXPORT SECTION ─── */
+    /* PDF SECTION */
     .pdf-section { margin: 1.5rem 1.5rem 0; padding: 1.25rem; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); }
-    .pdf-section-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 600; margin-bottom: 1rem; color: var(--text); display: flex; align-items: center; gap: 0.5rem; }
+    .pdf-section-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 600; margin-bottom: 1rem; color: var(--text); }
     .pdf-controls { display: flex; flex-direction: column; gap: 0.75rem; }
     .pdf-label { font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.35rem; display: block; }
     .pdf-select { width: 100%; padding: 0.65rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; background: var(--bg); color: var(--text); outline: none; cursor: pointer; }
@@ -129,12 +127,12 @@
     .style-card { border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 0.5rem; text-align: center; cursor: pointer; transition: all 0.2s; }
     .style-card:hover { border-color: var(--accent); }
     .style-card.selected { border-color: var(--accent); background: var(--accent-bg); }
-    .style-card .style-preview { width: 100%; height: 40px; border-radius: 6px; margin-bottom: 0.4rem; }
-    .style-card .style-name { font-size: 0.72rem; font-weight: 500; color: var(--text); }
-    .btn-generate-pdf { width: 100%; padding: 0.85rem; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: background 0.2s; margin-top: 0.25rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .style-preview { width: 100%; height: 40px; border-radius: 6px; margin-bottom: 0.4rem; display: flex; align-items: center; justify-content: center; }
+    .style-name { font-size: 0.72rem; font-weight: 500; color: var(--text); }
+    .btn-generate-pdf { width: 100%; padding: 0.85rem; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
     .btn-generate-pdf:hover { background: var(--accent-light); }
     .btn-generate-pdf:disabled { opacity: 0.6; cursor: not-allowed; }
-
+    /* RESTE */
     .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 520px; background: var(--white); border-top: 1px solid var(--border); display: flex; padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom)); }
     .bnav { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.15rem; font-size: 0.62rem; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0.4rem; border-radius: var(--radius-sm); transition: all 0.2s; }
     .bnav .bi { font-size: 1.25rem; }
@@ -189,7 +187,6 @@
   </style>
 </head>
 <body>
-
 <div class="app-shell">
   <div class="sidebar">
     <div class="sidebar-logo">Héritage<em>Mémoire</em></div>
@@ -283,8 +280,6 @@
 
     <!-- MEMORIES VIEW -->
     <div class="view" id="view-memories">
-
-      <!-- ─── EXPORT PDF ─── -->
       <div class="pdf-section">
         <div class="pdf-section-title">📄 Exporter en PDF</div>
         <div class="pdf-controls">
@@ -298,31 +293,28 @@
             <span class="pdf-label">Style de mise en page</span>
             <div class="style-picker">
               <div class="style-card selected" data-style="classique" onclick="selectStyle(this)">
-                <div class="style-preview" style="background:white;border:1px solid #e0d5c4;display:flex;align-items:center;justify-content:center;">
+                <div class="style-preview" style="background:white;border:1px solid #e0d5c4;">
                   <div style="width:60%;height:4px;background:#2c1f0e;border-radius:2px;"></div>
                 </div>
                 <div class="style-name">Classique</div>
               </div>
               <div class="style-card" data-style="chaleureux" onclick="selectStyle(this)">
-                <div class="style-preview" style="background:linear-gradient(135deg,#f5e6c8,#ede0c8);border:1px solid #e0d5c4;display:flex;align-items:center;justify-content:center;">
+                <div class="style-preview" style="background:linear-gradient(135deg,#f5e6c8,#ede0c8);border:1px solid #e0d5c4;">
                   <div style="width:60%;height:4px;background:#8b4513;border-radius:2px;"></div>
                 </div>
                 <div class="style-name">Chaleureux</div>
               </div>
               <div class="style-card" data-style="moderne" onclick="selectStyle(this)">
-                <div class="style-preview" style="background:#1a1a2e;border:1px solid #333;display:flex;align-items:center;justify-content:center;">
+                <div class="style-preview" style="background:#1a1a2e;border:1px solid #333;">
                   <div style="width:60%;height:4px;background:#c8922a;border-radius:2px;"></div>
                 </div>
                 <div class="style-name">Moderne</div>
               </div>
             </div>
           </div>
-          <button class="btn-generate-pdf" id="btn-pdf" onclick="generatePDF()">
-            📄 Générer le PDF
-          </button>
+          <button class="btn-generate-pdf" id="btn-pdf" onclick="generatePDF()">📄 Générer le PDF</button>
         </div>
       </div>
-
       <div class="memories-content">
         <p class="memories-title">📖 Mes souvenirs</p>
         <div id="memories-list"></div>
@@ -359,7 +351,6 @@
   <button class="bnav" onclick="openPaywall()"><span class="bi">✦</span>Premium</button>
 </div>
 
-<!-- AUTH BAR -->
 <div id="hm-auth-bar-bottom" style="background:var(--white);border-top:1px solid var(--border);padding:0.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;position:fixed;bottom:60px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;z-index:9;">
   <span style="font-size:0.82rem;color:var(--muted);">Connectez-vous pour sauvegarder</span>
   <button onclick="openHmModal()" style="background:var(--accent);color:white;border:none;border-radius:var(--radius-sm);padding:0.5rem 1rem;font-size:0.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Connexion</button>
@@ -400,10 +391,7 @@
       <li>Export PDF du livre de mémoire</li>
       <li>Partage sécurisé avec la famille</li>
     </ul>
-    <div class="paywall-price">
-      <div class="price">3,99€</div>
-      <div class="once">paiement unique — à vie</div>
-    </div>
+    <div class="paywall-price"><div class="price">3,99€</div><div class="once">paiement unique — à vie</div></div>
     <button class="btn-buy" onclick="goPremium()">Débloquer maintenant — 3,99€</button>
     <button class="btn-cancel" onclick="closePaywall()">Continuer gratuitement (3 chapitres)</button>
   </div>
@@ -443,13 +431,8 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import {
-  getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
-  collection, query, where, onSnapshot, orderBy, serverTimestamp, arrayUnion, getDocs
-} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import {
-  getStorage, ref, uploadBytes, getDownloadURL, deleteObject
-} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
+import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection, query, where, onSnapshot, orderBy, serverTimestamp, arrayUnion, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB1TwbZSkqkAKEPhNJXuwn9zMEz2BqBk48",
@@ -465,7 +448,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
-
 window.STRIPE_HERITAGE = "https://buy.stripe.com/4gMcMY15b0cLfCw81G4Vy02";
 
 let memories = [], sharedMemories = [], familleMembers = [];
@@ -477,18 +459,13 @@ let editingMemoryId = null, deletingMemoryId = null;
 let unsubMemories = null, unsubShared = null, unsubFamille = null;
 let selectedPdfStyle = 'classique';
 
-function loadLocal() {
-  try { memories = JSON.parse(localStorage.getItem('hm_memories') || '[]'); } catch { memories = []; }
-}
+function loadLocal() { try { memories = JSON.parse(localStorage.getItem('hm_memories') || '[]'); } catch { memories = []; } }
 
 async function checkAccesGratuit(email) {
   try {
     const snap = await getDoc(doc(db, 'acces_gratuit', 'heritage'));
-    if (snap.exists()) {
-      const emails = snap.data().emails || [];
-      return emails.map(e => e.toLowerCase().trim()).includes(email.toLowerCase().trim());
-    }
-  } catch(e) { console.warn('Erreur accès gratuit:', e); }
+    if (snap.exists()) return (snap.data().emails || []).map(e => e.toLowerCase().trim()).includes(email.toLowerCase().trim());
+  } catch(e) {}
   return false;
 }
 
@@ -501,10 +478,7 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById('hm-user-email').textContent = user.email;
     document.getElementById('sidebar-user-info').style.display = 'block';
     document.getElementById('sidebar-email').textContent = user.email;
-    try {
-      const snap = await getDoc(doc(db, 'users', user.uid));
-      isPremium = snap.exists() && snap.data()?.subscriptions?.heritage?.premium === true;
-    } catch {}
+    try { const snap = await getDoc(doc(db, 'users', user.uid)); isPremium = snap.exists() && snap.data()?.subscriptions?.heritage?.premium === true; } catch {}
     isAccesGratuit = await checkAccesGratuit(user.email);
     updateAccessBadges();
     subscribeMemories();
@@ -543,12 +517,7 @@ function subscribeMemories() {
   const uid = currentUser.uid;
   unsubMemories = onSnapshot(
     query(collection(db, 'souvenirs'), where('auteurId', '==', uid), orderBy('createdAt', 'desc')),
-    snap => {
-      memories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderMemories();
-      renderChapters();
-      updatePdfChapterSelect();
-    },
+    snap => { memories = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderMemories(); renderChapters(); updatePdfChapterSelect(); },
     err => console.error('Erreur souvenirs:', err)
   );
   unsubShared = onSnapshot(
@@ -563,9 +532,7 @@ function subscribeFamille() {
     query(collection(db, 'famille'), where('membres', 'array-contains', currentUser.uid)),
     snap => {
       familleMembers = [];
-      snap.docs.forEach(d => (d.data().invites || []).forEach(inv => {
-        if (inv.uid !== currentUser.uid) familleMembers.push({ ...inv, familleId: d.id });
-      }));
+      snap.docs.forEach(d => (d.data().invites || []).forEach(inv => { if (inv.uid !== currentUser.uid) familleMembers.push({ ...inv, familleId: d.id }); }));
       renderFamilleView();
     }
   );
@@ -641,9 +608,9 @@ function renderChapters() {
 
 function updatePdfChapterSelect() {
   const sel = document.getElementById('pdf-chapter-select');
-  const chaptersWithMemories = CHAPTERS.filter(ch => memories.some(m => m.chapter === ch.id));
+  const chaptersWithMems = CHAPTERS.filter(ch => memories.some(m => m.chapter === ch.id));
   sel.innerHTML = '<option value="all">Tous les chapitres</option>' +
-    chaptersWithMemories.map(ch => `<option value="${ch.id}">${ch.icon} ${ch.name}</option>`).join('');
+    chaptersWithMems.map(ch => `<option value="${ch.id}">${ch.icon} ${ch.name}</option>`).join('');
 }
 
 window.selectChapter = function(id) {
@@ -765,27 +732,20 @@ window.saveMemory = async function() {
   if (!currentUser) { openHmModal(); return; }
   const text = document.getElementById('answer-text').value.trim();
   if (!text && uploadedPhotos.length === 0 && !audioBlob) { showToast('Ajoutez au moins un texte ou une photo'); return; }
-
   const btn = document.getElementById('btn-save');
   btn.disabled = true; btn.textContent = '⏳ Sauvegarde...';
-
   const partageAvec = [];
   document.querySelectorAll('#record-famille-membres .membre-check:checked').forEach(cb => partageAvec.push(cb.dataset.uid));
-
   let audioUrl = null, audioPath = null;
   if (audioBlob) {
-    try {
-      const result = await uploadAudio(audioBlob, currentUser.uid);
-      audioUrl = result.url; audioPath = result.path;
-    } catch(e) { showToast('⚠️ Audio non sauvegardé'); }
+    try { const r = await uploadAudio(audioBlob, currentUser.uid); audioUrl = r.url; audioPath = r.path; }
+    catch(e) { showToast('⚠️ Audio non sauvegardé'); }
   }
-
   try {
     await addDoc(collection(db, 'souvenirs'), {
       auteurId: currentUser.uid, auteurEmail: currentUser.email,
       chapter: currentChapter.id, chapterName: currentChapter.name, chapterIcon: currentChapter.icon,
-      question: currentQuestion, text, photos: uploadedPhotos,
-      audioUrl, audioPath, partageAvec,
+      question: currentQuestion, text, photos: uploadedPhotos, audioUrl, audioPath, partageAvec,
       date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
       createdAt: serverTimestamp()
     });
@@ -798,73 +758,47 @@ window.saveMemory = async function() {
   }
 };
 
-// ─── PDF EXPORT ───
+// ─── PDF STYLES ───
+const PDF_STYLES = {
+  classique: {
+    pageBg: '#ffffff', headerBg: '#f5f5f5', coverAccent: '#8b4513',
+    coverColor: '#2c1f0e', headerColor: '#2c1f0e', questionColor: '#8a7660',
+    textColor: '#2c1f0e', borderColor: '#e0e0e0',
+  },
+  chaleureux: {
+    pageBg: '#fdf8f0', headerBg: '#f5ebe0', coverAccent: '#8b4513',
+    coverColor: '#2c1f0e', headerColor: '#8b4513', questionColor: '#c8922a',
+    textColor: '#2c1f0e', borderColor: '#e0d5c4',
+  },
+  moderne: {
+    pageBg: '#1a1a2e', headerBg: '#16213e', coverAccent: '#c8922a',
+    coverColor: '#ffffff', headerColor: '#c8922a', questionColor: '#8a9ab5',
+    textColor: '#eeeae0', borderColor: '#2a2a4e',
+  }
+};
+
 window.selectStyle = function(el) {
   document.querySelectorAll('.style-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
   selectedPdfStyle = el.dataset.style;
 };
 
-const PDF_STYLES = {
-  classique: {
-    pageBg: '#ffffff',
-    coverBg: '#ffffff',
-    coverColor: '#2c1f0e',
-    coverAccent: '#8b4513',
-    headerBg: '#f5f5f5',
-    headerColor: '#2c1f0e',
-    questionColor: '#8a7660',
-    textColor: '#2c1f0e',
-    borderColor: '#e0e0e0',
-    fontTitle: 'Georgia, serif',
-    fontBody: 'Arial, sans-serif',
-  },
-  chaleureux: {
-    pageBg: '#fdf8f0',
-    coverBg: 'linear-gradient(135deg, #f5e6c8, #ede0c8)',
-    coverColor: '#2c1f0e',
-    coverAccent: '#8b4513',
-    headerBg: '#f5ebe0',
-    headerColor: '#8b4513',
-    questionColor: '#c8922a',
-    textColor: '#2c1f0e',
-    borderColor: '#e0d5c4',
-    fontTitle: 'Georgia, serif',
-    fontBody: 'Arial, sans-serif',
-  },
-  moderne: {
-    pageBg: '#1a1a2e',
-    coverBg: '#0f0f1e',
-    coverColor: '#ffffff',
-    coverAccent: '#c8922a',
-    headerBg: '#16213e',
-    headerColor: '#c8922a',
-    questionColor: '#8a9ab5',
-    textColor: '#eeeae0',
-    borderColor: '#2a2a4e',
-    fontTitle: 'Georgia, serif',
-    fontBody: 'Arial, sans-serif',
-  }
-};
-
 window.generatePDF = async function() {
   if (!currentUser) { openHmModal(); return; }
-
   const chapterSel = document.getElementById('pdf-chapter-select').value;
   const style = PDF_STYLES[selectedPdfStyle];
   const btn = document.getElementById('btn-pdf');
-  btn.disabled = true; btn.textContent = '⏳ Génération en cours...';
+  btn.disabled = true; btn.textContent = '⏳ Génération...';
 
-  // Filtrer les souvenirs
-  const filtered = chapterSel === 'all'
-    ? memories
-    : memories.filter(m => m.chapter === chapterSel);
-
+  const filtered = chapterSel === 'all' ? memories : memories.filter(m => m.chapter === chapterSel);
   if (filtered.length === 0) {
     showToast('Aucun souvenir dans ce chapitre !');
     btn.disabled = false; btn.textContent = '📄 Générer le PDF';
     return;
   }
+
+  const nomFichier = chapterSel === 'all' ? 'Tous mes souvenirs' : (CHAPTERS.find(c => c.id === chapterSel)?.name || 'Souvenirs');
+  const dateGen = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
   // Grouper par chapitre
   const grouped = {};
@@ -873,83 +807,95 @@ window.generatePDF = async function() {
     grouped[m.chapter].items.push(m);
   });
 
-  // Construire le HTML du PDF
-  const nomFichier = chapterSel === 'all' ? 'Tous mes souvenirs' : (CHAPTERS.find(c=>c.id===chapterSel)?.name || 'Souvenirs');
-  const dateGen = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  // Ouvrir une nouvelle fenêtre pour l'impression
+  const win = window.open('', '_blank', 'width=800,height=900');
+  if (!win) { showToast('Autorisez les popups pour générer le PDF'); btn.disabled = false; btn.textContent = '📄 Générer le PDF'; return; }
 
-  let html = `
-    <div style="font-family:${style.fontBody};background:${style.pageBg};color:${style.textColor};padding:0;margin:0;">
+  win.document.write(`<!DOCTYPE html><html lang="fr"><head>
+    <meta charset="UTF-8">
+    <title>HéritageMémoire — ${nomFichier}</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: Georgia, serif; background: ${style.pageBg}; color: ${style.textColor}; padding: 0; }
+      .cover { background: ${style.headerBg}; text-align: center; padding: 80px 40px; border-bottom: 4px solid ${style.coverAccent}; page-break-after: always; }
+      .cover-emoji { font-size: 52px; margin-bottom: 20px; }
+      .cover-title { font-size: 32px; font-weight: bold; color: ${style.coverColor}; margin-bottom: 10px; }
+      .cover-sub { font-size: 20px; font-style: italic; color: ${style.coverAccent}; margin-bottom: 20px; }
+      .cover-line { width: 80px; height: 3px; background: ${style.coverAccent}; margin: 0 auto 20px; }
+      .cover-meta { font-size: 13px; color: ${style.questionColor}; font-family: Arial, sans-serif; line-height: 1.8; }
+      .chapter-block { padding: 30px 30px 10px; page-break-before: always; }
+      .chapter-header { background: ${style.headerBg}; border-left: 5px solid ${style.coverAccent}; padding: 18px 22px; border-radius: 6px; margin-bottom: 28px; }
+      .chapter-emoji { font-size: 28px; margin-bottom: 6px; }
+      .chapter-name { font-size: 24px; color: ${style.headerColor}; font-weight: bold; }
+      .chapter-count { font-size: 12px; color: ${style.questionColor}; margin-top: 4px; font-family: Arial, sans-serif; }
+      .memory { border: 1px solid ${style.borderColor}; border-radius: 8px; margin-bottom: 24px; overflow: hidden; page-break-inside: avoid; }
+      .memory-head { background: ${style.headerBg}; padding: 10px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid ${style.borderColor}; }
+      .memory-label { font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; color: ${style.questionColor}; font-family: Arial, sans-serif; }
+      .memory-date-txt { font-size: 11px; color: ${style.questionColor}; font-family: Arial, sans-serif; }
+      .memory-q { padding: 14px 18px 8px; font-style: italic; font-size: 14px; color: ${style.questionColor}; border-bottom: 1px dashed ${style.borderColor}; line-height: 1.5; }
+      .memory-t { padding: 14px 18px; font-size: 14px; line-height: 1.8; color: ${style.textColor}; white-space: pre-wrap; }
+      .memory-photos { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 14px; }
+      .memory-photos img { width: 31%; border-radius: 6px; object-fit: cover; aspect-ratio: 1; }
+      .memory-audio-note { padding: 10px 18px; font-size: 11px; color: ${style.questionColor}; border-top: 1px solid ${style.borderColor}; font-family: Arial, sans-serif; }
+      .footer { text-align: center; padding: 30px; font-size: 11px; color: ${style.questionColor}; font-family: Arial, sans-serif; border-top: 1px solid ${style.borderColor}; margin-top: 40px; }
+      @media print {
+        body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .chapter-block { page-break-before: always; }
+        .memory { page-break-inside: avoid; }
+      }
+    </style>
+  </head><body>
+    <div class="cover">
+      <div class="cover-emoji">📜</div>
+      <div class="cover-title">HéritageMémoire</div>
+      <div class="cover-sub">${nomFichier}</div>
+      <div class="cover-line"></div>
+      <div class="cover-meta">
+        Généré le ${dateGen}<br>
+        ${currentUser.email}<br>
+        ${filtered.length} souvenir${filtered.length > 1 ? 's' : ''}
+      </div>
+    </div>`);
 
-      <!-- PAGE DE COUVERTURE -->
-      <div style="background:${style.coverBg};min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 30px;page-break-after:always;border-bottom:3px solid ${style.coverAccent};">
-        <div style="font-size:48px;margin-bottom:16px;">📜</div>
-        <div style="font-family:${style.fontTitle};font-size:28px;font-weight:bold;color:${style.coverColor};margin-bottom:8px;">HéritageMémoire</div>
-        <div style="font-family:${style.fontTitle};font-size:18px;font-style:italic;color:${style.coverAccent};margin-bottom:16px;">${nomFichier}</div>
-        <div style="width:60px;height:2px;background:${style.coverAccent};margin:0 auto 16px;"></div>
-        <div style="font-size:12px;color:${style.questionColor};">Généré le ${dateGen}</div>
-        <div style="font-size:11px;color:${style.questionColor};margin-top:4px;">${currentUser.email}</div>
-      </div>`;
-
-  // Chapitres et souvenirs
   for (const chapId in grouped) {
     const chap = grouped[chapId];
-    html += `
-      <!-- CHAPITRE -->
-      <div style="padding:30px 30px 10px;page-break-before:always;">
-        <div style="background:${style.headerBg};border-left:4px solid ${style.coverAccent};padding:16px 20px;border-radius:6px;margin-bottom:24px;">
-          <div style="font-size:24px;margin-bottom:4px;">${chap.icon}</div>
-          <div style="font-family:${style.fontTitle};font-size:22px;color:${style.headerColor};font-weight:bold;">${chap.name}</div>
-          <div style="font-size:11px;color:${style.questionColor};margin-top:4px;">${chap.items.length} souvenir${chap.items.length>1?'s':''}</div>
-        </div>`;
+    win.document.write(`<div class="chapter-block">
+      <div class="chapter-header">
+        <div class="chapter-emoji">${chap.icon}</div>
+        <div class="chapter-name">${chap.name}</div>
+        <div class="chapter-count">${chap.items.length} souvenir${chap.items.length > 1 ? 's' : ''}</div>
+      </div>`);
 
-    chap.items.forEach((m, i) => {
-      html += `
-        <div style="border:1px solid ${style.borderColor};border-radius:8px;margin-bottom:20px;overflow:hidden;${i > 0 ? '' : ''}">
-          <div style="background:${style.headerBg};padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid ${style.borderColor};">
-            <div style="font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:0.08em;color:${style.questionColor};">${chap.icon} ${chap.name}</div>
-            <div style="font-size:10px;color:${style.questionColor};">${m.date||''}</div>
-          </div>
-          ${m.question ? `<div style="padding:12px 16px 6px;font-family:${style.fontTitle};font-style:italic;font-size:13px;color:${style.questionColor};border-bottom:1px dashed ${style.borderColor};">"${m.question}"</div>` : ''}
-          ${m.text ? `<div style="padding:12px 16px;font-size:13px;line-height:1.7;color:${style.textColor};">${m.text.replace(/\n/g,'<br>')}</div>` : ''}
-          ${m.photos?.length ? `
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:0 16px 12px;">
-              ${m.photos.map(p => `<img src="${p}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;" />`).join('')}
-            </div>` : ''}
-          ${m.audioUrl ? `<div style="padding:8px 16px;font-size:11px;color:${style.questionColor};border-top:1px solid ${style.borderColor};">🎙️ Enregistrement vocal disponible dans l'application</div>` : ''}
-        </div>`;
+    chap.items.forEach(m => {
+      win.document.write(`<div class="memory">
+        <div class="memory-head">
+          <span class="memory-label">${chap.icon} ${chap.name}</span>
+          <span class="memory-date-txt">${m.date || ''}</span>
+        </div>
+        ${m.question ? `<div class="memory-q">"${m.question}"</div>` : ''}
+        ${m.text ? `<div class="memory-t">${m.text}</div>` : ''}
+        ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p => `<img src="${p}" />`).join('')}</div>` : ''}
+        ${m.audioUrl ? `<div class="memory-audio-note">🎙️ Enregistrement vocal disponible dans l'application HéritageMémoire</div>` : ''}
+      </div>`);
     });
 
-    html += `</div>`;
+    win.document.write('</div>');
   }
 
-  html += `</div>`;
+  win.document.write(`<div class="footer">HéritageMémoire — ${dateGen}</div></body></html>`);
+  win.document.close();
 
-  // Conteneur temporaire
-  const container = document.createElement('div');
-  container.innerHTML = html;
-  container.style.position = 'absolute';
-  container.style.left = '-9999px';
-  container.style.top = '0';
-  document.body.appendChild(container);
-
-  const pdfOptions = {
-    margin: [10, 10, 10, 10],
-    filename: `HéritageMémoire_${nomFichier}_${new Date().getFullYear()}.pdf`,
-    image: { type: 'jpeg', quality: 0.92 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['avoid-all', 'css'] }
+  // Attendre que les images chargent puis imprimer
+  win.onload = () => {
+    setTimeout(() => {
+      win.focus();
+      win.print();
+    }, 1000);
   };
 
-  try {
-    await html2pdf().set(pdfOptions).from(container).save();
-    showToast('✓ PDF téléchargé !');
-  } catch(e) {
-    showToast('Erreur PDF : ' + e.message);
-  }
-
-  document.body.removeChild(container);
-  btn.disabled = false; btn.textContent = '📄 Générer le PDF';
+  btn.disabled = false;
+  btn.textContent = '📄 Générer le PDF';
+  showToast('📄 Fenêtre d\'impression ouverte !');
 };
 
 function renderMemories() {
@@ -1014,9 +960,7 @@ window.confirmDelete = async function() {
   if (!deletingMemoryId) return;
   try {
     const m = memories.find(x => x.id === deletingMemoryId);
-    if (m?.audioPath) {
-      try { await deleteObject(ref(storage, m.audioPath)); } catch(e) { console.warn('Audio déjà supprimé'); }
-    }
+    if (m?.audioPath) { try { await deleteObject(ref(storage, m.audioPath)); } catch {} }
     await deleteDoc(doc(db, 'souvenirs', deletingMemoryId));
     document.getElementById('confirm-delete-modal').classList.remove('open');
     showToast('Souvenir supprimé');
