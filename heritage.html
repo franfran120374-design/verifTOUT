@@ -797,43 +797,75 @@ window.saveMemory = async function() {
 };
 
 // ─── TRANSCRIPTION WHISPER ───
-window.transcribeAudio = async function(memoryId) {
-  if (OPENAI_API_KEY === 'VOTRE_CLÉ_OPENAI_ICI') {
-    showToast('⚠️ Clé OpenAI non configurée dans le code');
+// ─── TRANSCRIPTION WEB SPEECH API ───
+let speechRecognition = null;
+let liveTranscript = '';
+
+window.toggleRecording = async function() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+    if (speechRecognition) speechRecognition.stop();
     return;
   }
-  const m = memories.find(x => x.id === memoryId);
-  if (!m?.audioUrl) return;
-
-  const btn = document.getElementById('btn-transcribe-' + memoryId);
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Transcription...'; }
-  showToast('🎙️ Transcription en cours...');
-
   try {
-    // Télécharger l'audio depuis Firebase Storage
-    const response = await fetch(m.audioUrl);
-    const audioBlob = await response.blob();
-    const audioFile = new File([audioBlob], 'audio.webm', { type: 'audio/webm' });
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+    liveTranscript = '';
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = () => {
+      audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      const audio = document.getElementById('audio-playback');
+      audio.src = URL.createObjectURL(audioBlob); audio.style.display = 'block';
+      document.getElementById('rec-btn').textContent = '🎙️';
+      document.getElementById('rec-btn').classList.remove('recording');
+      document.getElementById('rec-status').textContent = 'Enregistrement terminé ✓';
+      // Afficher la transcription live dans le textarea si vide
+      if (liveTranscript && !document.getElementById('answer-text').value.trim()) {
+        document.getElementById('answer-text').value = liveTranscript;
+        document.getElementById('rec-status').textContent = '✓ Transcription ajoutée automatiquement';
+      }
+      clearInterval(recInterval); recSeconds = 0;
+      stream.getTracks().forEach(t => t.stop());
+    };
 
-    // Envoyer à Whisper
-    const formData = new FormData();
-    formData.append('file', audioFile);
-    formData.append('model', 'whisper-1');
-    formData.append('language', 'fr');
+    // Démarrer Web Speech API en parallèle
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      speechRecognition = new SpeechRecognition();
+      speechRecognition.lang = 'fr-FR';
+      speechRecognition.continuous = true;
+      speechRecognition.interimResults = true;
+      speechRecognition.onresult = (event) => {
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            liveTranscript += event.results[i][0].transcript + ' ';
+          } else {
+            interim += event.results[i][0].transcript;
+          }
+        }
+        document.getElementById('rec-status').textContent = '🎙️ ' + (liveTranscript + interim).slice(-60) + '...';
+      };
+      speechRecognition.onerror = () => {};
+      speechRecognition.start();
+    }
 
-    const whisperRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + OPENAI_API_KEY },
-      body: formData
-    });
+    mediaRecorder.start(); recSeconds = 0;
+    document.getElementById('rec-btn').classList.add('recording');
+    document.getElementById('rec-btn').textContent = '⏹️';
+    document.getElementById('rec-status').textContent = 'Enregistrement en cours...';
+    recInterval = setInterval(() => {
+      recSeconds++;
+      document.getElementById('rec-timer').textContent = `${Math.floor(recSeconds/60)}:${String(recSeconds%60).padStart(2,'0')}`;
+    }, 1000);
+  } catch(e) { showToast('Accès au micro refusé'); }
+};
 
-    if (!whisperRes.ok) throw new Error('Erreur Whisper: ' + whisperRes.status);
-
-    const data = await whisperRes.json();
-    const transcription = data.text?.trim();
-
-    if (!transcription) throw new Error('Transcription vide');
-
+// Garder transcribeAudio pour les anciens souvenirs (sans transcription live)
+window.transcribeAudio = async function(memoryId) {
+  showToast('💡 La transcription fonctionne pendant l\'enregistrement. Ré-enregistrez ce souvenir pour l\'obtenir.');
+};
     // Sauvegarder dans Firestore
     await updateDoc(doc(db, 'souvenirs', memoryId), { transcription, updatedAt: serverTimestamp() });
     showToast('✓ Transcription terminée !');
