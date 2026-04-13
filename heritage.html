@@ -787,9 +787,9 @@ function renderMemories() {
 
 // ─── PDF STYLES ───
 const PDF_STYLES = {
-  classique: { pageBg:'#ffffff', headerBg:'#f5f5f5', coverAccent:'#8b4513', coverColor:'#2c1f0e', headerColor:'#2c1f0e', questionColor:'#8a7660', textColor:'#2c1f0e', borderColor:'#e0e0e0' },
-  chaleureux: { pageBg:'#fdf8f0', headerBg:'#f5ebe0', coverAccent:'#8b4513', coverColor:'#2c1f0e', headerColor:'#8b4513', questionColor:'#c8922a', textColor:'#2c1f0e', borderColor:'#e0d5c4' },
-  moderne: { pageBg:'#1a1a2e', headerBg:'#16213e', coverAccent:'#c8922a', coverColor:'#ffffff', headerColor:'#c8922a', questionColor:'#8a9ab5', textColor:'#eeeae0', borderColor:'#2a2a4e' }
+  classique: { pageBg:'#ffffff', headerBg:'#f5f5f5', coverAccent:'#8b4513', coverColor:'#1a1410', headerColor:'#1a1410', questionColor:'#6b5845', textColor:'#1a1410', borderColor:'#e0e0e0' },
+  chaleureux: { pageBg:'#fdf8f0', headerBg:'#f5ebe0', coverAccent:'#8b4513', coverColor:'#1a1410', headerColor:'#8b4513', questionColor:'#a57a3a', textColor:'#1a1410', borderColor:'#e0d5c4' },
+  moderne: { pageBg:'#1a1a2e', headerBg:'#16213e', coverAccent:'#c8922a', coverColor:'#ffffff', headerColor:'#c8922a', questionColor:'#8a9ab5', textColor:'#f5f5f5', borderColor:'#2a2a4e' }
 };
 
 window.selectStyle = function(el) {
@@ -847,8 +847,8 @@ window.generatePDF = async function() {
       .memory-head { background: ${style.headerBg}; padding: 10px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid ${style.borderColor}; }
       .memory-label { font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; color: ${style.questionColor}; font-family: Arial, sans-serif; }
       .memory-date-txt { font-size: 11px; color: ${style.questionColor}; font-family: Arial, sans-serif; }
-      .memory-q { padding: 14px 18px 8px; font-style: italic; font-size: 14px; color: ${style.questionColor}; border-bottom: 1px dashed ${style.borderColor}; line-height: 1.5; }
-      .memory-t { padding: 14px 18px; font-size: 14px; line-height: 1.8; color: ${style.textColor}; white-space: pre-wrap; }
+      .memory-q { padding: 14px 18px 8px; font-style: italic; font-size: 14px; color: ${style.questionColor}; border-bottom: 1px dashed ${style.borderColor}; line-height: 1.5; font-weight: 500; }
+      .memory-t { padding: 14px 18px; font-size: 15px; line-height: 1.8; color: ${style.textColor}; white-space: pre-wrap; font-weight: 400; }
       .memory-photos { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 14px; }
       .memory-photos img { width: 31%; border-radius: 6px; object-fit: cover; aspect-ratio: 1; }
       .footer { text-align: center; padding: 30px; font-size: 11px; color: ${style.questionColor}; font-family: Arial, sans-serif; border-top: 1px solid ${style.borderColor}; margin-top: 40px; }
