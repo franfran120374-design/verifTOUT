@@ -98,10 +98,17 @@
     .btn-save:hover { background: var(--accent-light); }
     .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
     .memories-content { padding: 1.5rem; }
-    .memories-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 1.25rem; }
-    .memory-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; overflow: hidden; }
-    .memory-card-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .memory-chapter { font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gold); }
+    .memories-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 0.5rem; }
+    .memories-toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .btn-toolbar { font-size: 0.75rem; padding: 0.4rem 0.85rem; border: 1px solid var(--border); border-radius: 100px; background: var(--white); color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+    .btn-toolbar:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-toolbar.active { background: var(--accent); color: white; border-color: var(--accent); }
+    .memory-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; overflow: hidden; transition: border-color 0.2s; }
+    .memory-card.selected { border-color: var(--accent); border-width: 2px; }
+    .memory-card-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+    .memory-select-check { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); flex-shrink: 0; display: none; }
+    .selection-mode .memory-select-check { display: block; }
+    .memory-chapter { font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gold); flex: 1; }
     .memory-date { font-size: 0.75rem; color: var(--muted); }
     .memory-question { padding: 1rem 1.25rem 0.5rem; font-family: 'Playfair Display', serif; font-style: italic; font-size: 0.95rem; color: var(--muted); }
     .memory-text { padding: 0 1.25rem 1rem; font-size: 0.9rem; line-height: 1.7; }
@@ -109,13 +116,18 @@
     .memory-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; }
     .memory-audio { padding: 0.75rem 1.25rem; border-top: 1px solid var(--border); }
     .memory-audio audio { width: 100%; height: 32px; }
+    .memory-transcription { padding: 0.5rem 1.25rem 1rem; font-size: 0.85rem; color: var(--muted); font-style: italic; border-top: 1px dashed var(--border); background: var(--surface); line-height: 1.6; }
+    .memory-transcription strong { color: var(--accent); font-style: normal; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.35rem; }
     .empty-memories { text-align: center; padding: 4rem 1.5rem; }
     .empty-memories .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.35; }
     .empty-memories p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
-    .memory-actions { display: flex; gap: 0.5rem; padding: 0.75rem 1.25rem; border-top: 1px solid var(--border); background: var(--surface); }
-    .btn-mem-action { flex: 1; padding: 0.45rem 0; font-size: 0.75rem; font-weight: 500; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--white); color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+    .memory-actions { display: flex; gap: 0.5rem; padding: 0.75rem 1.25rem; border-top: 1px solid var(--border); background: var(--surface); flex-wrap: wrap; }
+    .btn-mem-action { flex: 1; padding: 0.45rem 0; font-size: 0.75rem; font-weight: 500; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--white); color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; min-width: 80px; }
     .btn-mem-action:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
     .btn-mem-action.danger:hover { border-color: #c0392b; color: #c0392b; background: #fdf2f2; }
+    .btn-mem-action.transcribe { border-color: var(--gold); color: var(--gold); }
+    .btn-mem-action.transcribe:hover { background: var(--gold-bg); }
+    .btn-mem-action:disabled { opacity: 0.5; cursor: not-allowed; }
     /* PDF SECTION */
     .pdf-section { margin: 1.5rem 1.5rem 0; padding: 1.25rem; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); }
     .pdf-section-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 600; margin-bottom: 1rem; color: var(--text); }
@@ -129,29 +141,12 @@
     .style-card.selected { border-color: var(--accent); background: var(--accent-bg); }
     .style-preview { width: 100%; height: 40px; border-radius: 6px; margin-bottom: 0.4rem; display: flex; align-items: center; justify-content: center; }
     .style-name { font-size: 0.72rem; font-weight: 500; color: var(--text); }
+    .pdf-option-row { display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: var(--text); }
+    .pdf-option-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
     .btn-generate-pdf { width: 100%; padding: 0.85rem; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
     .btn-generate-pdf:hover { background: var(--accent-light); }
     .btn-generate-pdf:disabled { opacity: 0.6; cursor: not-allowed; }
     /* RESTE */
-    .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 520px; background: var(--white); border-top: 1px solid var(--border); display: flex; padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom)); }
-    .bnav { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.15rem; font-size: 0.62rem; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0.4rem; border-radius: var(--radius-sm); transition: all 0.2s; }
-    .bnav .bi { font-size: 1.25rem; }
-    .bnav.active { color: var(--accent); background: var(--accent-bg); }
-    .modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(44,31,14,0.6); backdrop-filter: blur(4px); display: none; align-items: flex-end; justify-content: center; }
-    .modal-overlay.open { display: flex; }
-    .paywall-modal { background: var(--white); border-radius: 24px 24px 0 0; padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom)); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
-    .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 1.5rem; }
-    .paywall-modal h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; text-align: center; margin-bottom: 0.4rem; }
-    .paywall-modal .sub { font-size: 0.85rem; color: var(--muted); text-align: center; margin-bottom: 1.5rem; }
-    .paywall-features { list-style: none; margin-bottom: 1.5rem; }
-    .paywall-features li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.88rem; margin-bottom: 0.6rem; }
-    .paywall-features li::before { content: "✦"; color: var(--gold); flex-shrink: 0; }
-    .paywall-price { text-align: center; margin-bottom: 1.25rem; }
-    .paywall-price .price { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 600; }
-    .paywall-price .once { font-size: 0.85rem; color: var(--muted); }
-    .btn-buy { width: 100%; padding: 1rem; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500; cursor: pointer; margin-bottom: 0.75rem; transition: background 0.2s; }
-    .btn-buy:hover { background: var(--accent-light); }
-    .btn-cancel { width: 100%; padding: 0.75rem; background: none; border: none; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; cursor: pointer; }
     .share-section { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
     .share-title { font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.75rem; display: block; }
     .famille-membres { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem; }
@@ -181,6 +176,25 @@
     .confirm-modal p { font-size: 0.88rem; color: var(--muted); line-height: 1.5; margin-bottom: 1.5rem; }
     .btn-delete-confirm { width: 100%; padding: 0.9rem; background: #c0392b; color: white; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; margin-bottom: 0.5rem; }
     .btn-delete-confirm:hover { background: #a93226; }
+    .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 520px; background: var(--white); border-top: 1px solid var(--border); display: flex; padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom)); }
+    .bnav { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.15rem; font-size: 0.62rem; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0.4rem; border-radius: var(--radius-sm); transition: all 0.2s; }
+    .bnav .bi { font-size: 1.25rem; }
+    .bnav.active { color: var(--accent); background: var(--accent-bg); }
+    .modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(44,31,14,0.6); backdrop-filter: blur(4px); display: none; align-items: flex-end; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .paywall-modal { background: var(--white); border-radius: 24px 24px 0 0; padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom)); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+    .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 1.5rem; }
+    .paywall-modal h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; text-align: center; margin-bottom: 0.4rem; }
+    .paywall-modal .sub { font-size: 0.85rem; color: var(--muted); text-align: center; margin-bottom: 1.5rem; }
+    .paywall-features { list-style: none; margin-bottom: 1.5rem; }
+    .paywall-features li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.88rem; margin-bottom: 0.6rem; }
+    .paywall-features li::before { content: "✦"; color: var(--gold); flex-shrink: 0; }
+    .paywall-price { text-align: center; margin-bottom: 1.25rem; }
+    .paywall-price .price { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 600; }
+    .paywall-price .once { font-size: 0.85rem; color: var(--muted); }
+    .btn-buy { width: 100%; padding: 1rem; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500; cursor: pointer; margin-bottom: 0.75rem; transition: background 0.2s; }
+    .btn-buy:hover { background: var(--accent-light); }
+    .btn-cancel { width: 100%; padding: 0.75rem; background: none; border: none; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; cursor: pointer; }
     .badge-gratuit { font-size: 0.65rem; font-weight: 500; color: var(--green); background: var(--green-bg); border-radius: 100px; padding: 0.2rem 0.5rem; border: 1px solid rgba(58,107,58,0.2); }
     .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: var(--white); border-radius: 100px; padding: 0.6rem 1.25rem; font-size: 0.82rem; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 300; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -223,7 +237,7 @@
       </div>
     </header>
 
-    <!-- HOME VIEW -->
+    <!-- HOME -->
     <div class="view active" id="view-home">
       <div class="home-hero">
         <div class="hero-icon">📜</div>
@@ -236,7 +250,7 @@
       </div>
     </div>
 
-    <!-- RECORD VIEW -->
+    <!-- RECORD -->
     <div class="view" id="view-record">
       <div class="record-header">
         <button class="back-btn" onclick="showView('home')">← Retour</button>
@@ -278,8 +292,9 @@
       </div>
     </div>
 
-    <!-- MEMORIES VIEW -->
+    <!-- MEMORIES -->
     <div class="view" id="view-memories">
+      <!-- PDF EXPORT -->
       <div class="pdf-section">
         <div class="pdf-section-title">📄 Exporter en PDF</div>
         <div class="pdf-controls">
@@ -312,16 +327,30 @@
               </div>
             </div>
           </div>
+          <label class="pdf-option-row">
+            <input type="checkbox" id="pdf-exclude-audio" checked />
+            Exclure les souvenirs audio sans transcription
+          </label>
+          <label class="pdf-option-row">
+            <input type="checkbox" id="pdf-selection-only" />
+            N'inclure que les souvenirs sélectionnés
+          </label>
           <button class="btn-generate-pdf" id="btn-pdf" onclick="generatePDF()">📄 Générer le PDF</button>
         </div>
       </div>
+
       <div class="memories-content">
         <p class="memories-title">📖 Mes souvenirs</p>
+        <div class="memories-toolbar" id="memories-toolbar">
+          <button class="btn-toolbar" id="btn-select-mode" onclick="toggleSelectionMode()">☐ Sélectionner</button>
+          <button class="btn-toolbar" id="btn-select-all" onclick="selectAll()" style="display:none;">✓ Tout sélectionner</button>
+          <button class="btn-toolbar" id="btn-deselect-all" onclick="deselectAll()" style="display:none;">✗ Tout désélectionner</button>
+        </div>
         <div id="memories-list"></div>
       </div>
     </div>
 
-    <!-- FAMILLE VIEW -->
+    <!-- FAMILLE -->
     <div class="view" id="view-famille">
       <div class="famille-header">
         <h2>👨‍👩‍👧 Ma famille</h2>
@@ -448,7 +477,13 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+
 window.STRIPE_HERITAGE = "https://buy.stripe.com/4gMcMY15b0cLfCw81G4Vy02";
+
+// ══════════════════════════════════════════
+// ⚠️ REMPLACEZ PAR VOTRE CLÉ OPENAI WHISPER
+// ══════════════════════════════════════════
+const OPENAI_API_KEY = "sk-ant-api03-H4_...jQAA";
 
 let memories = [], sharedMemories = [], familleMembers = [];
 let isPremium = false, isAccesGratuit = false;
@@ -458,6 +493,8 @@ let mediaRecorder = null, audioChunks = [], recInterval = null, recSeconds = 0;
 let editingMemoryId = null, deletingMemoryId = null;
 let unsubMemories = null, unsubShared = null, unsubFamille = null;
 let selectedPdfStyle = 'classique';
+let selectionMode = false;
+let selectedIds = new Set();
 
 function loadLocal() { try { memories = JSON.parse(localStorage.getItem('hm_memories') || '[]'); } catch { memories = []; } }
 
@@ -746,6 +783,7 @@ window.saveMemory = async function() {
       auteurId: currentUser.uid, auteurEmail: currentUser.email,
       chapter: currentChapter.id, chapterName: currentChapter.name, chapterIcon: currentChapter.icon,
       question: currentQuestion, text, photos: uploadedPhotos, audioUrl, audioPath, partageAvec,
+      transcription: null,
       date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
       createdAt: serverTimestamp()
     });
@@ -758,23 +796,124 @@ window.saveMemory = async function() {
   }
 };
 
+// ─── TRANSCRIPTION WHISPER ───
+window.transcribeAudio = async function(memoryId) {
+  if (OPENAI_API_KEY === 'VOTRE_CLÉ_OPENAI_ICI') {
+    showToast('⚠️ Clé OpenAI non configurée dans le code');
+    return;
+  }
+  const m = memories.find(x => x.id === memoryId);
+  if (!m?.audioUrl) return;
+
+  const btn = document.getElementById('btn-transcribe-' + memoryId);
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Transcription...'; }
+  showToast('🎙️ Transcription en cours...');
+
+  try {
+    // Télécharger l'audio depuis Firebase Storage
+    const response = await fetch(m.audioUrl);
+    const audioBlob = await response.blob();
+    const audioFile = new File([audioBlob], 'audio.webm', { type: 'audio/webm' });
+
+    // Envoyer à Whisper
+    const formData = new FormData();
+    formData.append('file', audioFile);
+    formData.append('model', 'whisper-1');
+    formData.append('language', 'fr');
+
+    const whisperRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + OPENAI_API_KEY },
+      body: formData
+    });
+
+    if (!whisperRes.ok) throw new Error('Erreur Whisper: ' + whisperRes.status);
+
+    const data = await whisperRes.json();
+    const transcription = data.text?.trim();
+
+    if (!transcription) throw new Error('Transcription vide');
+
+    // Sauvegarder dans Firestore
+    await updateDoc(doc(db, 'souvenirs', memoryId), { transcription, updatedAt: serverTimestamp() });
+    showToast('✓ Transcription terminée !');
+  } catch(e) {
+    console.error('Erreur transcription:', e);
+    showToast('Erreur transcription : ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '🎙️ Transcrire'; }
+  }
+};
+
+// ─── SELECTION MODE ───
+window.toggleSelectionMode = function() {
+  selectionMode = !selectionMode;
+  selectedIds.clear();
+  const btn = document.getElementById('btn-select-mode');
+  const btnAll = document.getElementById('btn-select-all');
+  const btnDesel = document.getElementById('btn-deselect-all');
+  btn.textContent = selectionMode ? '✗ Annuler sélection' : '☐ Sélectionner';
+  btn.classList.toggle('active', selectionMode);
+  btnAll.style.display = selectionMode ? 'block' : 'none';
+  btnDesel.style.display = selectionMode ? 'block' : 'none';
+  document.getElementById('memories-list').classList.toggle('selection-mode', selectionMode);
+  renderMemories();
+};
+
+window.selectAll = function() {
+  memories.forEach(m => selectedIds.add(m.id));
+  renderMemories();
+};
+
+window.deselectAll = function() {
+  selectedIds.clear();
+  renderMemories();
+};
+
+window.toggleMemorySelect = function(id) {
+  if (selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  const card = document.getElementById('card-' + id);
+  if (card) card.classList.toggle('selected', selectedIds.has(id));
+  const cb = document.getElementById('check-' + id);
+  if (cb) cb.checked = selectedIds.has(id);
+};
+
+function renderMemories() {
+  const container = document.getElementById('memories-list');
+  const list = currentUser ? memories : JSON.parse(localStorage.getItem('hm_memories') || '[]');
+  if (selectionMode) container.classList.add('selection-mode');
+  else container.classList.remove('selection-mode');
+
+  if (list.length === 0) {
+    container.innerHTML = `<div class="empty-memories"><div class="empty-icon">📜</div><p>Vos souvenirs apparaîtront ici.<br>Choisissez un chapitre pour commencer !</p></div>`;
+    return;
+  }
+  container.innerHTML = list.map(m => `
+    <div class="memory-card ${selectedIds.has(m.id)?'selected':''}" id="card-${m.id}">
+      <div class="memory-card-header">
+        <input type="checkbox" class="memory-select-check" id="check-${m.id}" ${selectedIds.has(m.id)?'checked':''} onchange="toggleMemorySelect('${m.id}')" />
+        <span class="memory-chapter">${m.chapterIcon} ${m.chapterName}</span>
+        <span class="memory-date">${m.date||''}</span>
+      </div>
+      ${m.question ? `<div class="memory-question">"${m.question}"</div>` : ''}
+      ${m.text ? `<div class="memory-text">${m.text}</div>` : ''}
+      ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p=>`<img src="${p}"/>`).join('')}</div>` : ''}
+      ${m.audioUrl ? `<div class="memory-audio"><audio controls src="${m.audioUrl}"></audio></div>` : ''}
+      ${m.transcription ? `<div class="memory-transcription"><strong>🎙️ Transcription</strong>${m.transcription}</div>` : ''}
+      ${m.partageAvec?.length ? `<div style="padding:0.5rem 1.25rem;font-size:0.72rem;color:var(--gold);">🔗 Partagé avec ${m.partageAvec.length} membre${m.partageAvec.length>1?'s':''}</div>` : ''}
+      <div class="memory-actions">
+        <button class="btn-mem-action" onclick="openEditMemory('${m.id}')">✏️ Modifier</button>
+        ${m.audioUrl && !m.transcription ? `<button class="btn-mem-action transcribe" id="btn-transcribe-${m.id}" onclick="transcribeAudio('${m.id}')">🎙️ Transcrire</button>` : ''}
+        <button class="btn-mem-action danger" onclick="openDeleteMemory('${m.id}')">🗑 Supprimer</button>
+      </div>
+    </div>`).join('');
+}
+
 // ─── PDF STYLES ───
 const PDF_STYLES = {
-  classique: {
-    pageBg: '#ffffff', headerBg: '#f5f5f5', coverAccent: '#8b4513',
-    coverColor: '#2c1f0e', headerColor: '#2c1f0e', questionColor: '#8a7660',
-    textColor: '#2c1f0e', borderColor: '#e0e0e0',
-  },
-  chaleureux: {
-    pageBg: '#fdf8f0', headerBg: '#f5ebe0', coverAccent: '#8b4513',
-    coverColor: '#2c1f0e', headerColor: '#8b4513', questionColor: '#c8922a',
-    textColor: '#2c1f0e', borderColor: '#e0d5c4',
-  },
-  moderne: {
-    pageBg: '#1a1a2e', headerBg: '#16213e', coverAccent: '#c8922a',
-    coverColor: '#ffffff', headerColor: '#c8922a', questionColor: '#8a9ab5',
-    textColor: '#eeeae0', borderColor: '#2a2a4e',
-  }
+  classique: { pageBg:'#ffffff', headerBg:'#f5f5f5', coverAccent:'#8b4513', coverColor:'#2c1f0e', headerColor:'#2c1f0e', questionColor:'#8a7660', textColor:'#2c1f0e', borderColor:'#e0e0e0' },
+  chaleureux: { pageBg:'#fdf8f0', headerBg:'#f5ebe0', coverAccent:'#8b4513', coverColor:'#2c1f0e', headerColor:'#8b4513', questionColor:'#c8922a', textColor:'#2c1f0e', borderColor:'#e0d5c4' },
+  moderne: { pageBg:'#1a1a2e', headerBg:'#16213e', coverAccent:'#c8922a', coverColor:'#ffffff', headerColor:'#c8922a', questionColor:'#8a9ab5', textColor:'#eeeae0', borderColor:'#2a2a4e' }
 };
 
 window.selectStyle = function(el) {
@@ -786,13 +925,22 @@ window.selectStyle = function(el) {
 window.generatePDF = async function() {
   if (!currentUser) { openHmModal(); return; }
   const chapterSel = document.getElementById('pdf-chapter-select').value;
+  const excludeAudio = document.getElementById('pdf-exclude-audio').checked;
+  const selectionOnly = document.getElementById('pdf-selection-only').checked;
   const style = PDF_STYLES[selectedPdfStyle];
   const btn = document.getElementById('btn-pdf');
   btn.disabled = true; btn.textContent = '⏳ Génération...';
 
-  const filtered = chapterSel === 'all' ? memories : memories.filter(m => m.chapter === chapterSel);
+  let filtered = chapterSel === 'all' ? [...memories] : memories.filter(m => m.chapter === chapterSel);
+
+  // Filtre sélection manuelle
+  if (selectionOnly && selectedIds.size > 0) filtered = filtered.filter(m => selectedIds.has(m.id));
+
+  // Exclure les audios sans transcription
+  if (excludeAudio) filtered = filtered.filter(m => !m.audioUrl || m.transcription);
+
   if (filtered.length === 0) {
-    showToast('Aucun souvenir dans ce chapitre !');
+    showToast('Aucun souvenir à exporter avec ces critères !');
     btn.disabled = false; btn.textContent = '📄 Générer le PDF';
     return;
   }
@@ -800,23 +948,18 @@ window.generatePDF = async function() {
   const nomFichier = chapterSel === 'all' ? 'Tous mes souvenirs' : (CHAPTERS.find(c => c.id === chapterSel)?.name || 'Souvenirs');
   const dateGen = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  // Grouper par chapitre
   const grouped = {};
   filtered.forEach(m => {
     if (!grouped[m.chapter]) grouped[m.chapter] = { name: m.chapterName, icon: m.chapterIcon, items: [] };
     grouped[m.chapter].items.push(m);
   });
 
-  // Ouvrir une nouvelle fenêtre pour l'impression
-  const win = window.open('', '_blank', 'width=800,height=900');
-  if (!win) { showToast('Autorisez les popups pour générer le PDF'); btn.disabled = false; btn.textContent = '📄 Générer le PDF'; return; }
-
-  win.document.write(`<!DOCTYPE html><html lang="fr"><head>
+  let html = `<!DOCTYPE html><html lang="fr"><head>
     <meta charset="UTF-8">
     <title>HéritageMémoire — ${nomFichier}</title>
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Georgia, serif; background: ${style.pageBg}; color: ${style.textColor}; padding: 0; }
+      body { font-family: Georgia, serif; background: ${style.pageBg}; color: ${style.textColor}; }
       .cover { background: ${style.headerBg}; text-align: center; padding: 80px 40px; border-bottom: 4px solid ${style.coverAccent}; page-break-after: always; }
       .cover-emoji { font-size: 52px; margin-bottom: 20px; }
       .cover-title { font-size: 32px; font-weight: bold; color: ${style.coverColor}; margin-bottom: 10px; }
@@ -834,9 +977,10 @@ window.generatePDF = async function() {
       .memory-date-txt { font-size: 11px; color: ${style.questionColor}; font-family: Arial, sans-serif; }
       .memory-q { padding: 14px 18px 8px; font-style: italic; font-size: 14px; color: ${style.questionColor}; border-bottom: 1px dashed ${style.borderColor}; line-height: 1.5; }
       .memory-t { padding: 14px 18px; font-size: 14px; line-height: 1.8; color: ${style.textColor}; white-space: pre-wrap; }
+      .memory-transcription { padding: 12px 18px; font-size: 13px; line-height: 1.7; color: ${style.questionColor}; border-top: 1px dashed ${style.borderColor}; font-style: italic; }
+      .memory-transcription-label { font-size: 10px; font-weight: bold; text-transform: uppercase; color: ${style.coverAccent}; font-style: normal; display: block; margin-bottom: 6px; font-family: Arial, sans-serif; }
       .memory-photos { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 14px; }
       .memory-photos img { width: 31%; border-radius: 6px; object-fit: cover; aspect-ratio: 1; }
-      .memory-audio-note { padding: 10px 18px; font-size: 11px; color: ${style.questionColor}; border-top: 1px solid ${style.borderColor}; font-family: Arial, sans-serif; }
       .footer { text-align: center; padding: 30px; font-size: 11px; color: ${style.questionColor}; font-family: Arial, sans-serif; border-top: 1px solid ${style.borderColor}; margin-top: 40px; }
       @media print {
         body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -850,88 +994,58 @@ window.generatePDF = async function() {
       <div class="cover-title">HéritageMémoire</div>
       <div class="cover-sub">${nomFichier}</div>
       <div class="cover-line"></div>
-      <div class="cover-meta">
-        Généré le ${dateGen}<br>
-        ${currentUser.email}<br>
-        ${filtered.length} souvenir${filtered.length > 1 ? 's' : ''}
-      </div>
-    </div>`);
+      <div class="cover-meta">Généré le ${dateGen}<br>${currentUser.email}<br>${filtered.length} souvenir${filtered.length>1?'s':''}</div>
+    </div>`;
 
   for (const chapId in grouped) {
     const chap = grouped[chapId];
-    win.document.write(`<div class="chapter-block">
+    html += `<div class="chapter-block">
       <div class="chapter-header">
         <div class="chapter-emoji">${chap.icon}</div>
         <div class="chapter-name">${chap.name}</div>
-        <div class="chapter-count">${chap.items.length} souvenir${chap.items.length > 1 ? 's' : ''}</div>
-      </div>`);
+        <div class="chapter-count">${chap.items.length} souvenir${chap.items.length>1?'s':''}</div>
+      </div>`;
 
     chap.items.forEach(m => {
-      win.document.write(`<div class="memory">
+      html += `<div class="memory">
         <div class="memory-head">
           <span class="memory-label">${chap.icon} ${chap.name}</span>
-          <span class="memory-date-txt">${m.date || ''}</span>
+          <span class="memory-date-txt">${m.date||''}</span>
         </div>
         ${m.question ? `<div class="memory-q">"${m.question}"</div>` : ''}
         ${m.text ? `<div class="memory-t">${m.text}</div>` : ''}
-        ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p => `<img src="${p}" />`).join('')}</div>` : ''}
-        ${m.audioUrl ? `<div class="memory-audio-note">🎙️ Enregistrement vocal disponible dans l'application HéritageMémoire</div>` : ''}
-      </div>`);
+        ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p=>`<img src="${p}" />`).join('')}</div>` : ''}
+        ${m.transcription ? `<div class="memory-transcription"><span class="memory-transcription-label">🎙️ Transcription vocale</span>${m.transcription}</div>` : ''}
+      </div>`;
     });
 
-    win.document.write('</div>');
+    html += '</div>';
   }
 
-  win.document.write(`<div class="footer">HéritageMémoire — ${dateGen}</div></body></html>`);
-  win.document.close();
-win.document.close();
+  html += `<div class="footer">HéritageMémoire — ${dateGen}</div></body></html>`;
 
-// Forcer l'impression après chargement des images
-setTimeout(() => {
-  win.focus();
-  win.print();
-  btn.disabled = false;
-  btn.textContent = '📄 Générer le PDF';
-}, 2000);
+  // Créer un blob et ouvrir dans une nouvelle fenêtre
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
 
-showToast('📄 Fenêtre d\'impression ouverte !');
-  // Attendre que les images chargent puis imprimer
-  win.onload = () => {
-    setTimeout(() => {
-      win.focus();
-      win.print();
-    }, 1000);
-  };
-
-  btn.disabled = false;
-  btn.textContent = '📄 Générer le PDF';
-  showToast('📄 Fenêtre d\'impression ouverte !');
-};
-
-function renderMemories() {
-  const container = document.getElementById('memories-list');
-  const list = currentUser ? memories : JSON.parse(localStorage.getItem('hm_memories') || '[]');
-  if (list.length === 0) {
-    container.innerHTML = `<div class="empty-memories"><div class="empty-icon">📜</div><p>Vos souvenirs apparaîtront ici.<br>Choisissez un chapitre pour commencer !</p></div>`;
+  if (!win) {
+    showToast('Autorisez les popups pour générer le PDF');
+    btn.disabled = false; btn.textContent = '📄 Générer le PDF';
+    URL.revokeObjectURL(url);
     return;
   }
-  container.innerHTML = list.map(m => `
-    <div class="memory-card">
-      <div class="memory-card-header">
-        <span class="memory-chapter">${m.chapterIcon} ${m.chapterName}</span>
-        <span class="memory-date">${m.date||''}</span>
-      </div>
-      ${m.question ? `<div class="memory-question">"${m.question}"</div>` : ''}
-      ${m.text ? `<div class="memory-text">${m.text}</div>` : ''}
-      ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p=>`<img src="${p}"/>`).join('')}</div>` : ''}
-      ${m.audioUrl ? `<div class="memory-audio"><audio controls src="${m.audioUrl}"></audio></div>` : ''}
-      ${m.partageAvec?.length ? `<div style="padding:0.5rem 1.25rem;font-size:0.72rem;color:var(--gold);">🔗 Partagé avec ${m.partageAvec.length} membre${m.partageAvec.length>1?'s':''}</div>` : ''}
-      <div class="memory-actions">
-        <button class="btn-mem-action" onclick="openEditMemory('${m.id}')">✏️ Modifier</button>
-        <button class="btn-mem-action danger" onclick="openDeleteMemory('${m.id}')">🗑 Supprimer</button>
-      </div>
-    </div>`).join('');
-}
+
+  win.addEventListener('load', () => {
+    setTimeout(() => {
+      win.print();
+      URL.revokeObjectURL(url);
+    }, 500);
+  });
+
+  btn.disabled = false; btn.textContent = '📄 Générer le PDF';
+  showToast('📄 Fenêtre d\'impression ouverte !');
+};
 
 window.openEditMemory = function(id) {
   const m = memories.find(x => x.id === id);
@@ -1010,6 +1124,7 @@ function renderSharedMemories() {
       ${m.text ? `<div class="memory-text">${m.text}</div>` : ''}
       ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p=>`<img src="${p}"/>`).join('')}</div>` : ''}
       ${m.audioUrl ? `<div class="memory-audio"><audio controls src="${m.audioUrl}"></audio></div>` : ''}
+      ${m.transcription ? `<div class="memory-transcription"><strong>🎙️ Transcription</strong>${m.transcription}</div>` : ''}
     </div>`).join('');
 }
 
