@@ -84,14 +84,15 @@
   import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   // 🔹 CONFIG FIREBASE (REMPLACE AVEC TES INFOS)
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "hub-coloc.firebaseapp.com",
-    projectId: "hub-coloc",
-    storageBucket: "hub-coloc.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyB1TwbZSkqkAKEPhNJXuwn9zMEz2BqBk48",
+  authDomain: "hub-coloc.firebaseapp.com",
+  databaseURL: "https://hub-coloc-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "hub-coloc",
+  storageBucket: "hub-coloc.firebasestorage.app",
+  messagingSenderId: "1090628612964",
+  appId: "1:1090628612964:web:b6bec497006f2214304071"
+};
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
