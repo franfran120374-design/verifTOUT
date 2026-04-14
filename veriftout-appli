@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vérif'Tout</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+<h1>🔍 Vérif'Tout</h1>
+<input type="text" id="input" placeholder="Collez un texte ou URL">
+<button onclick="analyze()">Analyser</button>
+<button onclick="load()">Historique</button>
+
+<div id="result"></div>
+<pre id="history"></pre>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB1TwbZSkqkAKEPhNJXuwn9zMEz2BqBk48",
+  authDomain: "hub-coloc.firebaseapp.com",
+  projectId: "hub-coloc",
+  storageBucket: "hub-coloc.firebasestorage.app",
+  messagingSenderId: "1090628612964",
+  appId: "1:1090628612964:web:b6bec497006f2214304071"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+function analyzeText(text) {
+  const t = text.toLowerCase();
+  if (t.includes("urgent") || t.includes("mot de passe")) {
+    return { label: "Phishing", score: 85 };
+  }
+  if (t.includes("gratuit")) {
+    return { label: "Spam", score: 60 };
+  }
+  return { label: "Fiable", score: 10 };
+}
+
+window.analyze = async () => {
+  const input = document.getElementById("input").value;
+  const res = analyzeText(input);
+
+  document.getElementById("result").innerText = `${res.label} (${res.score}%)`;
+
+  await addDoc(collection(db, "verifTOUT"), {
+    input,
+    result: res.label,
+    score: res.score,
+    createdAt: serverTimestamp()
+  });
+};
+
+window.load = async () => {
+  const snapshot = await getDocs(collection(db, "verifTOUT"));
+  let txt = "";
+  snapshot.forEach(doc => {
+    const d = doc.data();
+    txt += `\n${d.input} → ${d.result}`;
+  });
+  document.getElementById("history").innerText = txt;
+};
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+
+</script>
+
+</body>
+</html>
+
