@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vérif'Tout</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    header {
+      background: #1e293b;
+      color: white;
+      padding: 20px;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    input {
+      width: 60%;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #2563eb;
+      color: white;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      display: inline-block;
+      min-width: 300px;
+    }
+
+    .safe { background: #dcfce7; color: #166534; }
+    .warning { background: #fef9c3; color: #854d0e; }
+    .danger { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🔍 Vérif'Tout</h1>
+  <p>Analyse intelligente des contenus (spam, phishing, fake news)</p>
+</header>
+
+<main>
+
+  <input type="text" id="userInput" placeholder="Collez un message, email ou URL...">
+  <br>
+
+  <button onclick="analyzeData()">Analyser</button>
+  <button onclick="loadHistory()">Historique</button>
+
+  <div id="result"></div>
+  <pre id="history"></pre>
+
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // 🔹 CONFIG FIREBASE (REMPLACE AVEC TES INFOS)
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "hub-coloc.firebaseapp.com",
+    projectId: "hub-coloc",
+    storageBucket: "hub-coloc.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 🔹 Analyse simulée (à remplacer par IA plus tard)
+  function fakeAnalysis(text) {
+    const lower = text.toLowerCase();
+
+    if (lower.includes("urgent") || lower.includes("mot de passe") || lower.includes("clique")) {
+      return { score: 85, label: "Phishing probable", class: "danger" };
+    }
+    if (lower.includes("gratuit") || lower.includes("promo")) {
+      return { score: 60, label: "Spam possible", class: "warning" };
+    }
+    return { score: 10, label: "Fiable", class: "safe" };
+  }
+
+  // 🔹 Analyse + enregistrement Firebase
+  window.analyzeData = async function () {
+    const input = document.getElementById("userInput").value;
+
+    if (!input) {
+      alert("Veuillez entrer un texte");
+      return;
+    }
+
+    const result = fakeAnalysis(input);
+
+    // affichage
+    const resultDiv = document.getElementById("result");
+    resultDiv.className = result.class;
+    resultDiv.innerHTML = `
+      <strong>${result.label}</strong><br>
+      Score de risque : ${result.score}%
+    `;
+
+    // sauvegarde Firestore
+    try {
+      await addDoc(collection(db, "verifTOUT"), {
+        input: input,
+        result: result.label,
+        score: result.score,
+        createdAt: serverTimestamp()
+      });
+    } catch (e) {
+      console.error("Erreur Firebase:", e);
+    }
+  };
+
+  // 🔹 Lecture historique
+  window.loadHistory = async function () {
+    const querySnapshot = await getDocs(collection(db, "verifTOUT"));
+    let output = "";
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      output += `\n• ${data.input} → ${data.result} (${data.score}%)`;
+    });
+
+    document.getElementById("history").textContent = output || "Aucune donnée";
+  };
+
+</script>
+
+</body>
+</html>
