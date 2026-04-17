@@ -1,25 +1,809 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vérif'Tout</title>
-  <link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vérif'Tout — Détectez phishing, spam & arnaques</title>
+  <meta name="description" content="Analysez instantanément tout texte ou URL pour détecter phishing, spam, désinformation et arnaques." />
+  <meta name="theme-color" content="#1e3a5f" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:       #1e3a5f;
+      --navy-light: #2a4f80;
+      --blue:       #2563eb;
+      --blue-light: #3b82f6;
+      --bg:         #f0f4f8;
+      --surface:    #ffffff;
+      --border:     #d1dbe8;
+      --text:       #0f1c2e;
+      --muted:      #64748b;
+      --safe:       #16a34a;
+      --safe-bg:    #dcfce7;
+      --warn:       #d97706;
+      --warn-bg:    #fef3c7;
+      --danger:     #dc2626;
+      --danger-bg:  #fee2e2;
+      --radius:     14px;
+      --radius-sm:  8px;
+      --shadow:     0 4px 20px rgba(30,58,95,0.10);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── LAYOUT ── */
+    .app-shell {
+      max-width: 780px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    .app-header {
+      background: var(--navy);
+      color: #fff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .header-brand .logo { font-size: 1.5rem; }
+    .header-brand .name {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+    .header-brand .name em {
+      font-style: normal;
+      color: #60a5fa;
+    }
+    .header-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .hbtn {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 100px;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+      letter-spacing: 0.02em;
+    }
+    .hbtn:hover { background: rgba(255,255,255,0.22); }
+    .hbtn.premium {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border-color: transparent;
+      color: #fff;
+    }
+    .hbtn.premium:hover { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+    #hm-user-email-hdr {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.65);
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── MAIN ── */
+    .main-content { flex: 1; padding: 1.5rem; }
+
+    /* ── TABS ── */
+    .tab-bar {
+      display: flex;
+      gap: 0.35rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.3rem;
+      margin-bottom: 1.5rem;
+      width: fit-content;
+    }
+    .tab-btn {
+      padding: 0.5rem 1.2rem;
+      border-radius: 100px;
+      border: none;
+      background: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--navy);
+      color: #fff;
+    }
+
+    /* ── VIEW ── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── ANALYZE CARD ── */
+    .analyze-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .analyze-card-header {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      padding: 1.5rem;
+      color: #fff;
+    }
+    .analyze-card-header h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    .analyze-card-header p { font-size: 0.82rem; color: rgba(255,255,255,0.7); }
+    .analyze-body { padding: 1.5rem; }
+
+    .input-wrapper {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+    .input-wrapper .input-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+    .main-input {
+      width: 100%;
+      padding: 0.9rem 1rem 0.9rem 2.75rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.2s;
+      resize: none;
+    }
+    .main-input:focus { border-color: var(--blue); }
+    .main-input::placeholder { color: #94a3b8; }
+    textarea.main-input {
+      min-height: 100px;
+      padding-left: 1rem;
+      resize: vertical;
+    }
+
+    .input-mode-toggle {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mode-btn.active {
+      border-color: var(--blue);
+      background: #eff6ff;
+      color: var(--blue);
+    }
+
+    .btn-analyze {
+      width: 100%;
+      padding: 0.9rem;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      letter-spacing: 0.01em;
+    }
+    .btn-analyze:hover { background: var(--navy); }
+    .btn-analyze:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .quota-bar {
+      margin-top: 0.75rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-align: center;
+    }
+    .quota-bar span { color: var(--blue); font-weight: 600; }
+
+    /* ── RESULT ── */
+    .result-card {
+      margin-top: 1.25rem;
+      display: none;
+    }
+    .result-card.show { display: block; }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.25rem;
+      border-radius: var(--radius);
+      border: 2px solid;
+      margin-bottom: 1rem;
+    }
+    .result-header.safe    { background: var(--safe-bg);   border-color: var(--safe);   }
+    .result-header.warning { background: var(--warn-bg);   border-color: var(--warn);   }
+    .result-header.danger  { background: var(--danger-bg); border-color: var(--danger); }
+
+    .result-gauge {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    .safe    .result-gauge { background: var(--safe);   color: #fff; }
+    .warning .result-gauge { background: var(--warn);   color: #fff; }
+    .danger  .result-gauge { background: var(--danger); color: #fff; }
+
+    .result-verdict h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .result-verdict p  { font-size: 0.82rem; color: var(--muted); }
+    .safe    .result-verdict h3 { color: var(--safe);   }
+    .warning .result-verdict h3 { color: var(--warn);   }
+    .danger  .result-verdict h3 { color: var(--danger); }
+
+    /* Score bars — premium */
+    .score-breakdown {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .breakdown-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .score-row {
+      margin-bottom: 0.75rem;
+    }
+    .score-row-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      font-weight: 500;
+      margin-bottom: 0.3rem;
+    }
+    .score-bar-track {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.6s ease;
+    }
+    .fill-safe    { background: var(--safe);   }
+    .fill-warning { background: var(--warn);   }
+    .fill-danger  { background: var(--danger); }
+
+    /* Flags */
+    .flags-list {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .flags-title {
+      padding: 0.85rem 1.25rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .flag-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .flag-item:last-child { border-bottom: none; }
+    .flag-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 100px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .flag-badge.phishing     { background: #fee2e2; color: #dc2626; }
+    .flag-badge.spam         { background: #fef3c7; color: #92400e; }
+    .flag-badge.desinformation { background: #f3e8ff; color: #7c3aed; }
+    .flag-badge.url          { background: #dbeafe; color: #1d4ed8; }
+    .flag-badge.safe         { background: var(--safe-bg); color: var(--safe); }
+    .flag-msg { color: var(--text); line-height: 1.45; }
+
+    /* Premium lock overlay */
+    .premium-lock {
+      background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-align: center;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+    .premium-lock .lock-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .premium-lock h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .premium-lock p  { font-size: 0.82rem; color: rgba(255,255,255,0.7); margin-bottom: 1rem; }
+    .btn-unlock {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.7rem 1.5rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-unlock:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(245,158,11,0.4); }
+
+    /* ── HISTORY VIEW ── */
+    .history-empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+    }
+    .history-empty .hi { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+
+    .history-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .hist-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 100px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .hist-badge.safe    { background: var(--safe-bg);   color: var(--safe);   }
+    .hist-badge.warning { background: var(--warn-bg);   color: var(--warn);   }
+    .hist-badge.danger  { background: var(--danger-bg); color: var(--danger); }
+
+    .hist-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .hist-input {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-bottom: 0.2rem;
+    }
+    .hist-meta { font-size: 0.72rem; color: var(--muted); }
+    .hist-score {
+      font-size: 1rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .hist-score.safe    { color: var(--safe);   }
+    .hist-score.warning { color: var(--warn);   }
+    .hist-score.danger  { color: var(--danger); }
+
+    /* ── MODALS ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(15,28,46,0.65);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    @media (min-width: 640px) {
+      .modal-overlay { align-items: center; }
+    }
+    .modal-card {
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom));
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    @media (min-width: 640px) {
+      .modal-card {
+        border-radius: 20px;
+        padding: 2rem;
+      }
+    }
+    .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 1.5rem; }
+    .modal-card h2 {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 0.4rem;
+      color: var(--navy);
+    }
+    .modal-sub { font-size: 0.85rem; color: var(--muted); text-align: center; margin-bottom: 1.5rem; }
+    .field-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 0.4rem;
+    }
+    .field-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+    .field-input:focus { border-color: var(--blue); }
+    .auth-err { font-size: 0.8rem; color: var(--danger); text-align: center; margin-bottom: 0.5rem; }
+    .btn-primary {
+      width: 100%;
+      padding: 0.9rem;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: var(--navy); }
+    .btn-secondary {
+      width: 100%;
+      padding: 0.75rem;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+
+    /* Paywall modal */
+    .paywall-shield {
+      font-size: 3rem;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    .paywall-features { list-style: none; margin-bottom: 1.5rem; }
+    .paywall-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.88rem;
+      margin-bottom: 0.6rem;
+      color: var(--text);
+    }
+    .paywall-features li::before { content: "✓"; color: var(--blue); font-weight: 700; flex-shrink: 0; }
+    .paywall-price {
+      text-align: center;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .price-amount { font-size: 2.5rem; font-weight: 800; color: var(--navy); }
+    .price-note   { font-size: 0.8rem; color: var(--muted); }
+
+    .btn-paywall {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #2563eb, #1e3a5f);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 0.75rem;
+      transition: all 0.2s;
+    }
+    .btn-paywall:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.35); }
+    .btn-check-premium {
+      width: 100%;
+      padding: 0.65rem;
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      color: var(--blue);
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+      transition: border-color 0.2s;
+    }
+    .btn-check-premium:hover { border-color: var(--blue); }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--navy);
+      color: #fff;
+      border-radius: 100px;
+      padding: 0.6rem 1.25rem;
+      font-size: 0.82rem;
+      opacity: 0;
+      transition: all 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 600;
+      font-weight: 500;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── PREMIUM BADGE ── */
+    .premium-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      border-radius: 100px;
+      padding: 0.2rem 0.55rem;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── LOADING SPINNER ── */
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 480px) {
+      .main-content { padding: 1rem; }
+      .tab-bar { width: 100%; }
+      .tab-btn { flex: 1; text-align: center; }
+    }
+  </style>
 </head>
 <body>
 
-<h1>🔍 Vérif'Tout</h1>
-<input type="text" id="input" placeholder="Collez un texte ou URL">
-<button onclick="analyze()">Analyser</button>
-<button onclick="load()">Historique</button>
+<div class="app-shell">
+  <!-- ── HEADER ── -->
+  <header class="app-header">
+    <div class="header-brand">
+      <span class="logo">🔍</span>
+      <span class="name">Vérif<em>'</em>Tout</span>
+    </div>
+    <div class="header-actions">
+      <span id="premium-badge-hdr" class="premium-badge" style="display:none;">⭐ Premium</span>
+      <span id="hm-user-email-hdr"></span>
+      <div id="auth-bar">
+        <button class="hbtn" onclick="openAuthModal()">Connexion</button>
+      </div>
+      <div id="user-bar" style="display:none;">
+        <button class="hbtn" onclick="handleSignOut()">↪ Déco</button>
+      </div>
+      <button class="hbtn premium" id="btn-premium-hdr" onclick="openPaywall()">✦ 3,99€</button>
+    </div>
+  </header>
 
-<div id="result"></div>
-<pre id="history"></pre>
+  <!-- ── MAIN ── -->
+  <main class="main-content">
+    <!-- TAB BAR -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-analyze" onclick="showTab('analyze')">🔍 Analyser</button>
+      <button class="tab-btn"        id="tab-history" onclick="showTab('history')">📋 Historique</button>
+    </div>
 
+    <!-- ── VIEW : ANALYZE ── -->
+    <div class="view active" id="view-analyze">
+      <div class="analyze-card">
+        <div class="analyze-card-header">
+          <h2>Détectez phishing, spam & arnaques</h2>
+          <p>Collez un texte ou une URL — l'analyse est instantanée.</p>
+        </div>
+        <div class="analyze-body">
+          <div class="input-mode-toggle">
+            <button class="mode-btn active" id="mode-url"  onclick="setMode('url')">🔗 URL</button>
+            <button class="mode-btn"        id="mode-text" onclick="setMode('text')">📝 Texte / Message</button>
+          </div>
+          <div class="input-wrapper" id="url-wrap">
+            <span class="input-icon">🔗</span>
+            <input type="url" id="input-url" class="main-input"
+              placeholder="https://exemple.com ou collez une URL suspecte…" />
+          </div>
+          <div id="text-wrap" style="display:none;">
+            <textarea id="input-text" class="main-input"
+              placeholder="Collez un email, SMS, message WhatsApp, ou tout texte suspect…"></textarea>
+          </div>
+          <button class="btn-analyze" id="btn-analyze" onclick="doAnalyze()">
+            🛡 Analyser maintenant
+          </button>
+          <div class="quota-bar" id="quota-bar">
+            Analyses gratuites aujourd'hui : <span id="quota-count">5</span> restantes
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULT -->
+      <div class="result-card" id="result-card">
+        <!-- Verdict header -->
+        <div class="result-header" id="result-header">
+          <div class="result-gauge" id="result-gauge"></div>
+          <div class="result-verdict" id="result-verdict"></div>
+        </div>
+
+        <!-- Score breakdown (premium) -->
+        <div id="premium-content">
+          <div class="score-breakdown" id="score-breakdown">
+            <div class="breakdown-title">Détail par catégorie</div>
+            <div id="score-rows"></div>
+          </div>
+          <div class="flags-list" id="flags-list">
+            <div class="flags-title">Indicateurs détectés</div>
+            <div id="flags-content"></div>
+          </div>
+        </div>
+        <!-- Free lock -->
+        <div class="premium-lock" id="premium-lock" style="display:none;">
+          <div class="lock-icon">🔒</div>
+          <h4>Analyse détaillée — Premium</h4>
+          <p>Débloquez le détail des indicateurs, le score par catégorie et l'historique illimité.</p>
+          <button class="btn-unlock" onclick="openPaywall()">✦ Débloquer pour 3,99€</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW : HISTORY ── -->
+    <div class="view" id="view-history">
+      <div id="history-list">
+        <div class="history-empty">
+          <div class="hi">📋</div>
+          <p>Aucune analyse enregistrée.<br>Connectez-vous pour sauvegarder votre historique.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ── AUTH MODAL ── -->
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal-card">
+    <div class="modal-handle"></div>
+    <h2>Connexion</h2>
+    <p class="modal-sub">Sauvegardez vos analyses et accédez à votre historique.</p>
+    <label class="field-label">Email</label>
+    <input id="auth-email" type="email" class="field-input" placeholder="vous@exemple.fr" />
+    <label class="field-label">Mot de passe</label>
+    <input id="auth-pwd" type="password" class="field-input" placeholder="••••••••" />
+    <div class="auth-err" id="auth-err"></div>
+    <button class="btn-primary" onclick="handleSignIn()">Se connecter</button>
+    <button class="btn-secondary" onclick="handleSignUp()">Créer un compte</button>
+    <button class="btn-secondary" onclick="closeAuthModal()">Annuler</button>
+  </div>
+</div>
+
+<!-- ── PAYWALL MODAL ── -->
+<div class="modal-overlay" id="paywall-modal">
+  <div class="modal-card">
+    <div class="modal-handle"></div>
+    <div class="paywall-shield">🛡️</div>
+    <h2>Vérif'Tout Premium</h2>
+    <p class="modal-sub">Protection complète, une seule fois.</p>
+    <ul class="paywall-features">
+      <li>Analyses illimitées (textes &amp; URLs)</li>
+      <li>Score détaillé par catégorie (phishing, spam, désinformation, URL)</li>
+      <li>Liste complète des indicateurs de risque</li>
+      <li>Historique illimité et consultable</li>
+      <li>Priorité sur les nouvelles fonctionnalités</li>
+    </ul>
+    <div class="paywall-price">
+      <div class="price-amount">3,99€</div>
+      <div class="price-note">paiement unique — accès à vie</div>
+    </div>
+    <button class="btn-paywall" onclick="goPremium()">✦ Débloquer maintenant — 3,99€</button>
+    <button class="btn-check-premium" onclick="checkPremiumStatus()">✓ Vérifier mon accès après paiement</button>
+    <button class="btn-secondary" onclick="closePaywall()">Continuer gratuitement (5/jour)</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ── SCRIPTS ── -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getAuth, onAuthStateChanged,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, addDoc, getDocs,
+  collection, query, where, orderBy, limit,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// ── FIREBASE ────────────────────────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyB1TwbZSkqkAKEPhNJXuwn9zMEz2BqBk48",
   authDomain: "hub-coloc.firebaseapp.com",
@@ -28,51 +812,533 @@ const firebaseConfig = {
   messagingSenderId: "1090628612964",
   appId: "1:1090628612964:web:b6bec497006f2214304071"
 };
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// ── STRIPE — configurez votre lien de paiement ici ───────────────────────────
+// Remplacez par votre lien Stripe Checkout avec ?prefilled_email= dynamique
+// Pour activer automatiquement après paiement, implémentez un webhook Stripe
+// (Cloud Function Firebase) qui met à jour users/{uid}/subscriptions.veriftout.premium
+const STRIPE_LINK = "https://buy.stripe.com/test_8x25kvgM2bMq0UZ9B9cIE00";
+// ── ÉTAT ────────────────────────────────────────────────────────────────────────
+let currentUser = null;
+let isPremium   = false;
+let inputMode   = 'url';  // 'url' | 'text'
+let lastResult  = null;
 
-function analyzeText(text) {
-  const t = text.toLowerCase();
-  if (t.includes("urgent") || t.includes("mot de passe")) {
-    return { label: "Phishing", score: 85 };
-  }
-  if (t.includes("gratuit")) {
-    return { label: "Spam", score: 60 };
-  }
-  return { label: "Fiable", score: 10 };
+const FREE_DAILY_LIMIT = 5;
+const LS_KEY = 'vt_quota';
+
+// ── QUOTA (localStorage pour les non-connectés) ──────────────────────────────
+function getQuota() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    const today = new Date().toISOString().slice(0, 10);
+    if (raw.date !== today) return FREE_DAILY_LIMIT;
+    return Math.max(0, FREE_DAILY_LIMIT - (raw.count || 0));
+  } catch { return FREE_DAILY_LIMIT; }
+}
+function consumeQuota() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    const today = new Date().toISOString().slice(0, 10);
+    const count = raw.date === today ? (raw.count || 0) + 1 : 1;
+    localStorage.setItem(LS_KEY, JSON.stringify({ date: today, count }));
+  } catch {}
+}
+function updateQuotaBar() {
+  const remaining = isPremium ? '∞' : getQuota();
+  document.getElementById('quota-count').textContent = remaining;
+  const bar = document.getElementById('quota-bar');
+  bar.innerHTML = isPremium
+    ? `<span class="premium-badge">⭐ Premium</span> Analyses illimitées`
+    : `Analyses gratuites aujourd'hui : <span>${remaining}</span> restantes`;
 }
 
-window.analyze = async () => {
-  const input = document.getElementById("input").value;
-  const res = analyzeText(input);
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  if (user) {
+    document.getElementById('auth-bar').style.display  = 'none';
+    document.getElementById('user-bar').style.display  = 'flex';
+    document.getElementById('hm-user-email-hdr').textContent = user.email;
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      isPremium = snap.exists() && snap.data()?.subscriptions?.veriftout?.premium === true;
+    } catch {}
+    updateAccessUI();
+    loadHistory();
+  } else {
+    currentUser = null; isPremium = false;
+    document.getElementById('auth-bar').style.display  = 'flex';
+    document.getElementById('user-bar').style.display  = 'none';
+    document.getElementById('hm-user-email-hdr').textContent = '';
+    updateAccessUI();
+  }
+});
 
-  document.getElementById("result").innerText = `${res.label} (${res.score}%)`;
-
-  await addDoc(collection(db, "verifTOUT"), {
-    input,
-    result: res.label,
-    score: res.score,
-    createdAt: serverTimestamp()
-  });
-};
-
-window.load = async () => {
-  const snapshot = await getDocs(collection(db, "verifTOUT"));
-  let txt = "";
-  snapshot.forEach(doc => {
-    const d = doc.data();
-    txt += `\n${d.input} → ${d.result}`;
-  });
-  document.getElementById("history").innerText = txt;
-};
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
+function updateAccessUI() {
+  const full = isPremium;
+  document.getElementById('premium-badge-hdr').style.display = full ? 'inline-block' : 'none';
+  document.getElementById('btn-premium-hdr').style.display   = full ? 'none' : 'inline-block';
+  updateQuotaBar();
+  // Re-render result if already shown
+  if (lastResult) renderResult(lastResult);
 }
+
+window.openAuthModal  = () => {
+  document.getElementById('auth-err').textContent = '';
+  document.getElementById('auth-modal').classList.add('open');
+};
+window.closeAuthModal = () => document.getElementById('auth-modal').classList.remove('open');
+
+window.handleSignIn = async function() {
+  const email = document.getElementById('auth-email').value.trim();
+  const pwd   = document.getElementById('auth-pwd').value;
+  const err   = document.getElementById('auth-err');
+  err.textContent = '';
+  if (!email || !pwd) { err.textContent = 'Remplissez email et mot de passe.'; return; }
+  try {
+    await signInWithEmailAndPassword(auth, email, pwd);
+    closeAuthModal();
+    showToast('✓ Connecté !');
+  } catch { err.textContent = 'Email ou mot de passe incorrect.'; }
+};
+
+window.handleSignUp = async function() {
+  const email = document.getElementById('auth-email').value.trim();
+  const pwd   = document.getElementById('auth-pwd').value;
+  const err   = document.getElementById('auth-err');
+  err.textContent = '';
+  if (!email || !pwd) { err.textContent = 'Remplissez email et mot de passe.'; return; }
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pwd);
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      email, createdAt: new Date().toISOString(), subscriptions: {}
+    });
+    closeAuthModal();
+    showToast('✓ Compte créé !');
+  } catch(e) {
+    err.textContent = e.code === 'auth/email-already-in-use' ? 'Email déjà utilisé.' : e.message;
+  }
+};
+
+window.handleSignOut = async () => { await signOut(auth); showToast('Déconnecté'); };
+
+// ── PAYWALL ──────────────────────────────────────────────────────────────────
+window.openPaywall  = () => document.getElementById('paywall-modal').classList.add('open');
+window.closePaywall = () => document.getElementById('paywall-modal').classList.remove('open');
+
+window.goPremium = () => {
+  if (!currentUser) { closePaywall(); openAuthModal(); return; }
+  const link = STRIPE_LINK.includes('VOTRE_LIEN')
+    ? null
+    : STRIPE_LINK + '?prefilled_email=' + encodeURIComponent(currentUser.email) + '&client_reference_id=' + currentUser.uid;
+  if (link) {
+    window.open(link, '_blank');
+    showToast('Après paiement, cliquez "Vérifier mon accès"');
+  } else {
+    showToast('Lien Stripe non configuré — contactez le support');
+  }
+  closePaywall();
+};
+
+window.checkPremiumStatus = async function() {
+  if (!currentUser) { closePaywall(); openAuthModal(); return; }
+  closePaywall();
+  try {
+    const snap = await getDoc(doc(db, 'users', currentUser.uid));
+    isPremium = snap.exists() && snap.data()?.subscriptions?.veriftout?.premium === true;
+    updateAccessUI();
+    showToast(isPremium ? '✓ Accès Premium activé !' : 'Paiement non confirmé — réessayez dans quelques instants');
+  } catch { showToast('Erreur de vérification'); }
+};
+
+// ── UI HELPERS ───────────────────────────────────────────────────────────────
+window.showTab = function(tab) {
+  ['analyze', 'history'].forEach(t => {
+    document.getElementById('view-' + t).classList.toggle('active', t === tab);
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+  });
+  if (tab === 'history') loadHistory();
+};
+
+window.setMode = function(mode) {
+  inputMode = mode;
+  document.getElementById('mode-url').classList.toggle('active',  mode === 'url');
+  document.getElementById('mode-text').classList.toggle('active', mode === 'text');
+  document.getElementById('url-wrap').style.display  = mode === 'url'  ? '' : 'none';
+  document.getElementById('text-wrap').style.display = mode === 'text' ? '' : 'none';
+};
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+window.showToast = showToast;
+
+// ── COMPREHENSIVE HEURISTIC ENGINE ────────────────────────────────────────────
+function analyzeContent(input) {
+  const text  = input.trim();
+  const lower = text.toLowerCase();
+  const isUrl = /^(https?:\/\/|www\.)/i.test(text);
+
+  let sc = { phishing: 0, spam: 0, desinformation: 0, urlSuspect: 0 };
+  let flags = [];
+
+  // ── URL ANALYSIS ──────────────────────────────────────────────────────────
+  if (isUrl) {
+    let url;
+    try { url = new URL(text.startsWith('http') ? text : 'https://' + text); } catch {}
+    if (url) {
+      const h = url.hostname.toLowerCase();
+      // IP-based
+      if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(h)) {
+        sc.urlSuspect += 40; sc.phishing += 30;
+        flags.push({ cat: 'url', msg: 'Adresse IP brute — aucun domaine légitime ne l\'utilise' });
+      }
+      // Suspicious TLDs
+      const sTLDs = ['.xyz','.top','.click','.tk','.ml','.ga','.cf','.gq','.bid','.win','.loan','.download','.stream','.gdn','.trade','.date','.review','.faith','.cricket','.work','.party','.racing','.link','.cam','.xin'];
+      if (sTLDs.some(t => h.endsWith(t))) {
+        sc.urlSuspect += 25;
+        flags.push({ cat: 'url', msg: `Extension de domaine suspecte (.${h.split('.').pop()}) — très utilisée pour les arnaques` });
+      }
+      // URL shorteners
+      const shorteners = ['bit.ly','tinyurl.com','t.co','goo.gl','ow.ly','buff.ly','rebrand.ly','cutt.ly','short.io','rb.gy','lnk.bio'];
+      if (shorteners.includes(h)) {
+        sc.urlSuspect += 20;
+        flags.push({ cat: 'url', msg: 'URL raccourcie — la destination réelle est masquée' });
+      }
+      // Typosquatting (marques françaises et internationales)
+      const brands = [
+        { b:'google',   p:['g00gle','go0gle','g0ogle','googIe','googel'] },
+        { b:'facebook', p:['faceb00k','facebok','facbook','faceebook','faecbook'] },
+        { b:'paypal',   p:['paypa1','paypai','paypaI','pay-pal','paypall','paypa-l'] },
+        { b:'amazon',   p:['arnazon','amazom','amaz0n','amaz-on'] },
+        { b:'apple',    p:['app1e','appIe','apple-support','icloud-security','apple-verify'] },
+        { b:'microsoft',p:['micros0ft','microsokt','microsofft','microsoft-support','windows-security'] },
+        { b:'orange',   p:['0range','orange-fr','orange-assistance','orange-confirm'] },
+        { b:'ameli',    p:['ame1i','amelii','ameli-fr','ameli-sante','amelifr'] },
+        { b:'impots',   p:['imp0ts','impots-gouv','impots-fr','remboursement-fiscal'] },
+        { b:'caf',      p:['caf-fr','caf-aides','ma-caf'] },
+        { b:'labanquepostale',p:['labanque-postale','banquepostale-secure'] },
+        { b:'créditAgricole',p:['credit-agr1cole','creditagricole-secure','ca-secure'] },
+        { b:'netflix',  p:['netflx','nettflix','netfl1x','netflix-billing'] },
+        { b:'chronopost',p:['chron0post','chronopost-livraison','chronopost-fr'] },
+      ];
+      for (const bp of brands) {
+        if (bp.p.some(p => h.includes(p))) {
+          sc.phishing += 60; sc.urlSuspect += 35;
+          flags.push({ cat: 'phishing', msg: `Usurpation probable de "${bp.b}" (typosquatting)` });
+        }
+      }
+      // Excessive subdomains
+      const sub = h.split('.').length - 2;
+      if (sub >= 3) {
+        sc.urlSuspect += 20;
+        flags.push({ cat: 'url', msg: `${sub} sous-domaines imbriqués — souvent utilisés pour masquer l'origine` });
+      }
+      // HTTP
+      if (url.protocol === 'http:') {
+        sc.urlSuspect += 15;
+        flags.push({ cat: 'url', msg: 'Connexion non chiffrée (HTTP) — vos données transitent en clair' });
+      }
+      // Non-standard port
+      if (url.port && !['80','443',''].includes(url.port)) {
+        sc.urlSuspect += 25;
+        flags.push({ cat: 'url', msg: `Port non standard (${url.port}) — inhabituel pour un site légitime` });
+      }
+      // Multiple redirects in path
+      if ((url.pathname.match(/\//g)||[]).length > 6) {
+        sc.urlSuspect += 15;
+        flags.push({ cat: 'url', msg: 'Chemin URL anormalement long — possible chaîne de redirection' });
+      }
+      // Phishing keywords in URL
+      const urlKw = ['login','signin','secure','verify','confirm','account','update','password','credential','banking','payement','invoice','urgent','refund','suspended'];
+      const uMatched = urlKw.filter(k => lower.includes(k));
+      if (uMatched.length >= 2) {
+        sc.phishing += 20;
+        flags.push({ cat: 'phishing', msg: `Mots-clés de phishing dans l'URL : ${uMatched.slice(0,3).join(', ')}` });
+      }
+    }
+  }
+
+  // ── PHISHING (texte) ──────────────────────────────────────────────────────
+  const phishingRules = [
+    { w:['urgent','immédiatement','immédiat','agissez','act now','expires dans'],     s:15, m:'Langage d\'urgence artificielle' },
+    { w:['mot de passe','password','identifiant','credentials','saisir vos'],         s:20, m:'Demande d\'identifiants' },
+    { w:['votre compte','compte suspendu','accès bloqué','compte désactivé'],         s:25, m:'Fausse alerte de compte' },
+    { w:['cliquez ici','cliquez maintenant','appuyez ici'],                           s:12, m:'Appel à l\'action suspect' },
+    { w:['vérification requise','confirmez votre','confirm your','verify your'],      s:20, m:'Demande de vérification forcée' },
+    { w:['activité suspecte','unusual activity','connexion inhabituelle'],             s:25, m:'Fausse alerte de sécurité' },
+    { w:['remboursement','trop-perçu','refund','réclamez votre'],                     s:18, m:'Fausse promesse de remboursement' },
+    { w:['mise à jour requise','update required','mettre à jour vos informations'],   s:20, m:'Fausse mise à jour de données' },
+    { w:['amende','contravention','infraction','pénalité','amenende impayée'],        s:25, m:'Fausse amende/pénalité gouvernementale' },
+    { w:['colis en attente','livraison bloquée','tracking','chronopost','colissimo'], s:12, m:'Smishing livraison (arnaque très répandue)' },
+    { w:['votre carte','carte bancaire','numéro de carte','iban','rib'],              s:30, m:'Demande de données bancaires' },
+    { w:['impôts','dgfip','trésor public','remboursement fiscal'],                    s:25, m:'Usurpation de l\'administration fiscale' },
+    { w:['ameli','sécurité sociale','cpam','remboursement sécu'],                     s:22, m:'Usurpation de l\'Assurance Maladie' },
+    { w:['caf','aide exceptionnelle','prime','allocation'],                            s:18, m:'Usurpation d\'organismes sociaux' },
+  ];
+  for (const r of phishingRules) {
+    const m = r.w.find(w => lower.includes(w));
+    if (m) { sc.phishing += r.s; flags.push({ cat:'phishing', msg:`${r.m} : "${m}"` }); }
+  }
+
+  // ── SPAM ──────────────────────────────────────────────────────────────────
+  const spamRules = [
+    { w:['gratuit','gratos','offre exclusive','100% gratuit'],                       s:15, m:'Offre gratuite — typique du spam' },
+    { w:['félicitations','vous avez gagné','gagnant','winner','tirage'],             s:28, m:'Fausse victoire / loterie' },
+    { w:['acheter maintenant','buy now','commandez','order now','ajoutez au panier'],s:12, m:'Spam commercial agressif' },
+    { w:['offre limitée','dernière chance','ne ratez pas','limited time'],           s:15, m:'FOMO — pression temporelle artificielle' },
+    { w:['million','milliard','riche','€€€','$$$','fortune'],                       s:22, m:'Promesse financière exagérée' },
+    { w:['héritage','succession','prince','funds transfer','inheritance'],           s:35, m:'Arnaque à l\'héritage (fraude 419)' },
+    { w:['investissement garanti','rendement garanti','sans risque','10x votre'],    s:32, m:'Investissement frauduleux (rendement garanti = fraude)' },
+    { w:['crypto','bitcoin','btc','eth','nft'],                                      s:10, m:'Contenu crypto (risque accru de fraude)' },
+    { w:['désabonnez','unsubscribe','se désabonner','opt-out'],                      s:8,  m:'Indicateur de liste de spam' },
+  ];
+  for (const r of spamRules) {
+    const m = r.w.find(w => lower.includes(w));
+    if (m) { sc.spam += r.s; flags.push({ cat:'spam', msg:`${r.m} : "${m}"` }); }
+  }
+  // Ponctuation excessive
+  const exclCount = (text.match(/!/g)||[]).length;
+  if (exclCount >= 3) {
+    sc.spam += 15;
+    flags.push({ cat:'spam', msg:`${exclCount} points d'exclamation — ponctuation caractéristique du spam` });
+  }
+  // ALL CAPS
+  const letters = text.replace(/[^a-zA-ZÀ-ÿ]/g,'');
+  const upper = text.replace(/[^A-ZÀÂÄÉÈÊËÎÏÔÙÛÜÇ]/g,'');
+  if (letters.length > 15 && upper.length / letters.length > 0.45) {
+    sc.spam += 20;
+    flags.push({ cat:'spam', msg:'Texte majoritairement en majuscules — technique d\'attention forcée' });
+  }
+
+  // ── DÉSINFORMATION ────────────────────────────────────────────────────────
+  const desinfRules = [
+    { w:['les médias cachent','la vérité cachée','ce que les médias ne vous disent pas','mainstream cache'],  s:38, m:'Rhétorique complotiste anti-médias' },
+    { w:['big pharma','vaccin tue','5g dangereux','gouvernement ment','nwo','nouvel ordre mondial'],          s:42, m:'Contenu complotiste documenté' },
+    { w:['urgent partagez','partagez avant','before they delete','avant censure','avant suppression'],        s:28, m:'Appel viral pré-censure — manipulation émotionnelle' },
+    { w:['remède miracle','guérit tout','médecins ne veulent pas','cure cachée','plante interdite'],          s:32, m:'Pseudo-médecine — arnaque santé' },
+    { w:['prouvé scientifiquement','études prouvent','experts confirment'],                                   s:12, m:'Autorité scientifique sans source' },
+    { w:['soros','bill gates microchip','puce sous la peau','élites mondiales'],                             s:45, m:'Désinformation identifiée à haut risque' },
+    { w:['astuce de grand-mère','médecine naturelle interdit','interdit par les médecins'],                  s:22, m:'Fausses informations santé' },
+    { w:['documentaire censuré','vidéo interdite','truth documentary'],                                      s:25, m:'Contenu censuré (signal de manipulation)' },
+  ];
+  for (const r of desinfRules) {
+    const m = r.w.find(w => lower.includes(w));
+    if (m) { sc.desinformation += r.s; flags.push({ cat:'desinformation', msg:r.m }); }
+  }
+
+  // ── FINAL SCORE ───────────────────────────────────────────────────────────
+  const raw = Math.max(sc.phishing, sc.spam, sc.desinformation, sc.urlSuspect);
+  const finalScore = Math.min(100, raw);
+
+  let label, severity;
+  if (finalScore >= 55) { label = 'Dangereux';  severity = 'danger';  }
+  else if (finalScore >= 25) { label = 'Suspect';    severity = 'warning'; }
+  else { label = 'Fiable';     severity = 'safe';    }
+
+  // Dominant category
+  const catMap = { phishing:'Phishing', spam:'Spam', desinformation:'Désinformation', urlSuspect:'URL suspecte' };
+  let domCat = 'Aucun risque détecté', domMax = 0;
+  for (const [k,v] of Object.entries(sc)) {
+    if (v > domMax) { domMax = v; domCat = catMap[k]; }
+  }
+  if (finalScore === 0) domCat = 'Aucun risque détecté';
+
+  return {
+    label, severity, score: finalScore, isUrl,
+    scores: {
+      phishing:      Math.min(100, sc.phishing),
+      spam:          Math.min(100, sc.spam),
+      desinformation:Math.min(100, sc.desinformation),
+      urlSuspect:    Math.min(100, sc.urlSuspect)
+    },
+    dominantCat: domCat,
+    flags: flags.slice(0, 10)
+  };
+}
+
+// ── RENDER RESULT ─────────────────────────────────────────────────────────────
+function renderResult(res) {
+  lastResult = res;
+  const card = document.getElementById('result-card');
+  card.classList.add('show');
+  // Header
+  const header  = document.getElementById('result-header');
+  const gauge   = document.getElementById('result-gauge');
+  const verdict = document.getElementById('result-verdict');
+  header.className  = 'result-header ' + res.severity;
+  gauge.textContent = res.score;
+  const icons = { safe:'✅', warning:'⚠️', danger:'🚨' };
+  const descs = {
+    safe:    'Aucun indicateur de risque significatif détecté.',
+    warning: `Attention — ${res.dominantCat} détecté. Soyez prudent avant de cliquer ou répondre.`,
+    danger:  `DANGER — ${res.dominantCat} à haut risque. Ne cliquez pas, ne répondez pas.`
+  };
+  verdict.innerHTML = `<h3>${icons[res.severity]} ${res.label}</h3><p>${descs[res.severity]}</p>`;
+
+  // Premium content
+  const premiumContent = document.getElementById('premium-content');
+  const premiumLock    = document.getElementById('premium-lock');
+
+  if (isPremium || res.severity === 'safe') {
+    premiumContent.style.display = '';
+    premiumLock.style.display    = 'none';
+    // Score rows
+    const cats = [
+      { key:'phishing',      label:'Phishing',       icon:'🎣' },
+      { key:'spam',          label:'Spam',            icon:'📧' },
+      { key:'desinformation',label:'Désinformation',  icon:'🗞️' },
+      { key:'urlSuspect',    label:'URL suspecte',    icon:'🔗' },
+    ];
+    let rowsHtml = '';
+    for (const c of cats) {
+      const v = res.scores[c.key] || 0;
+      const cls = v >= 55 ? 'fill-danger' : v >= 25 ? 'fill-warning' : 'fill-safe';
+      rowsHtml += `
+        <div class="score-row">
+          <div class="score-row-label">
+            <span>${c.icon} ${c.label}</span>
+            <span>${v}%</span>
+          </div>
+          <div class="score-bar-track">
+            <div class="score-bar-fill ${cls}" style="width:${v}%"></div>
+          </div>
+        </div>`;
+    }
+    document.getElementById('score-rows').innerHTML = rowsHtml;
+    // Flags
+    const flagsEl = document.getElementById('flags-content');
+    if (res.flags.length === 0) {
+      flagsEl.innerHTML = `<div class="flag-item"><span class="flag-badge safe">✓ Aucun</span><span class="flag-msg">Aucun indicateur suspect détecté.</span></div>`;
+    } else {
+      flagsEl.innerHTML = res.flags.map(f => {
+        const catLabels = { phishing:'🎣 Phishing', spam:'📧 Spam', desinformation:'🗞️ Désinfo', url:'🔗 URL' };
+        const label = catLabels[f.cat] || f.cat;
+        return `<div class="flag-item">
+          <span class="flag-badge ${f.cat}">${label}</span>
+          <span class="flag-msg">${f.msg}</span>
+        </div>`;
+      }).join('');
+    }
+  } else {
+    // Non-premium : show score breakdown blurred / locked
+    premiumContent.style.display = 'none';
+    premiumLock.style.display    = '';
+  }
+}
+
+// ── MAIN ANALYZE FUNCTION ─────────────────────────────────────────────────────
+window.doAnalyze = async function() {
+  const val = inputMode === 'url'
+    ? document.getElementById('input-url').value.trim()
+    : document.getElementById('input-text').value.trim();
+
+  if (!val) { showToast('Collez un texte ou une URL à analyser'); return; }
+
+  // Quota check (non-premium)
+  if (!isPremium) {
+    if (getQuota() <= 0) {
+      showToast('Limite quotidienne atteinte — passez Premium pour continuer');
+      openPaywall();
+      return;
+    }
+  }
+
+  const btn = document.getElementById('btn-analyze');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Analyse en cours…';
+
+  try {
+    const result = analyzeContent(val);
+    renderResult(result);
+    updateQuotaBar();
+
+    // Consommer le quota (non-premium)
+    if (!isPremium) consumeQuota();
+    updateQuotaBar();
+
+    // Sauvegarder dans Firestore si connecté
+    if (currentUser) {
+      try {
+        await addDoc(collection(db, 'verifTOUT'), {
+          userId:    currentUser.uid,
+          userEmail: currentUser.email,
+          input:     val.substring(0, 500),
+          inputMode,
+          result:    result.label,
+          severity:  result.severity,
+          score:     result.score,
+          scores:    result.scores,
+          dominantCat: result.dominantCat,
+          flagCount: result.flags.length,
+          createdAt: serverTimestamp()
+        });
+      } catch(e) { console.error('Firestore save error:', e); }
+    }
+  } catch(e) {
+    showToast('Erreur lors de l\'analyse');
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🛡 Analyser maintenant';
+  }
+};
+
+// ── HISTORY ──────────────────────────────────────────────────────────────────
+async function loadHistory() {
+  const container = document.getElementById('history-list');
+  if (!currentUser) {
+    container.innerHTML = `<div class="history-empty"><div class="hi">🔒</div><p>Connectez-vous pour accéder à votre historique.</p></div>`;
+    return;
+  }
+  container.innerHTML = `<div class="history-empty"><div class="hi">⏳</div><p>Chargement…</p></div>`;
+  try {
+    const maxItems = isPremium ? 100 : 10;
+    const q = query(
+      collection(db, 'verifTOUT'),
+      where('userId', '==', currentUser.uid),
+      orderBy('createdAt', 'desc'),
+      limit(maxItems)
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      container.innerHTML = `<div class="history-empty"><div class="hi">📋</div><p>Aucune analyse pour l'instant.<br>Analysez votre premier contenu !</p></div>`;
+      return;
+    }
+    const items = snap.docs.map(d => d.data());
+    const labels = { safe:'Fiable', warning:'Suspect', danger:'Dangereux' };
+    container.innerHTML = items.map(item => {
+      const d = item.createdAt?.toDate?.()?.toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) || '—';
+      return `<div class="history-item">
+        <div class="hist-badge ${item.severity}">${labels[item.severity] || item.result}</div>
+        <div class="hist-text">
+          <div class="hist-input">${item.input?.substring(0,80) || '—'}</div>
+          <div class="hist-meta">${d} · ${item.inputMode === 'url' ? '🔗 URL' : '📝 Texte'} · ${item.flagCount || 0} indicateur${(item.flagCount||0) !== 1 ? 's' : ''}</div>
+        </div>
+        <div class="hist-score ${item.severity}">${item.score}%</div>
+      </div>`;
+    }).join('');
+    if (!isPremium && items.length === 10) {
+      container.innerHTML += `<div style="text-align:center;padding:1.25rem;">
+        <div style="font-size:0.82rem;color:var(--muted);margin-bottom:0.75rem;">Historique limité à 10 entrées (version gratuite)</div>
+        <button onclick="openPaywall()" class="btn-unlock">✦ Débloquer l'historique complet — 3,99€</button>
+      </div>`;
+    }
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = `<div class="history-empty"><div class="hi">⚠️</div><p>Erreur de chargement. Vérifiez votre connexion.</p></div>`;
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+updateQuotaBar();
 
 </script>
-
 </body>
 </html>
-
