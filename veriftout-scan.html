@@ -849,7 +849,6 @@ function consumeQuota() {
 }
 function updateQuotaBar() {
   const remaining = isPremium ? '∞' : getQuota();
-  document.getElementById('quota-count').textContent = remaining;
   const bar = document.getElementById('quota-bar');
   bar.innerHTML = isPremium
     ? `<span class="premium-badge">⭐ Premium</span> Analyses illimitées`
