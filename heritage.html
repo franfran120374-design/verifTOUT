@@ -85,6 +85,10 @@
     .photo-thumb { position: relative; border-radius: var(--radius-sm); overflow: hidden; aspect-ratio: 1; }
     .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
     .photo-thumb .remove { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.55); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 0.65rem; cursor: pointer; }
+    /* FIX 4 : Barre de progression pour l'upload Storage */
+    .upload-progress-bar { display: none; margin-top: 0.75rem; }
+    .upload-progress-bar progress { width: 100%; height: 6px; border-radius: 3px; }
+    .upload-progress-bar span { font-size: 0.72rem; color: var(--muted); display: block; text-align: center; margin-top: 0.25rem; }
     .btn-save { width: 100%; padding: 1rem; margin-top: 1.5rem; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
     .btn-save:hover { background: var(--accent-light); }
     .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -185,9 +189,23 @@
     .badge-gratuit { font-size: 0.65rem; font-weight: 500; color: var(--green); background: var(--green-bg); border-radius: 100px; padding: 0.2rem 0.5rem; border: 1px solid rgba(58,107,58,0.2); }
     .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: var(--white); border-radius: 100px; padding: 0.6rem 1.25rem; font-size: 0.82rem; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 300; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    /* FIX 10 : Indicateur de chargement du module */
+    .loading-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(249,245,239,0.92); display: flex; align-items: center; justify-content: center; }
+    .loading-overlay.hidden { display: none; }
+    .loading-spinner { text-align: center; }
+    .loading-spinner p { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
   </style>
 </head>
 <body>
+
+<!-- FIX 10 : Overlay de chargement visible pendant l'initialisation du module -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner">
+    <div style="font-size:2rem;">📜</div>
+    <p>Chargement…</p>
+  </div>
+</div>
+
 <div class="app-shell">
   <div class="sidebar">
     <div class="sidebar-logo">Héritage<em>Mémoire</em></div>
@@ -244,6 +262,7 @@
         <h2 id="chapter-title">Enfance</h2>
         <p id="chapter-desc">Racontez vos premiers souvenirs</p>
       </div>
+      <!-- FIX 2 : record-content contient maintenant TOUT le contenu, y compris share-section et btn-save -->
       <div class="record-content">
         <div class="ai-question-box">
           <div class="ai-question-label">✦ Question guidée par l'IA</div>
@@ -255,19 +274,25 @@
         <div class="photo-section">
           <label class="input-label">Photos (optionnel)</label>
           <div class="photo-upload-zone">
-            <input type="file" accept="image/*" multiple onchange="handlePhotos(event)" />
+            <input type="file" id="photo-input" accept="image/*" multiple onchange="handlePhotos(event)" />
             <div style="font-size:1.5rem;">📷</div>
             <p>Ajouter des photos liées à ce souvenir</p>
           </div>
           <div class="photo-previews" id="photo-previews"></div>
+          <!-- FIX 4 : Barre de progression pour l'upload Firebase Storage -->
+          <div class="upload-progress-bar" id="upload-progress-bar">
+            <progress id="upload-progress-val" value="0" max="100"></progress>
+            <span id="upload-progress-text">Envoi des photos…</span>
+          </div>
         </div>
-        </div>
+        <!-- FIX 2 : share-section et btn-save maintenant DANS record-content -->
         <div class="share-section" id="record-share-section" style="display:none;">
           <span class="share-title">Partager avec la famille</span>
           <div class="famille-membres" id="record-famille-membres"></div>
         </div>
         <button class="btn-save" id="btn-save" onclick="saveMemory()">💾 Sauvegarder ce souvenir</button>
       </div>
+      <!-- FIN FIX 2 -->
     </div>
 
     <!-- MEMORIES -->
@@ -396,6 +421,8 @@
     </ul>
     <div class="paywall-price"><div class="price">3,99€</div><div class="once">paiement unique — à vie</div></div>
     <button class="btn-buy" onclick="goPremium()">Débloquer maintenant — 3,99€</button>
+    <!-- FIX 5 : Bouton de vérification du statut après paiement -->
+    <button class="btn-cancel" style="font-size:0.78rem;color:var(--accent);" onclick="checkPremiumStatus()">✓ Vérifier mon accès après paiement</button>
     <button class="btn-cancel" onclick="closePaywall()">Continuer gratuitement (3 chapitres)</button>
   </div>
 </div>
@@ -432,20 +459,35 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// Pre-load stubs to prevent "not defined" errors while module loads
-window.openHmModal = window.openHmModal || function() { console.log('Loading...'); };
-window.showView = window.showView || function() { console.log('Loading...'); };
-window.openPaywall = window.openPaywall || function() { console.log('Loading...'); };
-window.closePaywall = window.closePaywall || function() {};
-window.closeHmModal = window.closeHmModal || function() {};
+  /*
+   * FIX 10 : Queue de rappels différés
+   * Les fonctions du module ES sont async (déféré). Si l'utilisateur clique avant
+   * que le module soit chargé, les appels sont mis en file et rejoués après init.
+   * Remarque : l'overlay #loading-overlay empêche les clics pendant ce délai.
+   */
+  window._deferredCalls = [];
+  window.openHmModal  = function()   { window._deferredCalls.push({fn:'openHmModal',   args:[]}); };
+  window.showView     = function(id) { window._deferredCalls.push({fn:'showView',      args:[id]}); };
+  window.openPaywall  = function()   { window._deferredCalls.push({fn:'openPaywall',   args:[]}); };
+  window.closePaywall = function()   {};
+  window.closeHmModal = function()   {};
 </script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection, query, where, onSnapshot, orderBy, serverTimestamp, arrayUnion, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 
+/*
+ * FIX 9 : La clé Firebase est intentionnellement publique dans le SDK client.
+ * IMPÉRATIF : Configurez des règles Firestore strictes dans la console Firebase
+ * pour protéger les données utilisateurs. Voir la documentation du projet.
+ * Règles recommandées :
+ *   - users/{uid} : read/write if request.auth.uid == uid
+ *   - souvenirs/{id} : read if auteurId == auth.uid OR auth.uid in partageAvec
+ *   - famille/{id} : read/write if auth.uid in membres
+ */
 const firebaseConfig = {
   apiKey: "AIzaSyB1TwbZSkqkAKEPhNJXuwn9zMEz2BqBk48",
   authDomain: "hub-coloc.firebaseapp.com",
@@ -463,17 +505,42 @@ const storage = getStorage(app);
 
 window.STRIPE_HERITAGE = "https://buy.stripe.com/4gMcMY15b0cLfCw81G4Vy02";
 
+/*
+ * FIX 3 : Configuration du proxy pour l'API Anthropic.
+ * L'API Anthropic ne supporte pas les appels directs depuis le navigateur (CORS).
+ * Déployez un proxy serverless (Firebase Cloud Function, Vercel, Cloudflare Worker)
+ * qui ajoute le header x-api-key côté serveur et retourne la réponse.
+ * Exemple proxy (Node.js) :
+ *   app.post('/api/claude', async (req, res) => {
+ *     const r = await fetch('https://api.anthropic.com/v1/messages', {
+ *       method: 'POST',
+ *       headers: { 'x-api-key': process.env.ANTHROPIC_KEY, 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01' },
+ *       body: JSON.stringify(req.body)
+ *     });
+ *     const data = await r.json();
+ *     res.json(data);
+ *   });
+ * Puis : window.CLAUDE_PROXY_URL = 'https://votre-proxy.example.com/api/claude';
+ */
+const CLAUDE_PROXY_URL = window.CLAUDE_PROXY_URL || null;
+
+// ─── ÉTAT GLOBAL ───────────────────────────────────────────────────────────────
 let memories = [], sharedMemories = [], familleMembers = [];
 let isPremium = false, isAccesGratuit = false;
 let currentUser = null, currentChapter = null, currentQuestion = '';
-let uploadedPhotos = [];
+// FIX 4 : rawPhotoFiles stocke les objets File bruts pour l'upload Storage
+//          uploadedPhotos stocke les base64 uniquement pour la prévisualisation locale
+let uploadedPhotos = [], rawPhotoFiles = [];
 let editingMemoryId = null, deletingMemoryId = null;
 let unsubMemories = null, unsubShared = null, unsubFamille = null;
 let selectedPdfStyle = 'classique';
 let selectionMode = false;
 let selectedIds = new Set();
 
-function loadLocal() { try { memories = JSON.parse(localStorage.getItem('hm_memories') || '[]'); } catch { memories = []; } }
+function loadLocal() {
+  try { memories = JSON.parse(localStorage.getItem('hm_memories') || '[]'); }
+  catch { memories = []; }
+}
 
 async function checkAccesGratuit(email) {
   try {
@@ -492,7 +559,10 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById('hm-user-email').textContent = user.email;
     document.getElementById('sidebar-user-info').style.display = 'block';
     document.getElementById('sidebar-email').textContent = user.email;
-    try { const snap = await getDoc(doc(db, 'users', user.uid)); isPremium = snap.exists() && snap.data()?.subscriptions?.heritage?.premium === true; } catch {}
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      isPremium = snap.exists() && snap.data()?.subscriptions?.heritage?.premium === true;
+    } catch {}
     isAccesGratuit = await checkAccesGratuit(user.email);
     updateAccessBadges();
     subscribeMemories();
@@ -501,10 +571,13 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     currentUser = null; isPremium = false; isAccesGratuit = false;
     if (unsubMemories) { unsubMemories(); unsubMemories = null; }
-    if (unsubShared) { unsubShared(); unsubShared = null; }
-    if (unsubFamille) { unsubFamille(); unsubFamille = null; }
+    if (unsubShared)   { unsubShared();   unsubShared   = null; }
+    if (unsubFamille)  { unsubFamille();  unsubFamille  = null; }
     familleMembers = []; sharedMemories = [];
     loadLocal();
+    renderChapters();
+    // FIX 7 : Mettre à jour le sélecteur PDF même pour les utilisateurs anonymes
+    updatePdfChapterSelect();
     document.getElementById('hm-auth-bar').style.display = 'flex';
     document.getElementById('hm-auth-bar-bottom').style.display = 'flex';
     document.getElementById('hm-user-bar').style.display = 'none';
@@ -512,7 +585,6 @@ onAuthStateChanged(auth, async (user) => {
     ['hm-premium-ind','hm-gratuit-ind'].forEach(id => document.getElementById(id).style.display = 'none');
     document.getElementById('btn-paywall-mobile').style.display = 'inline-block';
     document.getElementById('btn-paywall-sidebar').style.display = 'block';
-    renderChapters();
   }
 });
 
@@ -531,7 +603,12 @@ function subscribeMemories() {
   const uid = currentUser.uid;
   unsubMemories = onSnapshot(
     query(collection(db, 'souvenirs'), where('auteurId', '==', uid), orderBy('createdAt', 'desc')),
-    snap => { memories = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderMemories(); renderChapters(); updatePdfChapterSelect(); },
+    snap => {
+      memories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderMemories();
+      renderChapters();
+      updatePdfChapterSelect();
+    },
     err => console.error('Erreur souvenirs:', err)
   );
   unsubShared = onSnapshot(
@@ -540,19 +617,30 @@ function subscribeMemories() {
   );
 }
 
+// FIX 8 : Déduplication des membres de famille par uid
 function subscribeFamille() {
   if (!currentUser) return;
   unsubFamille = onSnapshot(
     query(collection(db, 'famille'), where('membres', 'array-contains', currentUser.uid)),
     snap => {
       familleMembers = [];
-      snap.docs.forEach(d => (d.data().invites || []).forEach(inv => { if (inv.uid !== currentUser.uid) familleMembers.push({ ...inv, familleId: d.id }); }));
+      snap.docs.forEach(d =>
+        (d.data().invites || []).forEach(inv => {
+          if (inv.uid !== currentUser.uid) familleMembers.push({ ...inv, familleId: d.id });
+        })
+      );
+      // FIX 8 : Filtrer les doublons par uid
+      const seen = new Set();
+      familleMembers = familleMembers.filter(m => seen.has(m.uid) ? false : seen.add(m.uid));
       renderFamilleView();
     }
   );
 }
 
-window.openHmModal = () => { document.getElementById('hm-err').textContent = ''; document.getElementById('hm-auth-modal').classList.add('open'); };
+window.openHmModal = () => {
+  document.getElementById('hm-err').textContent = '';
+  document.getElementById('hm-auth-modal').classList.add('open');
+};
 window.closeHmModal = () => document.getElementById('hm-auth-modal').classList.remove('open');
 
 window.handleHmSignIn = async function() {
@@ -561,10 +649,16 @@ window.handleHmSignIn = async function() {
   const err = document.getElementById('hm-err');
   err.textContent = '';
   if (!email || !pwd) { err.textContent = 'Remplissez email et mot de passe.'; return; }
-  try { await signInWithEmailAndPassword(auth, email, pwd); closeHmModal(); showToast('✓ Connecté !'); }
-  catch { err.textContent = 'Email ou mot de passe incorrect.'; }
+  try {
+    await signInWithEmailAndPassword(auth, email, pwd);
+    closeHmModal();
+    showToast('✓ Connecté !');
+  } catch {
+    err.textContent = 'Email ou mot de passe incorrect.';
+  }
 };
 
+// FIX 6 : Résolution des invitations en attente à la création de compte
 window.handleHmSignUp = async function() {
   const email = document.getElementById('hm-email').value.trim();
   const pwd = document.getElementById('hm-pwd').value;
@@ -573,23 +667,76 @@ window.handleHmSignUp = async function() {
   if (!email || !pwd) { err.textContent = 'Remplissez email et mot de passe.'; return; }
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, pwd);
-    await setDoc(doc(db, 'users', cred.user.uid), { email, createdAt: new Date().toISOString(), subscriptions: {} });
-    await addDoc(collection(db, 'famille'), { createur: cred.user.uid, membres: [cred.user.uid], invites: [{ uid: cred.user.uid, email, statut: 'actif' }], createdAt: serverTimestamp() });
-    closeHmModal(); showToast('✓ Compte créé !');
-  } catch(e) { err.textContent = e.code === 'auth/email-already-in-use' ? 'Email déjà utilisé.' : e.message; }
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      email,
+      createdAt: new Date().toISOString(),
+      subscriptions: {}
+    });
+
+    // FIX 6 : Vérifier les invitations en attente et les résoudre
+    try {
+      const emailKey = email.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const pendingSnap = await getDoc(doc(db, 'pending_invites', emailKey));
+      if (pendingSnap.exists()) {
+        const { familleId } = pendingSnap.data();
+        if (familleId) {
+          const famRef = doc(db, 'famille', familleId);
+          const famSnap = await getDoc(famRef);
+          if (famSnap.exists()) {
+            const pendingUid = 'pending_' + email.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            const updatedInvites = (famSnap.data().invites || []).map(inv =>
+              inv.uid === pendingUid
+                ? { ...inv, uid: cred.user.uid, statut: 'actif' }
+                : inv
+            );
+            const updatedMembres = [...new Set([
+              ...(famSnap.data().membres || []),
+              cred.user.uid
+            ])];
+            await updateDoc(famRef, { invites: updatedInvites, membres: updatedMembres });
+            await deleteDoc(doc(db, 'pending_invites', emailKey));
+          }
+        }
+      } else {
+        // Pas d'invitation en attente : créer un groupe famille vierge
+        await addDoc(collection(db, 'famille'), {
+          createur: cred.user.uid,
+          membres: [cred.user.uid],
+          invites: [{ uid: cred.user.uid, email, statut: 'actif' }],
+          createdAt: serverTimestamp()
+        });
+      }
+    } catch(inviteErr) {
+      // Erreur non bloquante sur la résolution des invites
+      console.error('Erreur résolution invite:', inviteErr);
+      // Créer quand même un groupe famille
+      await addDoc(collection(db, 'famille'), {
+        createur: cred.user.uid,
+        membres: [cred.user.uid],
+        invites: [{ uid: cred.user.uid, email, statut: 'actif' }],
+        createdAt: serverTimestamp()
+      });
+    }
+
+    closeHmModal();
+    showToast('✓ Compte créé !');
+  } catch(e) {
+    err.textContent = e.code === 'auth/email-already-in-use' ? 'Email déjà utilisé.' : e.message;
+  }
 };
 
 window.handleHmSignOut = async () => { await signOut(auth); showToast('Déconnecté'); };
 
+// ─── CHAPITRES ─────────────────────────────────────────────────────────────────
 const CHAPTERS = [
   { id: 'enfance',     icon: '🧒',  name: 'Enfance',     desc: 'Les premières années',      free: true  },
-  { id: 'famille',    icon: '👨‍👩‍👧', name: 'Famille',     desc: 'Parents, frères, sœurs',    free: true  },
-  { id: 'amour',      icon: '💑',  name: 'Amour',       desc: 'Rencontres et romance',      free: true  },
-  { id: 'travail',    icon: '💼',  name: 'Travail',     desc: 'Carrière et métier',         free: false },
-  { id: 'voyages',    icon: '✈️',  name: 'Voyages',     desc: 'Aventures et découvertes',   free: false },
-  { id: 'guerre',     icon: '🕊️',  name: 'Histoire',    desc: 'Témoignages et époque',      free: false },
-  { id: 'sagesse',    icon: '🌟',  name: 'Sagesse',     desc: 'Leçons de vie',              free: false },
-  { id: 'traditions', icon: '🎄',  name: 'Traditions',  desc: 'Fêtes et rituels familiaux', free: false },
+  { id: 'famille',     icon: '👨‍👩‍👧', name: 'Famille',     desc: 'Parents, frères, sœurs',    free: true  },
+  { id: 'amour',       icon: '💑',  name: 'Amour',       desc: 'Rencontres et romance',      free: true  },
+  { id: 'travail',     icon: '💼',  name: 'Travail',     desc: 'Carrière et métier',         free: false },
+  { id: 'voyages',     icon: '✈️',  name: 'Voyages',     desc: 'Aventures et découvertes',   free: false },
+  { id: 'guerre',      icon: '🕊️',  name: 'Histoire',    desc: 'Témoignages et époque',      free: false },
+  { id: 'sagesse',     icon: '🌟',  name: 'Sagesse',     desc: 'Leçons de vie',              free: false },
+  { id: 'traditions',  icon: '🎄',  name: 'Traditions',  desc: 'Fêtes et rituels familiaux', free: false },
 ];
 
 const QUESTIONS = {
@@ -610,12 +757,12 @@ function renderChapters() {
   grid.innerHTML = CHAPTERS.map(ch => {
     const count = allMems.filter(m => m.chapter === ch.id).length;
     const locked = !ch.free && !full;
-    return `<div class="chapter-card ${locked?'locked':''}" onclick="${locked?'openPaywall()':`selectChapter('${ch.id}')`}">
+    return `<div class="chapter-card ${locked?'locked':''}" onclick="${locked ? 'openPaywall()' : `selectChapter('${ch.id}')`}">
       <div class="chapter-icon">${ch.icon}</div>
       <div class="chapter-name">${ch.name}</div>
       <div style="font-size:0.72rem;color:var(--muted);">${ch.desc}</div>
       <div class="chapter-count">${count} souvenir${count!==1?'s':''}</div>
-      ${locked?'<div class="chapter-lock">🔒 Premium</div>':''}
+      ${locked ? '<div class="chapter-lock">🔒 Premium</div>' : ''}
     </div>`;
   }).join('');
 }
@@ -627,19 +774,25 @@ function updatePdfChapterSelect() {
     chaptersWithMems.map(ch => `<option value="${ch.id}">${ch.icon} ${ch.name}</option>`).join('');
 }
 
+// FIX 1 : selectChapter() entièrement nettoyé — toutes les références aux
+//          éléments audio supprimés (audio-playback, rec-status, rec-timer,
+//          upload-progress) ont été retirées. audioBlob non déclaré supprimé.
 window.selectChapter = function(id) {
   currentChapter = CHAPTERS.find(c => c.id === id);
+  if (!currentChapter) return; // Sécurité défensive
   document.getElementById('chapter-title').textContent = currentChapter.icon + ' ' + currentChapter.name;
   document.getElementById('chapter-desc').textContent = currentChapter.desc;
-  uploadedPhotos = []; audioBlob = null;
+  uploadedPhotos = [];
+  rawPhotoFiles = []; // FIX 4 : synchronisation du tableau de fichiers bruts
   document.getElementById('photo-previews').innerHTML = '';
-  document.getElementById('audio-playback').style.display = 'none';
+  // Réinitialiser le champ fichier
+  const photoInput = document.getElementById('photo-input');
+  if (photoInput) photoInput.value = '';
   document.getElementById('answer-text').value = '';
-  document.getElementById('rec-status').textContent = 'Appuyez pour enregistrer';
-  document.getElementById('rec-timer').textContent = '0:00';
-  document.getElementById('upload-progress').style.display = 'none';
   document.getElementById('btn-save').disabled = false;
   document.getElementById('btn-save').textContent = '💾 Sauvegarder ce souvenir';
+  // Masquer la barre de progression photo
+  document.getElementById('upload-progress-bar').style.display = 'none';
   renderFamilleCheckboxes();
   loadNewQuestion();
   showView('record');
@@ -660,32 +813,57 @@ function renderFamilleCheckboxes() {
     </div>`).join('');
 }
 
+// FIX 3 : loadNewQuestion avec architecture proxy configurable
 window.loadNewQuestion = async function() {
   const btn = document.getElementById('btn-new-q');
   btn.disabled = true; btn.textContent = '↻ Chargement...';
   const localQs = QUESTIONS[currentChapter?.id] || [];
+  if (localQs.length === 0) {
+    document.getElementById('ai-question').textContent = 'Racontez votre souvenir librement.';
+    btn.disabled = false; btn.textContent = '↻ Autre question'; return;
+  }
   const allMems = currentUser ? memories : JSON.parse(localStorage.getItem('hm_memories') || '[]');
   const used = allMems.filter(m => m.chapter === currentChapter?.id).map(m => m.question);
   const fresh = localQs.filter(q => !used.includes(q));
   if (fresh.length > 0) {
     currentQuestion = fresh[Math.floor(Math.random() * fresh.length)];
     document.getElementById('ai-question').textContent = currentQuestion;
-    btn.disabled = false; btn.textContent = '↻ Autre question'; return;
+    btn.disabled = false; btn.textContent = '↻ Autre question';
+    return;
   }
-  try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 150, messages: [{ role: "user", content: `Génère une seule question ouverte, chaleureuse et bienveillante pour aider quelqu'un à raconter ses souvenirs sur le thème "${currentChapter?.name}". La question doit être simple, en français, et inviter à partager un souvenir précis et personnel. Réponds uniquement avec la question, sans ponctuation finale ni guillemets.` }] })
-    });
-    const data = await response.json();
-    currentQuestion = data.content[0]?.text?.trim() || localQs[0];
-  } catch { currentQuestion = localQs[Math.floor(Math.random() * localQs.length)]; }
+  // Toutes les questions locales ont été utilisées : tenter le proxy IA si configuré
+  if (CLAUDE_PROXY_URL) {
+    try {
+      const response = await fetch(CLAUDE_PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 150,
+          messages: [{
+            role: 'user',
+            content: `Génère une seule question ouverte, chaleureuse et bienveillante pour aider quelqu'un à raconter ses souvenirs sur le thème "${currentChapter?.name}". La question doit être simple, en français, et inviter à partager un souvenir précis et personnel. Réponds uniquement avec la question, sans ponctuation finale ni guillemets.`
+          }]
+        })
+      });
+      const data = await response.json();
+      currentQuestion = data.content?.[0]?.text?.trim() || localQs[Math.floor(Math.random() * localQs.length)];
+    } catch {
+      // Proxy non disponible : recycler les questions locales
+      currentQuestion = localQs[Math.floor(Math.random() * localQs.length)];
+    }
+  } else {
+    // Pas de proxy : recycler les questions locales
+    currentQuestion = localQs[Math.floor(Math.random() * localQs.length)];
+  }
   document.getElementById('ai-question').textContent = currentQuestion;
   btn.disabled = false; btn.textContent = '↻ Autre question';
 };
 
+// FIX 4 : handlePhotos stocke les objets File bruts ET les aperçus base64
 window.handlePhotos = function(event) {
   Array.from(event.target.files).forEach(file => {
+    rawPhotoFiles.push(file);
     const reader = new FileReader();
     reader.onload = (e) => { uploadedPhotos.push(e.target.result); renderPhotoPreviews(); };
     reader.readAsDataURL(file);
@@ -696,21 +874,57 @@ function renderPhotoPreviews() {
     `<div class="photo-thumb"><img src="${src}" /><button class="remove" onclick="removePhoto(${i})">✕</button></div>`
   ).join('');
 }
-window.removePhoto = (i) => { uploadedPhotos.splice(i, 1); renderPhotoPreviews(); };
+// FIX 4 : removePhoto synchronise rawPhotoFiles ET uploadedPhotos
+window.removePhoto = (i) => {
+  uploadedPhotos.splice(i, 1);
+  rawPhotoFiles.splice(i, 1);
+  renderPhotoPreviews();
+};
 
+// FIX 4 : saveMemory uploade les photos vers Firebase Storage avant Firestore
 window.saveMemory = async function() {
   if (!currentUser) { openHmModal(); return; }
   const text = document.getElementById('answer-text').value.trim();
-  if (!text && uploadedPhotos.length === 0) { showToast('Ajoutez au moins un texte ou une photo'); return; }
+  if (!text && rawPhotoFiles.length === 0) { showToast('Ajoutez au moins un texte ou une photo'); return; }
   const btn = document.getElementById('btn-save');
   btn.disabled = true; btn.textContent = '⏳ Sauvegarde...';
   const partageAvec = [];
-  document.querySelectorAll('#record-famille-membres .membre-check:checked').forEach(cb => partageAvec.push(cb.dataset.uid));
+  document.querySelectorAll('#record-famille-membres .membre-check:checked')
+    .forEach(cb => partageAvec.push(cb.dataset.uid));
   try {
+    // Upload des photos vers Firebase Storage (FIX 4)
+    const photoUrls = [];
+    const progressBar = document.getElementById('upload-progress-bar');
+    const progressVal = document.getElementById('upload-progress-val');
+    const progressText = document.getElementById('upload-progress-text');
+    if (rawPhotoFiles.length > 0) {
+      progressBar.style.display = 'block';
+      for (let i = 0; i < rawPhotoFiles.length; i++) {
+        const file = rawPhotoFiles[i];
+        progressText.textContent = `Envoi photo ${i + 1}/${rawPhotoFiles.length}…`;
+        progressVal.value = Math.round((i / rawPhotoFiles.length) * 100);
+        const photoRef = ref(storage,
+          `souvenirs/${currentUser.uid}/${Date.now()}_${i}_${file.name.replace(/[^a-z0-9._-]/gi, '_')}`
+        );
+        const snapshot = await uploadBytes(photoRef, file);
+        const url = await getDownloadURL(snapshot.ref);
+        photoUrls.push(url);
+      }
+      progressVal.value = 100;
+      progressText.textContent = 'Photos envoyées ✓';
+      setTimeout(() => { progressBar.style.display = 'none'; }, 1500);
+    }
+    // Écriture dans Firestore avec les URLs Storage (non les base64)
     await addDoc(collection(db, 'souvenirs'), {
-      auteurId: currentUser.uid, auteurEmail: currentUser.email,
-      chapter: currentChapter.id, chapterName: currentChapter.name, chapterIcon: currentChapter.icon,
-      question: currentQuestion, text, photos: uploadedPhotos, partageAvec,
+      auteurId:    currentUser.uid,
+      auteurEmail: currentUser.email,
+      chapter:     currentChapter.id,
+      chapterName: currentChapter.name,
+      chapterIcon: currentChapter.icon,
+      question:    currentQuestion,
+      text,
+      photos:      photoUrls, // URLs Firebase Storage uniquement
+      partageAvec,
       date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
       createdAt: serverTimestamp()
     });
@@ -720,10 +934,11 @@ window.saveMemory = async function() {
   } catch(e) {
     showToast('Erreur : ' + e.message);
     btn.disabled = false; btn.textContent = '💾 Sauvegarder ce souvenir';
+    document.getElementById('upload-progress-bar').style.display = 'none';
   }
 };
 
-// ─── SELECTION MODE ───
+// ─── SELECTION MODE ─────────────────────────────────────────────────────────────
 window.toggleSelectionMode = function() {
   selectionMode = !selectionMode;
   selectedIds.clear();
@@ -738,19 +953,11 @@ window.toggleSelectionMode = function() {
   renderMemories();
 };
 
-window.selectAll = function() {
-  memories.forEach(m => selectedIds.add(m.id));
-  renderMemories();
-};
-
-window.deselectAll = function() {
-  selectedIds.clear();
-  renderMemories();
-};
+window.selectAll = function() { memories.forEach(m => selectedIds.add(m.id)); renderMemories(); };
+window.deselectAll = function() { selectedIds.clear(); renderMemories(); };
 
 window.toggleMemorySelect = function(id) {
-  if (selectedIds.has(id)) selectedIds.delete(id);
-  else selectedIds.add(id);
+  if (selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
   const card = document.getElementById('card-' + id);
   if (card) card.classList.toggle('selected', selectedIds.has(id));
   const cb = document.getElementById('check-' + id);
@@ -762,7 +969,6 @@ function renderMemories() {
   const list = currentUser ? memories : JSON.parse(localStorage.getItem('hm_memories') || '[]');
   if (selectionMode) container.classList.add('selection-mode');
   else container.classList.remove('selection-mode');
-
   if (list.length === 0) {
     container.innerHTML = `<div class="empty-memories"><div class="empty-icon">📜</div><p>Vos souvenirs apparaîtront ici.<br>Choisissez un chapitre pour commencer !</p></div>`;
     return;
@@ -776,7 +982,7 @@ function renderMemories() {
       </div>
       ${m.question ? `<div class="memory-question">"${m.question}"</div>` : ''}
       ${m.text ? `<div class="memory-text">${m.text}</div>` : ''}
-      ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p=>`<img src="${p}"/>`).join('')}</div>` : ''}
+      ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p=>`<img src="${p}" loading="lazy"/>`).join('')}</div>` : ''}
       ${m.partageAvec?.length ? `<div style="padding:0.5rem 1.25rem;font-size:0.72rem;color:var(--gold);">🔗 Partagé avec ${m.partageAvec.length} membre${m.partageAvec.length>1?'s':''}</div>` : ''}
       <div class="memory-actions">
         <button class="btn-mem-action" onclick="openEditMemory('${m.id}')">✏️ Modifier</button>
@@ -785,11 +991,11 @@ function renderMemories() {
     </div>`).join('');
 }
 
-// ─── PDF STYLES ───
+// ─── PDF STYLES ─────────────────────────────────────────────────────────────────
 const PDF_STYLES = {
-  classique: { pageBg:'#ffffff', headerBg:'#f5f5f5', coverAccent:'#8b4513', coverColor:'#1a1410', headerColor:'#1a1410', questionColor:'#6b5845', textColor:'#1a1410', borderColor:'#e0e0e0' },
+  classique:  { pageBg:'#ffffff', headerBg:'#f5f5f5', coverAccent:'#8b4513', coverColor:'#1a1410', headerColor:'#1a1410', questionColor:'#6b5845', textColor:'#1a1410', borderColor:'#e0e0e0' },
   chaleureux: { pageBg:'#fdf8f0', headerBg:'#f5ebe0', coverAccent:'#8b4513', coverColor:'#1a1410', headerColor:'#8b4513', questionColor:'#a57a3a', textColor:'#1a1410', borderColor:'#e0d5c4' },
-  moderne: { pageBg:'#1a1a2e', headerBg:'#16213e', coverAccent:'#c8922a', coverColor:'#ffffff', headerColor:'#c8922a', questionColor:'#8a9ab5', textColor:'#f5f5f5', borderColor:'#2a2a4e' }
+  moderne:    { pageBg:'#1a1a2e', headerBg:'#16213e', coverAccent:'#c8922a', coverColor:'#ffffff', headerColor:'#c8922a', questionColor:'#8a9ab5', textColor:'#f5f5f5', borderColor:'#2a2a4e' }
 };
 
 window.selectStyle = function(el) {
@@ -805,27 +1011,19 @@ window.generatePDF = async function() {
   const style = PDF_STYLES[selectedPdfStyle];
   const btn = document.getElementById('btn-pdf');
   btn.disabled = true; btn.textContent = '⏳ Génération...';
-
   let filtered = chapterSel === 'all' ? [...memories] : memories.filter(m => m.chapter === chapterSel);
-
-  // Filtre sélection manuelle
   if (selectionOnly && selectedIds.size > 0) filtered = filtered.filter(m => selectedIds.has(m.id));
-
   if (filtered.length === 0) {
     showToast('Aucun souvenir à exporter avec ces critères !');
-    btn.disabled = false; btn.textContent = '📄 Générer le PDF';
-    return;
+    btn.disabled = false; btn.textContent = '📄 Générer le PDF'; return;
   }
-
   const nomFichier = chapterSel === 'all' ? 'Tous mes souvenirs' : (CHAPTERS.find(c => c.id === chapterSel)?.name || 'Souvenirs');
   const dateGen = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-
   const grouped = {};
   filtered.forEach(m => {
     if (!grouped[m.chapter]) grouped[m.chapter] = { name: m.chapterName, icon: m.chapterIcon, items: [] };
     grouped[m.chapter].items.push(m);
   });
-
   let html = `<!DOCTYPE html><html lang="fr"><head>
     <meta charset="UTF-8">
     <title>HéritageMémoire — ${nomFichier}</title>
@@ -848,7 +1046,7 @@ window.generatePDF = async function() {
       .memory-label { font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; color: ${style.questionColor}; font-family: Arial, sans-serif; }
       .memory-date-txt { font-size: 11px; color: ${style.questionColor}; font-family: Arial, sans-serif; }
       .memory-q { padding: 14px 18px 8px; font-style: italic; font-size: 14px; color: ${style.questionColor}; border-bottom: 1px dashed ${style.borderColor}; line-height: 1.5; font-weight: 500; }
-      .memory-t { padding: 14px 18px; font-size: 15px; line-height: 1.8; color: ${style.textColor}; white-space: pre-wrap; font-weight: 400; }
+      .memory-t { padding: 14px 18px; font-size: 15px; line-height: 1.8; color: ${style.textColor}; white-space: pre-wrap; }
       .memory-photos { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 14px; }
       .memory-photos img { width: 31%; border-radius: 6px; object-fit: cover; aspect-ratio: 1; }
       .footer { text-align: center; padding: 30px; font-size: 11px; color: ${style.questionColor}; font-family: Arial, sans-serif; border-top: 1px solid ${style.borderColor}; margin-top: 40px; }
@@ -866,7 +1064,6 @@ window.generatePDF = async function() {
       <div class="cover-line"></div>
       <div class="cover-meta">Généré le ${dateGen}<br>${currentUser.email}<br>${filtered.length} souvenir${filtered.length>1?'s':''}</div>
     </div>`;
-
   for (const chapId in grouped) {
     const chap = grouped[chapId];
     html += `<div class="chapter-block">
@@ -875,7 +1072,6 @@ window.generatePDF = async function() {
         <div class="chapter-name">${chap.name}</div>
         <div class="chapter-count">${chap.items.length} souvenir${chap.items.length>1?'s':''}</div>
       </div>`;
-
     chap.items.forEach(m => {
       html += `<div class="memory">
         <div class="memory-head">
@@ -887,33 +1083,22 @@ window.generatePDF = async function() {
         ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p=>`<img src="${p}" />`).join('')}</div>` : ''}
       </div>`;
     });
-
     html += '</div>';
   }
-
   html += `<div class="footer">HéritageMémoire — ${dateGen}</div></body></html>`;
-
-  // Créer un blob et ouvrir dans une nouvelle fenêtre
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const win = window.open(url, '_blank');
-
   if (!win) {
     showToast('Autorisez les popups pour générer le PDF');
     btn.disabled = false; btn.textContent = '📄 Générer le PDF';
-    URL.revokeObjectURL(url);
-    return;
+    URL.revokeObjectURL(url); return;
   }
-
   win.addEventListener('load', () => {
-    setTimeout(() => {
-      win.print();
-      URL.revokeObjectURL(url);
-    }, 500);
+    setTimeout(() => { win.print(); URL.revokeObjectURL(url); }, 500);
   });
-
   btn.disabled = false; btn.textContent = '📄 Générer le PDF';
-  showToast('📄 Fenêtre d\'impression ouverte !');
+  showToast("📄 Fenêtre d'impression ouverte !");
 };
 
 window.openEditMemory = function(id) {
@@ -947,7 +1132,10 @@ window.saveEdit = async function() {
   } catch(e) { showToast('Erreur : ' + e.message); }
 };
 
-window.openDeleteMemory = function(id) { deletingMemoryId = id; document.getElementById('confirm-delete-modal').classList.add('open'); };
+window.openDeleteMemory = function(id) {
+  deletingMemoryId = id;
+  document.getElementById('confirm-delete-modal').classList.add('open');
+};
 
 window.confirmDelete = async function() {
   if (!deletingMemoryId) return;
@@ -989,10 +1177,11 @@ function renderSharedMemories() {
       </div>
       ${m.question ? `<div class="memory-question">"${m.question}"</div>` : ''}
       ${m.text ? `<div class="memory-text">${m.text}</div>` : ''}
-      ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p=>`<img src="${p}"/>`).join('')}</div>` : ''}
+      ${m.photos?.length ? `<div class="memory-photos">${m.photos.map(p=>`<img src="${p}" loading="lazy"/>`).join('')}</div>` : ''}
     </div>`).join('');
 }
 
+// FIX 6 : inviterMembre écrit aussi dans pending_invites pour résolution future
 window.inviterMembre = async function() {
   if (!currentUser) { openHmModal(); return; }
   const emailInput = document.getElementById('invite-email-global');
@@ -1001,13 +1190,27 @@ window.inviterMembre = async function() {
   try {
     const snap = await getDocs(query(collection(db, 'famille'), where('membres', 'array-contains', currentUser.uid)));
     const nouvelInvite = { uid: 'pending_' + email.replace(/[^a-z0-9]/g,'_'), email, statut: 'en attente' };
+    let familleId = null;
     if (snap.empty) {
-      await addDoc(collection(db, 'famille'), { createur: currentUser.uid, membres: [currentUser.uid], invites: [{ uid: currentUser.uid, email: currentUser.email, statut: 'actif' }, nouvelInvite], createdAt: serverTimestamp() });
+      const newFam = await addDoc(collection(db, 'famille'), {
+        createur: currentUser.uid,
+        membres: [currentUser.uid],
+        invites: [{ uid: currentUser.uid, email: currentUser.email, statut: 'actif' }, nouvelInvite],
+        createdAt: serverTimestamp()
+      });
+      familleId = newFam.id;
     } else {
-      await updateDoc(doc(db, 'famille', snap.docs[0].id), { invites: arrayUnion(nouvelInvite) });
+      familleId = snap.docs[0].id;
+      await updateDoc(doc(db, 'famille', familleId), { invites: arrayUnion(nouvelInvite) });
     }
-    emailInput.value = ''; showToast(`✓ ${email} invité(e) !`);
-  } catch(e) { showToast('Erreur invitation'); }
+    // FIX 6 : Créer l'entrée pending_invites pour résolution à la création de compte
+    const emailKey = email.replace(/[^a-z0-9]/g, '_');
+    await setDoc(doc(db, 'pending_invites', emailKey), {
+      email, familleId, invitedBy: currentUser.uid, createdAt: serverTimestamp()
+    }, { merge: true });
+    emailInput.value = '';
+    showToast(`✓ ${email} invité(e) !`);
+  } catch(e) { showToast('Erreur invitation'); console.error(e); }
 };
 
 window.retirerMembre = async function(uid) {
@@ -1027,7 +1230,9 @@ window.retirerMembre = async function(uid) {
 
 window.showView = function(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-' + id).classList.add('active');
+  const view = document.getElementById('view-' + id);
+  if (!view) { console.error('Vue inconnue:', id); return; }
+  view.classList.add('active');
   document.querySelectorAll('.bnav, .snav').forEach(b => b.classList.remove('active'));
   const bnav = document.getElementById('bnav-' + id);
   const snav = document.getElementById('snav-' + id);
@@ -1039,14 +1244,43 @@ window.showView = function(id) {
   window.scrollTo(0, 0);
 };
 
-window.openPaywall = () => document.getElementById('paywall').classList.add('open');
+window.openPaywall  = () => document.getElementById('paywall').classList.add('open');
 window.closePaywall = () => document.getElementById('paywall').classList.remove('open');
+
+// FIX 5 : goPremium + checkPremiumStatus pour vérification manuelle après paiement Stripe
+// NOTE : Implémentez un webhook Stripe (Firebase Cloud Function) pour l'activation automatique.
+//   Événement : checkout.session.completed
+//   Action    : mettre à jour users/{uid}/subscriptions.heritage.premium = true
 window.goPremium = () => {
   if (!currentUser) { closePaywall(); openHmModal(); return; }
   if (window.STRIPE_HERITAGE && !window.STRIPE_HERITAGE.includes('VOTRE_LIEN')) {
-    window.open(window.STRIPE_HERITAGE + '?prefilled_email=' + encodeURIComponent(currentUser.email), '_blank');
-  } else { showToast('Lien Stripe non configuré'); }
+    window.open(
+      window.STRIPE_HERITAGE + '?prefilled_email=' + encodeURIComponent(currentUser.email),
+      '_blank'
+    );
+    showToast('Après paiement, cliquez "Vérifier mon accès"');
+  } else {
+    showToast('Lien Stripe non configuré');
+  }
   closePaywall();
+};
+
+// FIX 5 : Vérification manuelle du statut Premium (en attendant le webhook)
+window.checkPremiumStatus = async function() {
+  if (!currentUser) { openHmModal(); return; }
+  closePaywall();
+  try {
+    const snap = await getDoc(doc(db, 'users', currentUser.uid));
+    isPremium = snap.exists() && snap.data()?.subscriptions?.heritage?.premium === true;
+    isAccesGratuit = await checkAccesGratuit(currentUser.email);
+    updateAccessBadges();
+    renderChapters();
+    if (isPremium || isAccesGratuit) {
+      showToast('✓ Accès illimité activé !');
+    } else {
+      showToast('Paiement non encore confirmé — réessayez dans quelques instants');
+    }
+  } catch(e) { showToast('Erreur de vérification'); }
 };
 
 function showToast(msg) {
@@ -1056,8 +1290,18 @@ function showToast(msg) {
 }
 window.showToast = showToast;
 
+// ─── INITIALISATION ────────────────────────────────────────────────────────────
 loadLocal();
 renderChapters();
+updatePdfChapterSelect(); // FIX 7 : initialisation pour les utilisateurs anonymes
+
+// FIX 10 : Cacher l'overlay de chargement et rejouer les appels différés
+document.getElementById('loading-overlay').classList.add('hidden');
+(window._deferredCalls || []).forEach(({fn, args}) => {
+  if (typeof window[fn] === 'function') window[fn](...args);
+});
+window._deferredCalls = null;
+
 </script>
 </body>
 </html>
