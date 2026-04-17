@@ -238,6 +238,66 @@
     .btn-analyze:hover { background: var(--navy); }
     .btn-analyze:disabled { opacity: 0.55; cursor: not-allowed; }
 
+    .btn-row { display: flex; gap: 0.6rem; margin-bottom: 0; }
+    .btn-row .btn-analyze { flex: 1; margin: 0; }
+    .btn-clear {
+      padding: 0.9rem 1.2rem;
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-clear:hover { border-color: var(--danger); color: var(--danger); }
+
+    .btn-share {
+      width: 100%;
+      padding: 0.75rem;
+      background: none;
+      border: 1.5px solid var(--blue);
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--blue);
+      cursor: pointer;
+      margin-top: 0.75rem;
+      transition: all 0.2s;
+    }
+    .btn-share:hover { background: #eff6ff; }
+
+    /* ── DANGER WARNING ── */
+    .danger-overlay {
+      position: fixed; inset: 0; z-index: 800;
+      background: rgba(220,38,38,0.15);
+      backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center; padding: 1.5rem;
+    }
+    .danger-overlay.show { display: flex; }
+    .danger-box {
+      background: #fff;
+      border: 3px solid var(--danger);
+      border-radius: var(--radius);
+      padding: 2rem;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+    }
+    .danger-box .d-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+    .danger-box h3 { font-size: 1.2rem; font-weight: 700; color: var(--danger); margin-bottom: 0.5rem; }
+    .danger-box p { font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.25rem; }
+    .btn-danger-ok {
+      width: 100%; padding: 0.85rem;
+      background: var(--danger); color: #fff; border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600;
+      cursor: pointer;
+    }
+
     .quota-bar {
       margin-top: 0.75rem;
       font-size: 0.72rem;
@@ -697,9 +757,12 @@
             <textarea id="input-text" class="main-input"
               placeholder="Collez un email, SMS, message WhatsApp, ou tout texte suspect…"></textarea>
           </div>
-          <button class="btn-analyze" id="btn-analyze" onclick="doAnalyze()">
-            🛡 Analyser maintenant
-          </button>
+          <div class="btn-row">
+            <button class="btn-analyze" id="btn-analyze" onclick="doAnalyze()">
+              🛡 Analyser maintenant
+            </button>
+            <button class="btn-clear" onclick="clearAll()">🗑 Effacer</button>
+          </div>
           <div class="quota-bar" id="quota-bar">
             Analyses gratuites aujourd'hui : <span id="quota-count">5</span> restantes
           </div>
@@ -725,6 +788,9 @@
             <div id="flags-content"></div>
           </div>
         </div>
+        <!-- Bouton partager -->
+        <button class="btn-share" id="btn-share" style="display:none;" onclick="shareResult()">📤 Signaler / Partager par e-mail</button>
+
         <!-- Free lock -->
         <div class="premium-lock" id="premium-lock" style="display:none;">
           <div class="lock-icon">🔒</div>
@@ -785,6 +851,16 @@
     <button class="btn-paywall" onclick="goPremium()">✦ Débloquer maintenant — 3,99€</button>
     <button class="btn-check-premium" onclick="checkPremiumStatus()">✓ Vérifier mon accès après paiement</button>
     <button class="btn-secondary" onclick="closePaywall()">Continuer gratuitement (5/jour)</button>
+  </div>
+</div>
+
+<!-- ── DANGER WARNING OVERLAY ── -->
+<div class="danger-overlay" id="danger-overlay">
+  <div class="danger-box">
+    <div class="d-icon">🚨</div>
+    <h3>CONTENU DANGEREUX DÉTECTÉ</h3>
+    <p id="danger-msg">Ce contenu présente des signaux critiques de phishing, arnaque ou désinformation. <strong>Ne cliquez sur aucun lien, ne communiquez aucune information personnelle et ne répondez pas.</strong></p>
+    <button class="btn-danger-ok" onclick="closeDangerOverlay()">J'ai compris — je ne donnerai aucune information</button>
   </div>
 </div>
 
@@ -1187,6 +1263,14 @@ function renderResult(res) {
   };
   verdict.innerHTML = `<h3>${icons[res.severity]} ${res.label}</h3><p>${descs[res.severity]}</p>`;
 
+  // Bouton partager
+  document.getElementById('btn-share').style.display = '';
+
+  // Avertissement non dissimulable si dangereux
+  if (res.severity === 'danger') {
+    showDangerOverlay(res.dominantCat);
+  }
+
   // Premium content
   const premiumContent = document.getElementById('premium-content');
   const premiumLock    = document.getElementById('premium-lock');
@@ -1340,6 +1424,58 @@ async function loadHistory() {
     container.innerHTML = `<div class="history-empty"><div class="hi">⚠️</div><p>Erreur de chargement. Vérifiez votre connexion.</p></div>`;
   }
 }
+
+// ── EFFACER ──────────────────────────────────────────────────────────────────
+window.clearAll = function() {
+  document.getElementById('input-url').value = '';
+  document.getElementById('input-text').value = '';
+  document.getElementById('result-card').classList.remove('show');
+  document.getElementById('btn-share').style.display = 'none';
+  lastResult = null;
+  showToast('Champs effacés');
+};
+
+// ── EXTRACTION EMAIL ──────────────────────────────────────────────────────────
+function extractEmail(text) {
+  const match = text.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
+  return match ? match[0] : null;
+}
+
+// ── PARTAGER ─────────────────────────────────────────────────────────────────
+window.shareResult = function() {
+  if (!lastResult) return;
+  const val = inputMode === 'url'
+    ? document.getElementById('input-url').value.trim()
+    : document.getElementById('input-text').value.trim();
+  const detectedEmail = extractEmail(val);
+  const subject = encodeURIComponent(`[Vérif'Tout] Contenu ${lastResult.label} signalé`);
+  const body = encodeURIComponent(
+    `Bonjour,\n\nJ'ai analysé le contenu suivant avec Vérif'Tout :\n\n"${val.substring(0, 300)}"\n\n` +
+    `Résultat : ${lastResult.label} (score : ${lastResult.score}/100)\n` +
+    `Catégorie dominante : ${lastResult.dominantCat}\n\n` +
+    `Ce contenu a été identifié comme potentiellement dangereux. Merci de le vérifier.\n\n` +
+    `— Envoyé via Vérif'Tout`
+  );
+  const to = detectedEmail ? encodeURIComponent(detectedEmail) : '';
+  window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+};
+
+// ── DANGER OVERLAY ───────────────────────────────────────────────────────────
+function showDangerOverlay(dominantCat) {
+  const msgs = {
+    'Phishing': 'Ce contenu contient des signaux critiques de <strong>phishing</strong> — tentative de vol de vos identifiants ou données bancaires.',
+    'Spam': 'Ce contenu est identifié comme <strong>spam agressif</strong> avec des promesses frauduleuses.',
+    'Désinformation': 'Ce contenu propage de la <strong>désinformation</strong> — ne le partagez pas.',
+    'URL suspecte': 'Cette URL présente des <strong>caractéristiques malveillantes</strong> — ne cliquez pas.'
+  };
+  document.getElementById('danger-msg').innerHTML =
+    (msgs[dominantCat] || 'Ce contenu est dangereux.') +
+    ' <strong>Ne cliquez sur aucun lien, ne communiquez aucune information personnelle.</strong>';
+  document.getElementById('danger-overlay').classList.add('show');
+}
+window.closeDangerOverlay = function() {
+  document.getElementById('danger-overlay').classList.remove('show');
+};
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 updateQuotaBar();
