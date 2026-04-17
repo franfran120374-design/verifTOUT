@@ -255,7 +255,7 @@
     .btn-clear:hover { border-color: var(--danger); color: var(--danger); }
 
     .btn-share {
-      width: 100%;
+      flex: 1;
       padding: 0.75rem;
       background: none;
       border: 1.5px solid var(--blue);
@@ -265,10 +265,64 @@
       font-weight: 500;
       color: var(--blue);
       cursor: pointer;
-      margin-top: 0.75rem;
       transition: all 0.2s;
     }
     .btn-share:hover { background: #eff6ff; }
+
+    .btn-signaler {
+      flex: 1;
+      padding: 0.75rem;
+      background: none;
+      border: 1.5px solid var(--danger);
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--danger);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-signaler:hover { background: #fee2e2; }
+    .btn-signaler:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .result-action-row {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 0.75rem;
+    }
+
+    /* ── BADGE COMMUNAUTÉ ── */
+    .community-badge {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      background: #450a0a;
+      border: 1px solid #b91c1c;
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.83rem;
+      color: #fca5a5;
+    }
+    .community-badge.show { display: flex; }
+    .community-badge .cb-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .community-badge strong { color: #f87171; }
+
+    /* ── BADGE GOOGLE SAFE BROWSING ── */
+    .gsb-badge {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      background: #450a0a;
+      border: 1px solid #dc2626;
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.83rem;
+      color: #fca5a5;
+    }
+    .gsb-badge.show { display: flex; }
+    .gsb-badge .gsb-icon { font-size: 1.1rem; flex-shrink: 0; }
 
     /* ── DANGER WARNING ── */
     .danger-overlay {
@@ -788,8 +842,21 @@
             <div id="flags-content"></div>
           </div>
         </div>
-        <!-- Bouton partager -->
-        <button class="btn-share" id="btn-share" style="display:none;" onclick="shareResult()">📤 Signaler / Partager par e-mail</button>
+        <!-- Badge signalements communautaires -->
+        <div class="community-badge" id="community-badge">
+          <span class="cb-icon">👥</span>
+          <span id="community-badge-text"><strong>X utilisateurs</strong> ont déjà signalé ce contenu comme dangereux.</span>
+        </div>
+        <!-- Badge Google Safe Browsing -->
+        <div class="gsb-badge" id="gsb-badge">
+          <span class="gsb-icon">🔍</span>
+          <span id="gsb-badge-text"><strong>Google Safe Browsing</strong> : cette URL est répertoriée comme dangereuse.</span>
+        </div>
+        <!-- Actions -->
+        <div class="result-action-row" id="result-action-row" style="display:none;">
+          <button class="btn-share" id="btn-share" onclick="shareResult()">📤 Partager par e-mail</button>
+          <button class="btn-signaler" id="btn-signaler" onclick="signalerContenu()">🚨 Signaler</button>
+        </div>
 
         <!-- Free lock -->
         <div class="premium-lock" id="premium-lock" style="display:none;">
@@ -874,9 +941,9 @@ import {
   signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, addDoc, getDocs,
+  getFirestore, doc, getDoc, setDoc, addDoc, getDocs, updateDoc,
   collection, query, where, orderBy, limit,
-  serverTimestamp
+  serverTimestamp, increment
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ── FIREBASE ────────────────────────────────────────────────────────────────────
@@ -897,6 +964,11 @@ const db   = getFirestore(app);
 // Pour activer automatiquement après paiement, implémentez un webhook Stripe
 // (Cloud Function Firebase) qui met à jour users/{uid}/subscriptions.veriftout.premium
 const STRIPE_LINK = "https://buy.stripe.com/6oUfZaeW15x561W4Pu4Vy03";
+
+// ── GOOGLE SAFE BROWSING (optionnel) ─────────────────────────────────────────
+// Obtenez une clé GRATUITE sur https://console.cloud.google.com → APIs → Safe Browsing API
+// Puis remplacez '' par votre clé ci-dessous
+const GOOGLE_SAFE_BROWSING_KEY = '';
 // ── ÉTAT ────────────────────────────────────────────────────────────────────────
 let currentUser = null;
 let isPremium   = false;
@@ -1151,7 +1223,7 @@ function analyzeContent(input) {
     { w:['urgent','immédiatement','immédiat','agissez','act now','expires dans'],     s:15, m:'Langage d\'urgence artificielle' },
     { w:['mot de passe','password','identifiant','credentials','saisir vos'],         s:20, m:'Demande d\'identifiants' },
     { w:['votre compte','compte suspendu','accès bloqué','compte désactivé'],         s:25, m:'Fausse alerte de compte' },
-    { w:['cliquez ici','cliquez maintenant','appuyez ici'],                           s:12, m:'Appel à l\'action suspect' },
+    { w:['cliquez ici','cliquez maintenant','appuyez ici','cliquez pour confirmer','cliquez pour valider','cliquez pour accéder'], s:12, m:'Appel à l\'action suspect' },
     { w:['vérification requise','confirmez votre','confirm your','verify your'],      s:20, m:'Demande de vérification forcée' },
     { w:['activité suspecte','unusual activity','connexion inhabituelle'],             s:25, m:'Fausse alerte de sécurité' },
     { w:['remboursement','trop-perçu','refund','réclamez votre'],                     s:18, m:'Fausse promesse de remboursement' },
@@ -1184,6 +1256,19 @@ function analyzeContent(input) {
     const m = r.w.find(w => lower.includes(w));
     if (m) { sc.spam += r.s; flags.push({ cat:'spam', msg:`${r.m} : "${m}"` }); }
   }
+  // Bonus fraude crypto-investissement combinée
+  if (sc.spam >= 32 && (lower.includes('crypto') || lower.includes('bitcoin') || lower.includes('btc') || lower.includes('eth') || lower.includes('nft'))) {
+    sc.spam += 25;
+    flags.push({ cat:'spam', msg:'Signal combiné : investissement frauduleux + crypto — arnaque hautement probable' });
+  }
+  // Smishing livraison contextuel (colis + cliquez sans phrase exacte)
+  const hasLivraison = lower.includes('colis') || lower.includes('livraison') || lower.includes('coli') || lower.includes('chronopost') || lower.includes('colissimo');
+  const hasClic = lower.includes('cliquez') || lower.includes('confirmer') || lower.includes('cliquer');
+  if (hasLivraison && hasClic && sc.phishing < 25) {
+    sc.phishing += 18;
+    flags.push({ cat:'phishing', msg:'Smishing livraison contextuel — lien de confirmation suspect' });
+  }
+
   // Ponctuation excessive
   const exclCount = (text.match(/!/g)||[]).length;
   if (exclCount >= 3) {
@@ -1214,13 +1299,16 @@ function analyzeContent(input) {
     if (m) { sc.desinformation += r.s; flags.push({ cat:'desinformation', msg:r.m }); }
   }
 
-  // ── FINAL SCORE ───────────────────────────────────────────────────────────
-  const raw = Math.max(sc.phishing, sc.spam, sc.desinformation, sc.urlSuspect);
-  const finalScore = Math.min(100, raw);
+  // ── FINAL SCORE (agrégation pondérée) ────────────────────────────────────
+  // max() capture l'attaque dominante, bonus() récompense les signaux multi-vecteurs
+  const maxScore = Math.max(sc.phishing, sc.spam, sc.desinformation, sc.urlSuspect);
+  const secondarySum = (sc.phishing + sc.spam + sc.desinformation + sc.urlSuspect) - maxScore;
+  const raw = maxScore + secondarySum * 0.35; // 35% des scores secondaires s'ajoutent
+  const finalScore = Math.min(100, Math.round(raw));
 
   let label, severity;
   if (finalScore >= 55) { label = 'Dangereux';  severity = 'danger';  }
-  else if (finalScore >= 25) { label = 'Suspect';    severity = 'warning'; }
+  else if (finalScore >= 18) { label = 'Suspect';    severity = 'warning'; }
   else { label = 'Fiable';     severity = 'safe';    }
 
   // Dominant category
@@ -1245,7 +1333,7 @@ function analyzeContent(input) {
 }
 
 // ── RENDER RESULT ─────────────────────────────────────────────────────────────
-function renderResult(res) {
+function renderResult(res, communityCount = 0, gsbThreat = null) {
   lastResult = res;
   const card = document.getElementById('result-card');
   card.classList.add('show');
@@ -1263,10 +1351,28 @@ function renderResult(res) {
   };
   verdict.innerHTML = `<h3>${icons[res.severity]} ${res.label}</h3><p>${descs[res.severity]}</p>`;
 
-  // Bouton partager
-  document.getElementById('btn-share').style.display = '';
+  // Badges communauté + GSB
+  if (communityCount >= 1) showCommunityBadge(communityCount);
+  else document.getElementById('community-badge').classList.remove('show');
 
-  // Avertissement non dissimulable si dangereux
+  const gsbBadge = document.getElementById('gsb-badge');
+  if (gsbThreat) {
+    const label = THREAT_LABELS[gsbThreat.threatType] || gsbThreat.threatType;
+    document.getElementById('gsb-badge-text').innerHTML =
+      `<strong>Google Safe Browsing</strong> : URL répertoriée comme "<em>${label}</em>" dans la base de données Google.`;
+    gsbBadge.classList.add('show');
+  } else {
+    gsbBadge.classList.remove('show');
+  }
+
+  // Boutons action (partager + signaler)
+  const actionRow = document.getElementById('result-action-row');
+  actionRow.style.display = 'flex';
+  const btnSignaler = document.getElementById('btn-signaler');
+  btnSignaler.disabled = false;
+  btnSignaler.textContent = '🚨 Signaler';
+
+  // Avertissement non dissimulable si dangereux (score ≥ 55)
   if (res.severity === 'danger') {
     showDangerOverlay(res.dominantCat);
   }
@@ -1345,7 +1451,27 @@ window.doAnalyze = async function() {
 
   try {
     const result = analyzeContent(val);
-    renderResult(result);
+
+    // ── Vérification communauté & Google Safe Browsing (en parallèle) ──
+    const hash = await hashContent(val);
+    const [communityCount, gsbThreat] = await Promise.all([
+      checkSignalements(hash),
+      checkSafeBrowsing(val)
+    ]);
+
+    // Booster le score si menace confirmée par sources externes
+    if (communityCount >= 3) {
+      result.score    = Math.min(100, result.score + 10);
+      result.severity = result.score >= 55 ? 'danger' : result.score >= 18 ? 'warning' : 'safe';
+    }
+    if (gsbThreat) {
+      result.score    = Math.max(result.score, 75);
+      result.severity = 'danger';
+      result.label    = 'Dangereux';
+      result.gsbThreat = gsbThreat;
+    }
+
+    renderResult(result, communityCount, gsbThreat);
     updateQuotaBar();
 
     // Consommer le quota (non-premium)
@@ -1427,10 +1553,12 @@ async function loadHistory() {
 
 // ── EFFACER ──────────────────────────────────────────────────────────────────
 window.clearAll = function() {
-  document.getElementById('input-url').value = '';
-  document.getElementById('input-text').value = '';
+  document.getElementById('input-url').value   = '';
+  document.getElementById('input-text').value  = '';
   document.getElementById('result-card').classList.remove('show');
-  document.getElementById('btn-share').style.display = 'none';
+  document.getElementById('result-action-row').style.display = 'none';
+  document.getElementById('community-badge').classList.remove('show');
+  document.getElementById('gsb-badge').classList.remove('show');
   lastResult = null;
   showToast('Champs effacés');
 };
@@ -1475,6 +1603,111 @@ function showDangerOverlay(dominantCat) {
 }
 window.closeDangerOverlay = function() {
   document.getElementById('danger-overlay').classList.remove('show');
+};
+
+// ── HASH SHA-256 ──────────────────────────────────────────────────────────────
+async function hashContent(text) {
+  const data = new TextEncoder().encode(text.trim().toLowerCase().slice(0, 500));
+  const buf  = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── SIGNALEMENTS COMMUNAUTAIRES ───────────────────────────────────────────────
+async function checkSignalements(hash) {
+  try {
+    const snap = await getDoc(doc(db, 'verifTOUT_signalements', hash));
+    return snap.exists() ? (snap.data().reportCount || 0) : 0;
+  } catch { return 0; }
+}
+
+window.signalerContenu = async function() {
+  if (!currentUser) { openAuthModal(); showToast('Connectez-vous pour signaler'); return; }
+  const val = inputMode === 'url'
+    ? document.getElementById('input-url').value.trim()
+    : document.getElementById('input-text').value.trim();
+  if (!val || !lastResult) return;
+  const btn = document.getElementById('btn-signaler');
+  btn.disabled = true;
+  btn.textContent = '⏳';
+  try {
+    const hash = await hashContent(val);
+    const ref  = doc(db, 'verifTOUT_signalements', hash);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const reporters = snap.data().reporters || [];
+      if (reporters.includes(currentUser.uid)) {
+        showToast('Vous avez déjà signalé ce contenu');
+        btn.textContent = '✓ Signalé';
+        return;
+      }
+      await updateDoc(ref, {
+        reportCount:  increment(1),
+        lastReported: serverTimestamp(),
+        reporters:    [...reporters, currentUser.uid]
+      });
+    } else {
+      await setDoc(ref, {
+        hash,
+        preview:       val.substring(0, 150),
+        reportCount:   1,
+        firstReported: serverTimestamp(),
+        lastReported:  serverTimestamp(),
+        reporters:     [currentUser.uid],
+        dominantCat:   lastResult.dominantCat || 'Inconnu',
+        score:         lastResult.score
+      });
+    }
+    btn.textContent = '✓ Signalé';
+    showToast('✓ Signalement enregistré — merci pour la communauté');
+    // Mettre à jour le badge
+    const newCount = snap.exists() ? (snap.data().reportCount || 0) + 1 : 1;
+    showCommunityBadge(newCount);
+  } catch(e) {
+    console.error('Signalement error:', e);
+    btn.disabled = false;
+    btn.textContent = '🚨 Signaler';
+    showToast('Erreur lors du signalement');
+  }
+};
+
+function showCommunityBadge(count) {
+  if (count <= 0) return;
+  const badge = document.getElementById('community-badge');
+  const text  = document.getElementById('community-badge-text');
+  text.innerHTML = `<strong>${count} utilisateur${count > 1 ? 's' : ''}</strong> ${count > 1 ? 'ont' : 'a'} déjà signalé ce contenu comme dangereux.`;
+  badge.classList.add('show');
+}
+
+// ── GOOGLE SAFE BROWSING ──────────────────────────────────────────────────────
+async function checkSafeBrowsing(url) {
+  if (!GOOGLE_SAFE_BROWSING_KEY || !url.startsWith('http')) return null;
+  try {
+    const resp = await fetch(
+      `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${GOOGLE_SAFE_BROWSING_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client: { clientId: 'veriftout', clientVersion: '1.0' },
+          threatInfo: {
+            threatTypes:      ['MALWARE','SOCIAL_ENGINEERING','UNWANTED_SOFTWARE','POTENTIALLY_HARMFUL_APPLICATION'],
+            platformTypes:    ['ANY_PLATFORM'],
+            threatEntryTypes: ['URL'],
+            threatEntries:    [{ url }]
+          }
+        })
+      }
+    );
+    const data = await resp.json();
+    return (data.matches && data.matches.length > 0) ? data.matches[0] : null;
+  } catch { return null; }
+}
+
+const THREAT_LABELS = {
+  MALWARE:                          'Malware',
+  SOCIAL_ENGINEERING:               'Phishing / ingénierie sociale',
+  UNWANTED_SOFTWARE:                'Logiciel indésirable',
+  POTENTIALLY_HARMFUL_APPLICATION:  'Application dangereuse'
 };
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
