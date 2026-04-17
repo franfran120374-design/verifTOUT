@@ -820,7 +820,7 @@ const db   = getFirestore(app);
 // Remplacez par votre lien Stripe Checkout avec ?prefilled_email= dynamique
 // Pour activer automatiquement après paiement, implémentez un webhook Stripe
 // (Cloud Function Firebase) qui met à jour users/{uid}/subscriptions.veriftout.premium
-const STRIPE_LINK = "https://buy.stripe.com/test_8x25kvgM2bMq0UZ9B9cIE00";
+const STRIPE_LINK = "https://buy.stripe.com/6oUfZaeW15x561W4Pu4Vy03";
 // ── ÉTAT ────────────────────────────────────────────────────────────────────────
 let currentUser = null;
 let isPremium   = false;
@@ -864,9 +864,10 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById('hm-user-email-hdr').textContent = user.email;
     try {
       const snap = await getDoc(doc(db, 'users', user.uid));
-      console.log('Firestore data:', JSON.stringify(snap.data()));
-      console.log('isPremium check:', snap.data()?.subscriptions?.veriftout?.premium);
-      isPremium = snap.exists() && snap.data()?.subscriptions?.veriftout?.premium === true;
+      isPremium = snap.exists() && (
+        snap.data()?.subscriptions?.veriftout?.premium === true ||
+        snap.data()?.veriftout?.premium === true
+      );
     } catch(e) { console.error('Firestore error:', e); }
     updateAccessUI();
     loadHistory();
@@ -950,7 +951,10 @@ window.checkPremiumStatus = async function() {
   closePaywall();
   try {
     const snap = await getDoc(doc(db, 'users', currentUser.uid));
-    isPremium = snap.exists() && snap.data()?.subscriptions?.veriftout?.premium === true;
+    isPremium = snap.exists() && (
+      snap.data()?.subscriptions?.veriftout?.premium === true ||
+      snap.data()?.veriftout?.premium === true
+    );
     updateAccessUI();
     showToast(isPremium ? '✓ Accès Premium activé !' : 'Paiement non confirmé — réessayez dans quelques instants');
   } catch { showToast('Erreur de vérification'); }
