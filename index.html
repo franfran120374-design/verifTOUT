@@ -482,6 +482,54 @@
     </div>
   </div>
 
+  <!-- VÉRIF'TOUT -->
+  <div class="app-card" style="margin-top:2rem;">
+    <div class="app-header">
+      <div class="app-icon">🔍</div>
+      <div class="app-meta">
+        <h2>Vérif'Tout</h2>
+        <p>Détectez phishing, spam et arnaques — analysez n'importe quel texte ou URL instantanément.</p>
+      </div>
+      <div class="app-badge">Disponible</div>
+    </div>
+
+    <div class="pricing-grid">
+      <div class="plan">
+        <div class="plan-name">Gratuit</div>
+        <div class="plan-price">0€ <span>/ toujours</span></div>
+        <div class="plan-desc">Pour se protéger au quotidien</div>
+        <ul class="feature-list">
+          <li class="active"><span class="check">✓</span> 5 analyses par jour</li>
+          <li class="active"><span class="check">✓</span> Analyse URL & texte</li>
+          <li class="active"><span class="check">✓</span> Verdict simple (Fiable / Suspect / Dangereux)</li>
+          <li><span class="check" style="color:var(--muted)">✗</span> Score détaillé par catégorie</li>
+          <li><span class="check" style="color:var(--muted)">✗</span> Liste complète des indicateurs</li>
+          <li><span class="check" style="color:var(--muted)">✗</span> Historique illimité</li>
+        </ul>
+        <a href="veriftout-appli.html" class="btn-plan btn-plan-free">
+          Utiliser gratuitement
+        </a>
+      </div>
+
+      <div class="plan featured">
+        <div class="plan-name">Premium</div>
+        <div class="plan-price">3,99€ <span>/ accès à vie</span></div>
+        <div class="plan-desc">Paiement unique, sans abonnement</div>
+        <ul class="feature-list">
+          <li class="active"><span class="check">✓</span> Analyses illimitées</li>
+          <li class="active"><span class="check">✓</span> Analyse URL & texte</li>
+          <li class="active"><span class="check">✓</span> Verdict simple (Fiable / Suspect / Dangereux)</li>
+          <li class="active"><span class="check">✓</span> Score détaillé par catégorie</li>
+          <li class="active"><span class="check">✓</span> Liste complète des indicateurs</li>
+          <li class="active"><span class="check">✓</span> Historique illimité</li>
+        </ul>
+        <button class="btn-plan btn-plan-premium" onclick="handlePremium('veriftout')">
+          Acheter l'accès — 3,99€ →
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- COMING SOON -->
   <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.5rem; margin: 3rem 0 1.25rem;">Bientôt disponibles</h3>
   <div class="coming-soon-grid">
@@ -562,7 +610,8 @@
   const STRIPE_LINKS = {
     "hub-coloc": "https://buy.stripe.com/6oU6oAbJP9Nlduo6XC4Vy00",
     "meditrad":  "https://buy.stripe.com/eVq6oAbJPcZxduo1Di4Vy01",
-    "heritage":  "https://buy.stripe.com/4gMcMY15b0cLfCw81G4Vy02"
+    "heritage":  "https://buy.stripe.com/4gMcMY15b0cLfCw81G4Vy02",
+    "veriftout": "https://buy.stripe.com/6oUfZaeW15x561W4Pu4Vy03"
   };
 
   onAuthStateChanged(auth, (user) => {
