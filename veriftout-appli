@@ -934,7 +934,7 @@ window.goPremium = () => {
   if (!currentUser) { closePaywall(); openAuthModal(); return; }
   const link = STRIPE_LINK.includes('VOTRE_LIEN')
     ? null
-    : STRIPE_LINK + '?prefilled_email=' + encodeURIComponent(currentUser.email) + '&client_reference_id=' + currentUser.uid;
+STRIPE_LINK + '?prefilled_email=' + encodeURIComponent(currentUser.email) + '&client_reference_id=' + currentUser.uid;
   if (link) {
     window.open(link, '_blank');
     showToast('Après paiement, cliquez "Vérifier mon accès"');
