@@ -980,13 +980,25 @@ window.resetForm = function() {
 };
 
 window.switchTab = function(tab, el, fromNav) {
-  document.getElementById('view-analyser').style.display = tab === 'analyser' ? 'block' : 'none';
+  // Vues
+  document.getElementById('view-analyser').style.display   = tab === 'analyser'   ? 'block' : 'none';
   document.getElementById('view-historique').style.display = tab === 'historique' ? 'block' : 'none';
+  // Onglets haut
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (el && !fromNav) { el.classList.add('active'); }
+  else {
+    const navEl = document.querySelector('.tab[onclick*=\'' + tab + '\']');
+    if (navEl) navEl.classList.add('active');
+  }
+  // Bottom nav
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  if (el) el.classList.add('active');
-  if (tab === 'analyser') document.getElementById('nav-analyser').classList.add('active');
-  if (tab === 'historique') document.getElementById('nav-historique').classList.add('active');
+  const navBtn = document.getElementById('nav-' + tab);
+  if (navBtn) navBtn.classList.add('active');
+  // Sidebar desktop
+  document.querySelectorAll('.snav-btn').forEach(b => b.classList.remove('active'));
+  const snavBtn = document.getElementById('snav-' + tab);
+  if (snavBtn) snavBtn.classList.add('active');
+  // Contenu
   if (tab === 'historique') renderHistory();
 };
 
@@ -1021,14 +1033,7 @@ function checkDesktop() {
 checkDesktop();
 window.addEventListener('resize', checkDesktop);
 
-// Override switchTab to also update sidebar nav
-const _origSwitch = window.switchTab;
-window.switchTab = function(tab, el, fromNav) {
-  _origSwitch(tab, el, fromNav);
-  document.querySelectorAll('.snav-btn').forEach(b => b.classList.remove('active'));
-  const snavBtn = document.getElementById('snav-' + tab);
-  if (snavBtn) snavBtn.classList.add('active');
-};
+// switchTab unifié ci-dessus
 
 </script>
 </body>
