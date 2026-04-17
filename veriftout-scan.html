@@ -864,8 +864,10 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById('hm-user-email-hdr').textContent = user.email;
     try {
       const snap = await getDoc(doc(db, 'users', user.uid));
+      console.log('Firestore data:', JSON.stringify(snap.data()));
+      console.log('isPremium check:', snap.data()?.subscriptions?.veriftout?.premium);
       isPremium = snap.exists() && snap.data()?.subscriptions?.veriftout?.premium === true;
-    } catch {}
+    } catch(e) { console.error('Firestore error:', e); }
     updateAccessUI();
     loadHistory();
   } else {
