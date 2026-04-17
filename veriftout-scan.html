@@ -820,7 +820,7 @@ const db   = getFirestore(app);
 // Remplacez par votre lien Stripe Checkout avec ?prefilled_email= dynamique
 // Pour activer automatiquement après paiement, implémentez un webhook Stripe
 // (Cloud Function Firebase) qui met à jour users/{uid}/subscriptions.veriftout.premium
-const STRIPE_LINK = "https://buy.stripe.com/6oUfZaeW15x561W4Pu4Vy03";
+const STRIPE_LINK = "https://buy.stripe.com/test_8x25kvgM2bMq0UZ9B9cIE00";
 // ── ÉTAT ────────────────────────────────────────────────────────────────────────
 let currentUser = null;
 let isPremium   = false;
@@ -934,7 +934,7 @@ window.goPremium = () => {
   if (!currentUser) { closePaywall(); openAuthModal(); return; }
   const link = STRIPE_LINK.includes('VOTRE_LIEN')
     ? null
-STRIPE_LINK + '?prefilled_email=' + encodeURIComponent(currentUser.email) + '&client_reference_id=' + currentUser.uid;
+    : STRIPE_LINK + '?prefilled_email=' + encodeURIComponent(currentUser.email) + '&client_reference_id=' + currentUser.uid;
   if (link) {
     window.open(link, '_blank');
     showToast('Après paiement, cliquez "Vérifier mon accès"');
