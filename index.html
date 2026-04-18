@@ -59,20 +59,117 @@
       background: none; border: 1px solid var(--border);
       color: var(--muted); font-family: 'DM Sans', sans-serif;
       font-size: 0.875rem; padding: 0.5rem 1.1rem;
-      border-radius: var(--radius-sm); cursor: pointer;
-      transition: all 0.2s;
+      border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;
     }
     .btn-ghost:hover { border-color: var(--border-hover); color: var(--text); }
     .btn-accent {
       background: var(--accent); border: none;
       color: #1a0e00; font-family: 'DM Sans', sans-serif;
       font-size: 0.875rem; font-weight: 500; padding: 0.5rem 1.3rem;
-      border-radius: var(--radius-sm); cursor: pointer;
-      transition: all 0.2s;
+      border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;
     }
     .btn-accent:hover { background: var(--accent-light); }
     #user-info { display: none; align-items: center; gap: 0.75rem; }
     #user-email { font-size: 0.8rem; color: var(--muted); }
+
+    /* ─── FREEMIUM STICKY BANNER ─── */
+    #freemium-banner {
+      display: none;
+      position: sticky; top: 64px; z-index: 90;
+      background: linear-gradient(90deg, rgba(212,168,83,0.14) 0%, rgba(212,168,83,0.07) 100%);
+      border-bottom: 1px solid rgba(212,168,83,0.22);
+      padding: 0.65rem 2.5rem;
+      text-align: center; font-size: 0.875rem; color: var(--accent-light);
+    }
+    #freemium-banner strong { color: var(--accent); }
+    #freemium-banner a {
+      color: var(--accent); font-weight: 500; cursor: pointer;
+      text-decoration: underline; margin-left: 0.5rem;
+    }
+
+    /* ─── PREMIUM DASHBOARD ─── */
+    #premium-dashboard {
+      display: none;
+      padding: 6rem 2rem 2rem;
+      max-width: 960px; margin: 0 auto;
+    }
+    .dash-header { margin-bottom: 2.5rem; }
+    .dash-header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.4rem; font-weight: 600; margin-bottom: 0.4rem;
+    }
+    .dash-header h1 em { color: var(--accent); font-style: italic; }
+    .dash-header p { color: var(--muted); font-size: 0.95rem; }
+    .dash-section-title {
+      font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 1.25rem; padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* shortcut tiles */
+    .shortcut-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 1rem; margin-bottom: 3rem;
+    }
+    .shortcut-tile {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+      display: flex; flex-direction: column; gap: 0.75rem;
+      transition: border-color 0.2s; position: relative; overflow: hidden;
+    }
+    .shortcut-tile:hover { border-color: rgba(212,168,83,0.4); }
+    .shortcut-tile::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at top left, rgba(212,168,83,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .shortcut-tile .tile-icon { font-size: 2rem; }
+    .shortcut-tile .tile-name { font-size: 1rem; font-weight: 500; }
+    .shortcut-tile .tile-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.5; flex: 1; }
+    .tile-badge-premium {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--accent); background: var(--accent-bg);
+      border: 1px solid rgba(212,168,83,0.25);
+      border-radius: 100px; padding: 0.25rem 0.6rem; width: fit-content;
+    }
+    .tile-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.25rem; }
+    .tile-btn-open {
+      flex: 1; min-width: 80px;
+      background: var(--accent); border: none; color: #1a0e00;
+      font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500;
+      padding: 0.55rem 0.8rem; border-radius: var(--radius-sm);
+      cursor: pointer; transition: background 0.2s;
+      text-align: center; text-decoration: none; display: block;
+    }
+    .tile-btn-open:hover { background: var(--accent-light); }
+    .tile-btn-install {
+      background: none; border: 1px solid var(--border-hover);
+      color: var(--muted); font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem; padding: 0.55rem 0.7rem;
+      border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;
+    }
+    .tile-btn-install:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* upgrade tiles */
+    .upgrade-tile {
+      background: var(--surface); border: 1px dashed rgba(255,255,255,0.1);
+      border-radius: var(--radius); padding: 1.5rem;
+      display: flex; flex-direction: column; gap: 0.75rem;
+      opacity: 0.72; transition: opacity 0.2s;
+    }
+    .upgrade-tile:hover { opacity: 1; }
+    .upgrade-tile .tile-icon { font-size: 2rem; filter: grayscale(0.4); }
+    .upgrade-tile .tile-name { font-size: 1rem; font-weight: 500; color: var(--muted); }
+    .upgrade-tile .tile-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.5; flex: 1; }
+    .tile-btn-buy {
+      background: none; border: 1px solid rgba(212,168,83,0.35);
+      color: var(--accent); font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem; font-weight: 500; padding: 0.55rem 0.8rem;
+      border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; text-align: center;
+    }
+    .tile-btn-buy:hover { background: var(--accent-bg); border-color: var(--accent); }
 
     /* ─── HERO ─── */
     .hero {
@@ -91,14 +188,10 @@
       font-family: 'Cormorant Garamond', serif;
       font-size: clamp(2.8rem, 7vw, 5rem); font-weight: 600;
       line-height: 1.1; letter-spacing: -0.01em;
-      max-width: 700px;
-      margin-bottom: 1.5rem;
+      max-width: 700px; margin-bottom: 1.5rem;
     }
     .hero h1 em { color: var(--accent); font-style: italic; }
-    .hero p {
-      font-size: 1.05rem; color: var(--muted); max-width: 480px;
-      line-height: 1.7; margin-bottom: 2.5rem;
-    }
+    .hero p { font-size: 1.05rem; color: var(--muted); max-width: 480px; line-height: 1.7; margin-bottom: 2.5rem; }
     .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
     .btn-primary {
       background: var(--accent); border: none;
@@ -119,25 +212,20 @@
 
     /* ─── APPS SECTION ─── */
     .section { padding: 5rem 2rem; max-width: 900px; margin: 0 auto; }
-    .section-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 2.2rem; font-weight: 600; margin-bottom: 0.5rem;
-    }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 600; margin-bottom: 0.5rem; }
     .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; }
 
     /* ─── APP CARD ─── */
     .app-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden; margin-bottom: 2rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; margin-bottom: 2rem;
       transition: border-color 0.2s;
     }
     .app-card:hover { border-color: var(--border-hover); }
+    .app-card.owned-card { border-color: rgba(212,168,83,0.3); }
     .app-header {
       display: flex; align-items: center; gap: 1.25rem;
-      padding: 1.75rem 2rem;
-      border-bottom: 1px solid var(--border);
+      padding: 1.75rem 2rem; border-bottom: 1px solid var(--border);
     }
     .app-icon {
       width: 56px; height: 56px; border-radius: 14px;
@@ -148,148 +236,106 @@
     .app-meta h2 { font-size: 1.2rem; font-weight: 500; margin-bottom: 0.25rem; }
     .app-meta p { font-size: 0.875rem; color: var(--muted); }
     .app-badge {
-      margin-left: auto; background: var(--green-bg);
-      color: var(--green); font-size: 0.7rem; font-weight: 500;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      border: 1px solid rgba(44,182,125,0.2);
-      border-radius: 100px; padding: 0.3rem 0.75rem;
+      margin-left: auto; background: var(--green-bg); color: var(--green);
+      font-size: 0.7rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+      border: 1px solid rgba(44,182,125,0.2); border-radius: 100px; padding: 0.3rem 0.75rem;
+    }
+    .badge-owned {
+      margin-left: auto; background: rgba(212,168,83,0.12); color: var(--accent);
+      font-size: 0.7rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+      border: 1px solid rgba(212,168,83,0.3); border-radius: 100px; padding: 0.3rem 0.75rem;
     }
 
-    /* ─── PRICING GRID ─── */
-    .pricing-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 1px; background: var(--border);
+    /* ─── OWNED APP OVERLAY ─── */
+    .owned-overlay {
+      display: none;
+      padding: 2rem;
+      background: linear-gradient(135deg, rgba(212,168,83,0.06) 0%, transparent 60%);
     }
-    .plan {
-      background: var(--surface); padding: 2rem;
+    .owned-overlay-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1.5rem;
     }
-    .plan-name {
+    .owned-label {
       font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 0.75rem;
+      color: var(--accent); margin-bottom: 0.5rem;
     }
-    .plan-price {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 2.5rem; font-weight: 600; margin-bottom: 0.25rem;
+    .owned-info h3 { font-size: 1.05rem; font-weight: 500; margin-bottom: 0.35rem; }
+    .owned-info p { font-size: 0.85rem; color: var(--muted); }
+    .owned-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn-open-app {
+      background: var(--accent); border: none; color: #1a0e00;
+      font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
+      padding: 0.75rem 1.5rem; border-radius: var(--radius-sm); cursor: pointer;
+      transition: all 0.2s; text-decoration: none; display: inline-block;
     }
+    .btn-open-app:hover { background: var(--accent-light); }
+    .btn-install-app {
+      background: none; border: 1px solid var(--border-hover); color: var(--muted);
+      font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+      padding: 0.75rem 1.5rem; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;
+    }
+    .btn-install-app:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ─── PRICING GRID ─── */
+    .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); }
+    .plan { background: var(--surface); padding: 2rem; }
+    .plan-name { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; }
+    .plan-price { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 600; margin-bottom: 0.25rem; }
     .plan-price span { font-size: 1rem; font-family: 'DM Sans', sans-serif; color: var(--muted); }
     .plan-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
     .feature-list { list-style: none; margin-bottom: 1.75rem; }
-    .feature-list li {
-      display: flex; align-items: flex-start; gap: 0.6rem;
-      font-size: 0.875rem; color: var(--muted);
-      margin-bottom: 0.6rem;
-    }
-    .feature-list li .check {
-      color: var(--green); font-size: 0.9rem; flex-shrink: 0; margin-top: 1px;
-    }
+    .feature-list li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.875rem; color: var(--muted); margin-bottom: 0.6rem; }
+    .feature-list li .check { color: var(--green); font-size: 0.9rem; flex-shrink: 0; margin-top: 1px; }
     .feature-list li.active { color: var(--text); }
     .plan.featured { background: var(--surface2); }
     .plan.featured .plan-price { color: var(--accent); }
-
-    .btn-plan {
-      width: 100%; padding: 0.85rem; border-radius: var(--radius-sm);
-      font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
-      cursor: pointer; transition: all 0.2s; text-align: center;
-      display: block; text-decoration: none;
-    }
-    .btn-plan-free {
-      background: none; border: 1px solid var(--border-hover); color: var(--text);
-    }
+    .btn-plan { width: 100%; padding: 0.85rem; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s; text-align: center; display: block; text-decoration: none; }
+    .btn-plan-free { background: none; border: 1px solid var(--border-hover); color: var(--text); }
     .btn-plan-free:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-plan-premium {
-      background: var(--accent); border: none; color: #1a0e00;
-    }
+    .btn-plan-premium { background: var(--accent); border: none; color: #1a0e00; }
     .btn-plan-premium:hover { background: var(--accent-light); }
 
     /* ─── COMING SOON ─── */
-    .coming-soon-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 1rem;
-    }
-    .coming-card {
-      background: var(--surface); border: 1px dashed rgba(255,255,255,0.08);
-      border-radius: var(--radius); padding: 1.5rem; text-align: center;
-      opacity: 0.6;
-    }
+    .coming-soon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+    .coming-card { background: var(--surface); border: 1px dashed rgba(255,255,255,0.08); border-radius: var(--radius); padding: 1.5rem; text-align: center; opacity: 0.6; }
     .coming-card .icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
     .coming-card h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.25rem; }
     .coming-card p { font-size: 0.75rem; color: var(--muted); }
-    .coming-tag {
-      display: inline-block; font-size: 0.65rem; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--muted);
-      border: 1px solid var(--border); border-radius: 100px;
-      padding: 0.2rem 0.6rem; margin-top: 0.75rem;
-    }
+    .coming-tag { display: inline-block; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--border); border-radius: 100px; padding: 0.2rem 0.6rem; margin-top: 0.75rem; }
 
     /* ─── FOOTER ─── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 2.5rem 2.5rem;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 1rem;
-    }
-    footer .logo-sm {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.2rem; font-weight: 600; color: var(--muted);
-    }
+    footer { border-top: 1px solid var(--border); padding: 2.5rem 2.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    footer .logo-sm { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 600; color: var(--muted); }
     footer .logo-sm span { color: var(--accent); }
     footer p { font-size: 0.8rem; color: var(--muted); }
 
-    /* ─── MODAL ─── */
-    .modal-overlay {
-      position: fixed; inset: 0; z-index: 200;
-      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
-      display: none; align-items: center; justify-content: center; padding: 1rem;
-    }
+    /* ─── MODALS ─── */
+    .modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 1rem; }
     .modal-overlay.open { display: flex; }
-    .modal {
-      background: var(--surface); border: 1px solid var(--border-hover);
-      border-radius: var(--radius); padding: 2.5rem;
-      width: 100%; max-width: 380px; position: relative;
-    }
-    .modal h2 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem;
-    }
+    .modal { background: var(--surface); border: 1px solid var(--border-hover); border-radius: var(--radius); padding: 2.5rem; width: 100%; max-width: 380px; position: relative; }
+    .modal h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem; }
     .modal p { font-size: 0.875rem; color: var(--muted); margin-bottom: 1.75rem; }
-    .modal-close {
-      position: absolute; top: 1.25rem; right: 1.25rem;
-      background: none; border: none; color: var(--muted); cursor: pointer;
-      font-size: 1.2rem;
-    }
+    .modal-close { position: absolute; top: 1.25rem; right: 1.25rem; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.2rem; }
     .form-group { margin-bottom: 1rem; }
     .form-group label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.4rem; }
-    .form-group input {
-      width: 100%; padding: 0.7rem 1rem;
-      background: var(--bg); border: 1px solid var(--border-hover);
-      border-radius: var(--radius-sm); color: var(--text);
-      font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
-      outline: none; transition: border-color 0.2s;
-    }
+    .form-group input { width: 100%; padding: 0.7rem 1rem; background: var(--bg); border: 1px solid var(--border-hover); border-radius: var(--radius-sm); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
     .form-group input:focus { border-color: var(--accent); }
-    .btn-full {
-      width: 100%; padding: 0.9rem;
-      background: var(--accent); border: none; color: #1a0e00;
-      font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
-      border-radius: var(--radius-sm); cursor: pointer; margin-top: 0.5rem;
-      transition: background 0.2s;
-    }
+    .btn-full { width: 100%; padding: 0.9rem; background: var(--accent); border: none; color: #1a0e00; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; border-radius: var(--radius-sm); cursor: pointer; margin-top: 0.5rem; transition: background 0.2s; }
     .btn-full:hover { background: var(--accent-light); }
-    .modal-switch {
-      text-align: center; font-size: 0.8rem; color: var(--muted); margin-top: 1rem;
-    }
+    .modal-switch { text-align: center; font-size: 0.8rem; color: var(--muted); margin-top: 1rem; }
     .modal-switch a { color: var(--accent); text-decoration: none; cursor: pointer; }
     .error-msg { font-size: 0.8rem; color: #e05252; margin-top: 0.75rem; text-align: center; }
 
+    /* PWA modal */
+    #pwa-modal .modal { max-width: 420px; }
+    .pwa-steps { list-style: none; margin: 1rem 0 1.5rem; }
+    .pwa-steps li { display: flex; gap: 0.8rem; align-items: flex-start; font-size: 0.875rem; color: var(--muted); margin-bottom: 0.9rem; }
+    .pwa-step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--accent-bg); border: 1px solid rgba(212,168,83,0.3); color: var(--accent); font-size: 0.75rem; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .pwa-steps li span.hi { color: var(--text); }
+
     /* ─── TOAST ─── */
-    .toast {
-      position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
-      background: var(--surface2); border: 1px solid var(--border-hover);
-      border-radius: var(--radius-sm); padding: 0.9rem 1.4rem;
-      font-size: 0.875rem; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-      transform: translateY(80px); opacity: 0;
-      transition: all 0.3s; pointer-events: none;
-    }
+    .toast { position: fixed; bottom: 2rem; right: 2rem; z-index: 999; background: var(--surface2); border: 1px solid var(--border-hover); border-radius: var(--radius-sm); padding: 0.9rem 1.4rem; font-size: 0.875rem; box-shadow: 0 8px 32px rgba(0,0,0,0.4); transform: translateY(80px); opacity: 0; transition: all 0.3s; pointer-events: none; }
     .toast.show { transform: translateY(0); opacity: 1; }
 
     @media (max-width: 600px) {
@@ -297,6 +343,9 @@
       .hero h1 { font-size: 2.5rem; }
       .pricing-grid { grid-template-columns: 1fr; }
       footer { flex-direction: column; text-align: center; }
+      .shortcut-grid { grid-template-columns: 1fr 1fr; }
+      #premium-dashboard { padding: 5rem 1rem 2rem; }
+      #freemium-banner { padding: 0.65rem 1rem; font-size: 0.8rem; }
     }
   </style>
 </head>
@@ -317,8 +366,30 @@
   </div>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
+<!-- FREEMIUM STICKY BANNER (logged-in free users) -->
+<div id="freemium-banner">
+  Vous utilisez la version gratuite. <strong>Passez Premium</strong> pour un accès illimité à toutes vos apps.
+  <a onclick="document.getElementById('apps').scrollIntoView({behavior:'smooth'})">Voir les offres →</a>
+</div>
+
+<!-- PREMIUM DASHBOARD (hidden by default) -->
+<div id="premium-dashboard">
+  <div class="dash-header">
+    <h1>Bonjour, <em id="dash-name"></em> <span style="color:var(--accent)">✦</span></h1>
+    <p>Vos applications Premium — accès direct depuis votre tableau de bord.</p>
+  </div>
+
+  <div class="dash-section-title">Mes applications</div>
+  <div class="shortcut-grid" id="shortcut-grid"></div>
+
+  <div id="upgrade-section" style="display:none;">
+    <div class="dash-section-title">Débloquer d'autres apps</div>
+    <div class="shortcut-grid" id="upgrade-grid"></div>
+  </div>
+</div>
+
+<!-- HERO (hidden for premium users) -->
+<section class="hero" id="hero-section">
   <div class="hero-tag">✦ Des apps utiles, vraiment</div>
   <h1>Des apps simples qui <em>changent</em> le quotidien</h1>
   <p>VérifTOUT crée des applications légères, pensées pour résoudre de vrais problèmes du quotidien — sans abonnement inutile, sans complexité.</p>
@@ -328,24 +399,35 @@
   </div>
 </section>
 
-<!-- APPS -->
+<!-- APPS LANDING -->
 <section class="section" id="apps">
   <h2 class="section-title">Nos applications</h2>
   <p class="section-sub">Simple. Fiable. Sans superflu.</p>
 
   <!-- HUB COLOC -->
-  <div class="app-card">
+  <div class="app-card" id="card-hub-coloc">
     <div class="app-header">
       <div class="app-icon">🏠</div>
       <div class="app-meta">
         <h2>Hub Coloc</h2>
         <p>Gérez votre colocation sans prise de tête — dépenses, tâches, vie commune.</p>
       </div>
-      <div class="app-badge">Disponible</div>
+      <div class="app-badge" id="badge-hub-coloc">Disponible</div>
     </div>
-
-    <div class="pricing-grid">
-      <!-- GRATUIT -->
+    <div class="owned-overlay" id="owned-hub-coloc">
+      <div class="owned-overlay-inner">
+        <div class="owned-info">
+          <div class="owned-label">✦ Accès Premium actif</div>
+          <h3>Hub Coloc — toutes les fonctionnalités débloquées</h3>
+          <p>Colocataires illimités · Historique · Export PDF · Notifications</p>
+        </div>
+        <div class="owned-actions">
+          <a href="hub-coloc/" class="btn-open-app">Ouvrir l'app →</a>
+          <button class="btn-install-app" onclick="triggerInstall('hub-coloc','hub-coloc/')">📱 Installer</button>
+        </div>
+      </div>
+    </div>
+    <div class="pricing-grid" id="pricing-hub-coloc">
       <div class="plan">
         <div class="plan-name">Gratuit</div>
         <div class="plan-price">0€ <span>/ toujours</span></div>
@@ -359,13 +441,8 @@
           <li><span class="check" style="color:var(--muted)">✗</span> Export PDF des comptes</li>
           <li><span class="check" style="color:var(--muted)">✗</span> Colocs illimitées</li>
         </ul>
-        <!-- ✅ LIEN CORRIGÉ -->
-        <a href="hub-coloc/" class="btn-plan btn-plan-free">
-          Utiliser gratuitement
-        </a>
+        <a href="hub-coloc/" class="btn-plan btn-plan-free">Utiliser gratuitement</a>
       </div>
-
-      <!-- PREMIUM -->
       <div class="plan featured">
         <div class="plan-name">Premium</div>
         <div class="plan-price">3,99€ <span>/ mois</span></div>
@@ -379,25 +456,35 @@
           <li class="active"><span class="check">✓</span> Export PDF des comptes</li>
           <li class="active"><span class="check">✓</span> Colocs illimitées</li>
         </ul>
-        <button class="btn-plan btn-plan-premium" onclick="handlePremium('hub-coloc')">
-          Passer au Premium →
-        </button>
+        <button class="btn-plan btn-plan-premium" onclick="handlePremium('hub-coloc')">Passer au Premium →</button>
       </div>
     </div>
   </div>
 
-  <!-- MEDITRAD CARD -->
-  <div class="app-card" style="margin-top:2rem;">
+  <!-- MEDITRAD -->
+  <div class="app-card" id="card-meditrad" style="margin-top:2rem;">
     <div class="app-header">
       <div class="app-icon">🩺</div>
       <div class="app-meta">
         <h2>MédiTrad</h2>
         <p>Vos ordonnances et comptes-rendus expliqués en langage simple grâce à l'IA.</p>
       </div>
-      <div class="app-badge">Disponible</div>
+      <div class="app-badge" id="badge-meditrad">Disponible</div>
     </div>
-
-    <div class="pricing-grid">
+    <div class="owned-overlay" id="owned-meditrad">
+      <div class="owned-overlay-inner">
+        <div class="owned-info">
+          <div class="owned-label">✦ Accès Premium actif</div>
+          <h3>MédiTrad — analyses illimitées débloquées</h3>
+          <p>Ordonnances · Comptes-rendus · Interactions médicamenteuses · Export PDF</p>
+        </div>
+        <div class="owned-actions">
+          <a href="meditrad.html" class="btn-open-app">Ouvrir l'app →</a>
+          <button class="btn-install-app" onclick="triggerInstall('meditrad','meditrad.html')">📱 Installer</button>
+        </div>
+      </div>
+    </div>
+    <div class="pricing-grid" id="pricing-meditrad">
       <div class="plan">
         <div class="plan-name">Gratuit</div>
         <div class="plan-price">0€ <span>/ toujours</span></div>
@@ -410,11 +497,8 @@
           <li><span class="check" style="color:var(--muted)">✗</span> Analyses illimitées</li>
           <li><span class="check" style="color:var(--muted)">✗</span> Export PDF</li>
         </ul>
-        <a href="meditrad.html" class="btn-plan btn-plan-free">
-          Utiliser gratuitement
-        </a>
+        <a href="meditrad.html" class="btn-plan btn-plan-free">Utiliser gratuitement</a>
       </div>
-
       <div class="plan featured">
         <div class="plan-name">Premium</div>
         <div class="plan-price">3,99€ <span>/ accès à vie</span></div>
@@ -427,25 +511,35 @@
           <li class="active"><span class="check">✓</span> Analyses illimitées</li>
           <li class="active"><span class="check">✓</span> Export PDF</li>
         </ul>
-        <button class="btn-plan btn-plan-premium" onclick="handlePremium('meditrad')">
-          Acheter l'accès — 3,99€ →
-        </button>
+        <button class="btn-plan btn-plan-premium" onclick="handlePremium('meditrad')">Acheter l'accès — 3,99€ →</button>
       </div>
     </div>
   </div>
 
-  <!-- HERITAGEMEMOIRE CARD -->
-  <div class="app-card" style="margin-top:2rem;">
+  <!-- HERITAGE MEMOIRE -->
+  <div class="app-card" id="card-heritage" style="margin-top:2rem;">
     <div class="app-header">
       <div class="app-icon">📜</div>
       <div class="app-meta">
         <h2>HéritageMémoire</h2>
         <p>Archivez la mémoire de vos proches — questions guidées par l'IA, texte, photos et audio.</p>
       </div>
-      <div class="app-badge">Disponible</div>
+      <div class="app-badge" id="badge-heritage">Disponible</div>
     </div>
-
-    <div class="pricing-grid">
+    <div class="owned-overlay" id="owned-heritage">
+      <div class="owned-overlay-inner">
+        <div class="owned-info">
+          <div class="owned-label">✦ Accès Premium actif</div>
+          <h3>HéritageMémoire — tous les chapitres débloqués</h3>
+          <p>Souvenirs illimités · Export PDF · Partage famille sécurisé</p>
+        </div>
+        <div class="owned-actions">
+          <a href="heritage.html" class="btn-open-app">Ouvrir l'app →</a>
+          <button class="btn-install-app" onclick="triggerInstall('heritage','heritage.html')">📱 Installer</button>
+        </div>
+      </div>
+    </div>
+    <div class="pricing-grid" id="pricing-heritage">
       <div class="plan">
         <div class="plan-name">Gratuit</div>
         <div class="plan-price">0€ <span>/ toujours</span></div>
@@ -458,11 +552,8 @@
           <li><span class="check" style="color:var(--muted)">✗</span> Souvenirs illimités</li>
           <li><span class="check" style="color:var(--muted)">✗</span> Export PDF</li>
         </ul>
-        <a href="heritage.html" class="btn-plan btn-plan-free">
-          Utiliser gratuitement
-        </a>
+        <a href="heritage.html" class="btn-plan btn-plan-free">Utiliser gratuitement</a>
       </div>
-
       <div class="plan featured">
         <div class="plan-name">Premium</div>
         <div class="plan-price">3,99€ <span>/ accès à vie</span></div>
@@ -475,25 +566,35 @@
           <li class="active"><span class="check">✓</span> Export PDF du livre</li>
           <li class="active"><span class="check">✓</span> Partage famille sécurisé</li>
         </ul>
-        <button class="btn-plan btn-plan-premium" onclick="handlePremium('heritage')">
-          Acheter l'accès — 3,99€ →
-        </button>
+        <button class="btn-plan btn-plan-premium" onclick="handlePremium('heritage')">Acheter l'accès — 3,99€ →</button>
       </div>
     </div>
   </div>
 
   <!-- VÉRIF'TOUT -->
-  <div class="app-card" style="margin-top:2rem;">
+  <div class="app-card" id="card-veriftout" style="margin-top:2rem;">
     <div class="app-header">
       <div class="app-icon">🔍</div>
       <div class="app-meta">
         <h2>Vérif'Tout</h2>
         <p>Détectez phishing, spam et arnaques — analysez n'importe quel texte ou URL instantanément.</p>
       </div>
-      <div class="app-badge">Disponible</div>
+      <div class="app-badge" id="badge-veriftout">Disponible</div>
     </div>
-
-    <div class="pricing-grid">
+    <div class="owned-overlay" id="owned-veriftout">
+      <div class="owned-overlay-inner">
+        <div class="owned-info">
+          <div class="owned-label">✦ Accès Premium actif</div>
+          <h3>Vérif'Tout — analyses illimitées débloquées</h3>
+          <p>Score détaillé · Indicateurs complets · Historique illimité · Signalement</p>
+        </div>
+        <div class="owned-actions">
+          <a href="veriftout-appli.html" class="btn-open-app">Ouvrir l'app →</a>
+          <button class="btn-install-app" onclick="triggerInstall('veriftout','veriftout-appli.html')">📱 Installer</button>
+        </div>
+      </div>
+    </div>
+    <div class="pricing-grid" id="pricing-veriftout">
       <div class="plan">
         <div class="plan-name">Gratuit</div>
         <div class="plan-price">0€ <span>/ toujours</span></div>
@@ -506,11 +607,8 @@
           <li><span class="check" style="color:var(--muted)">✗</span> Liste complète des indicateurs</li>
           <li><span class="check" style="color:var(--muted)">✗</span> Historique illimité</li>
         </ul>
-        <a href="veriftout-scan.html" class="btn-plan btn-plan-free">
-          Utiliser gratuitement
-        </a>
+        <a href="veriftout-appli.html" class="btn-plan btn-plan-free">Utiliser gratuitement</a>
       </div>
-
       <div class="plan featured">
         <div class="plan-name">Premium</div>
         <div class="plan-price">3,99€ <span>/ accès à vie</span></div>
@@ -523,9 +621,7 @@
           <li class="active"><span class="check">✓</span> Liste complète des indicateurs</li>
           <li class="active"><span class="check">✓</span> Historique illimité</li>
         </ul>
-        <button class="btn-plan btn-plan-premium" onclick="handlePremium('veriftout')">
-          Acheter l'accès — 3,99€ →
-        </button>
+        <button class="btn-plan btn-plan-premium" onclick="handlePremium('veriftout')">Acheter l'accès — 3,99€ →</button>
       </div>
     </div>
   </div>
@@ -581,13 +677,26 @@
   </div>
 </div>
 
+<!-- PWA INSTALL MODAL -->
+<div class="modal-overlay" id="pwa-modal">
+  <div class="modal" style="max-width:420px;">
+    <button class="modal-close" onclick="document.getElementById('pwa-modal').classList.remove('open')">✕</button>
+    <h2 id="pwa-title">Installer l'app</h2>
+    <p id="pwa-subtitle">Ajoutez un raccourci sur votre écran d'accueil.</p>
+    <div id="pwa-body"></div>
+    <button class="btn-full" id="pwa-install-btn" onclick="executePwaInstall()" style="display:none;">Installer maintenant</button>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<!-- ─── FIREBASE MODULE ─── -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
   import {
-    getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged
+    getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+    signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
   import {
     getFirestore, doc, getDoc, setDoc
@@ -614,14 +723,32 @@
     "veriftout": "https://buy.stripe.com/6oUfZaeW15x561W4Pu4Vy03"
   };
 
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
       document.getElementById('user-info').style.display = 'flex';
       document.getElementById('auth-buttons').style.display = 'none';
       document.getElementById('user-email').textContent = user.email;
+
+      // Fetch subscriptions from Firestore
+      let subs = {};
+      let userData = {};
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          userData = snap.data();
+          subs = userData.subscriptions || {};
+        }
+      } catch (e) { console.warn('Firestore:', e); }
+
+      window.onUserLoaded(user, subs, userData);
     } else {
       document.getElementById('user-info').style.display = 'none';
       document.getElementById('auth-buttons').style.display = 'flex';
+      // Reset to visitor state
+      document.getElementById('premium-dashboard').style.display = 'none';
+      document.getElementById('hero-section').style.display = '';
+      document.getElementById('freemium-banner').style.display = 'none';
+      window._applyOverlays([]);
     }
   });
 
@@ -636,14 +763,170 @@
   window._setDoc = setDoc;
 </script>
 
+<!-- ─── APP LOGIC ─── -->
 <script>
+  /* ─── CATALOG ─── */
+  const APPS = {
+    'hub-coloc': { icon:'🏠', name:'Hub Coloc', desc:'Colocation sans prise de tête.', url:'hub-coloc/', price:'3,99€/mois', perks:'Colocataires illimités · Historique · Export PDF' },
+    'meditrad':  { icon:'🩺', name:'MédiTrad',  desc:'Ordonnances expliquées par l\'IA.', url:'meditrad.html', price:'3,99€ à vie', perks:'Analyses illimitées · Interactions médicamenteuses · Export PDF' },
+    'heritage':  { icon:'📜', name:'HéritageMémoire', desc:'Archivez la mémoire de vos proches.', url:'heritage.html', price:'3,99€ à vie', perks:'Chapitres illimités · Export PDF · Partage famille' },
+    'veriftout': { icon:'🔍', name:'Vérif\'Tout', desc:'Détectez phishing et arnaques.', url:'veriftout-appli.html', price:'3,99€ à vie', perks:'Analyses illimitées · Score détaillé · Historique' }
+  };
+
+  let _deferredPrompt = null;
+  let _pwaTarget = null;
+
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); _deferredPrompt = e; });
+
+  /* ─── ROUTING after auth ─── */
+  window.onUserLoaded = function(user, subs, userData) {
+    const allIds = Object.keys(APPS);
+    const ownedIds = allIds.filter(id => {
+      const s = subs[id];
+      return s && (s.active === true || s.plan === 'premium' || s.plan === 'active');
+    });
+
+    window._applyOverlays(ownedIds);
+
+    if (ownedIds.length > 0) {
+      document.getElementById('hero-section').style.display = 'none';
+      document.getElementById('premium-dashboard').style.display = 'block';
+      document.getElementById('freemium-banner').style.display = 'none';
+      _renderDashboard(user, ownedIds, allIds);
+    } else {
+      document.getElementById('hero-section').style.display = '';
+      document.getElementById('premium-dashboard').style.display = 'none';
+      document.getElementById('freemium-banner').style.display = 'block';
+    }
+  };
+
+  /* ─── DASHBOARD ─── */
+  function _renderDashboard(user, ownedIds, allIds) {
+    const name = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
+    document.getElementById('dash-name').textContent = name;
+
+    const grid = document.getElementById('shortcut-grid');
+    grid.innerHTML = '';
+    ownedIds.forEach(id => {
+      const a = APPS[id];
+      const t = document.createElement('div');
+      t.className = 'shortcut-tile';
+      t.innerHTML = `
+        <div class="tile-icon">${a.icon}</div>
+        <div class="tile-badge-premium">✦ Premium actif</div>
+        <div class="tile-name">${a.name}</div>
+        <div class="tile-desc">${a.perks}</div>
+        <div class="tile-actions">
+          <a href="${a.url}" class="tile-btn-open">Ouvrir →</a>
+          <button class="tile-btn-install" onclick="triggerInstall('${id}','${a.url}')">📱</button>
+        </div>`;
+      grid.appendChild(t);
+    });
+
+    const notOwned = allIds.filter(id => !ownedIds.includes(id));
+    const uGrid = document.getElementById('upgrade-grid');
+    const uSect = document.getElementById('upgrade-section');
+    uGrid.innerHTML = '';
+    if (notOwned.length) {
+      uSect.style.display = 'block';
+      notOwned.forEach(id => {
+        const a = APPS[id];
+        const t = document.createElement('div');
+        t.className = 'upgrade-tile';
+        t.innerHTML = `
+          <div class="tile-icon">${a.icon}</div>
+          <div class="tile-name">${a.name}</div>
+          <div class="tile-desc">${a.desc}</div>
+          <button class="tile-btn-buy" onclick="handlePremium('${id}')">Débloquer — ${a.price} →</button>`;
+        uGrid.appendChild(t);
+      });
+    } else { uSect.style.display = 'none'; }
+  }
+
+  /* ─── LANDING OVERLAYS ─── */
+  window._applyOverlays = function(ownedIds) {
+    Object.keys(APPS).forEach(id => {
+      const card    = document.getElementById('card-' + id);
+      const pricing = document.getElementById('pricing-' + id);
+      const owned   = document.getElementById('owned-' + id);
+      const badge   = document.getElementById('badge-' + id);
+      if (!card) return;
+      if (ownedIds.includes(id)) {
+        if (pricing) pricing.style.display = 'none';
+        if (owned)   owned.style.display   = 'block';
+        if (badge)   { badge.textContent = '✦ Premium'; badge.className = 'badge-owned'; }
+        card.classList.add('owned-card');
+      } else {
+        if (pricing) pricing.style.display = '';
+        if (owned)   owned.style.display   = 'none';
+        if (badge)   { badge.textContent = 'Disponible'; badge.className = 'app-badge'; }
+        card.classList.remove('owned-card');
+      }
+    });
+  };
+
+  /* ─── PWA INSTALL ─── */
+  function _isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream; }
+  function _isStandalone() { return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }
+
+  window.triggerInstall = function(appId, appUrl) {
+    _pwaTarget = { appId, url: appUrl };
+    const a = APPS[appId];
+    const title    = document.getElementById('pwa-title');
+    const subtitle = document.getElementById('pwa-subtitle');
+    const body     = document.getElementById('pwa-body');
+    const btn      = document.getElementById('pwa-install-btn');
+
+    title.textContent = 'Installer ' + a.name;
+
+    if (_isStandalone()) {
+      subtitle.textContent = 'Application déjà installée.';
+      body.innerHTML = '<p style="color:var(--green);text-align:center;padding:1rem 0;font-size:0.95rem;">✓ Déjà sur votre écran d\'accueil</p>';
+      btn.style.display = 'none';
+    } else if (_isIOS()) {
+      subtitle.textContent = 'Installation sur iPhone / iPad :';
+      body.innerHTML = `
+        <ol class="pwa-steps">
+          <li><span class="pwa-step-num">1</span><div>Appuyez sur <span class="hi">le bouton Partager ⬆</span> en bas de Safari</div></li>
+          <li><span class="pwa-step-num">2</span><div>Sélectionnez <span class="hi">« Sur l'écran d'accueil »</span></div></li>
+          <li><span class="pwa-step-num">3</span><div>Confirmez en appuyant sur <span class="hi">Ajouter</span></div></li>
+        </ol>
+        <p style="font-size:0.8rem;color:var(--muted);">Ouvrez d'abord <a href="${appUrl}" style="color:var(--accent);">${a.name}</a> dans Safari.</p>`;
+      btn.style.display = 'none';
+    } else if (_deferredPrompt) {
+      subtitle.textContent = 'Installez l\'app en un clic.';
+      body.innerHTML = `<p style="font-size:0.875rem;color:var(--muted);margin-bottom:1rem;">Ajoutez <strong style="color:var(--text)">${a.name}</strong> sur votre écran d'accueil pour un accès rapide.</p>`;
+      btn.style.display = 'block';
+    } else {
+      subtitle.textContent = 'Via le menu de votre navigateur :';
+      body.innerHTML = `
+        <ol class="pwa-steps">
+          <li><span class="pwa-step-num">1</span><div>Ouvrez <a href="${appUrl}" style="color:var(--accent);">${a.name}</a></div></li>
+          <li><span class="pwa-step-num">2</span><div>Cliquez sur <span class="hi">⋮</span> ou <span class="hi">...</span> en haut à droite</div></li>
+          <li><span class="pwa-step-num">3</span><div>Sélectionnez <span class="hi">« Installer »</span> ou <span class="hi">« Ajouter à l'écran d'accueil »</span></div></li>
+        </ol>`;
+      btn.style.display = 'none';
+    }
+    document.getElementById('pwa-modal').classList.add('open');
+  };
+
+  window.executePwaInstall = async function() {
+    if (!_deferredPrompt) return;
+    _deferredPrompt.prompt();
+    const { outcome } = await _deferredPrompt.userChoice;
+    _deferredPrompt = null;
+    document.getElementById('pwa-modal').classList.remove('open');
+    if (outcome === 'accepted') showToast('App installée sur votre écran d\'accueil !');
+  };
+
+  /* ─── AUTH ─── */
   let currentMode = 'login';
 
   function openModal(mode) {
     currentMode = mode;
     document.getElementById('auth-modal').classList.add('open');
     updateModalUI();
-    document.getElementById('auth-email').focus();
+    setTimeout(() => document.getElementById('auth-email').focus(), 80);
   }
 
   function closeModal() {
@@ -652,13 +935,11 @@
   }
 
   function updateModalUI() {
-    const isLogin = currentMode === 'login';
-    document.getElementById('modal-title').textContent = isLogin ? 'Connexion' : 'Créer un compte';
-    document.getElementById('modal-subtitle').textContent = isLogin
-      ? 'Accédez à vos applications et abonnements.'
-      : 'Rejoignez VérifTOUT — c\'est gratuit.';
-    document.getElementById('auth-submit-btn').textContent = isLogin ? 'Se connecter' : 'Créer mon compte';
-    document.getElementById('modal-switch').innerHTML = isLogin
+    const l = currentMode === 'login';
+    document.getElementById('modal-title').textContent    = l ? 'Connexion' : 'Créer un compte';
+    document.getElementById('modal-subtitle').textContent = l ? 'Accédez à vos applications et abonnements.' : 'Rejoignez VérifTOUT — c\'est gratuit.';
+    document.getElementById('auth-submit-btn').textContent = l ? 'Se connecter' : 'Créer mon compte';
+    document.getElementById('modal-switch').innerHTML = l
       ? 'Pas encore de compte ? <a onclick="switchModal()">Créer un compte</a>'
       : 'Déjà un compte ? <a onclick="switchModal()">Se connecter</a>';
   }
@@ -671,35 +952,35 @@
 
   async function handleAuth() {
     const email = document.getElementById('auth-email').value.trim();
-    const password = document.getElementById('auth-password').value;
-    const errorEl = document.getElementById('auth-error');
-    errorEl.textContent = '';
-    if (!email || !password) { errorEl.textContent = 'Merci de remplir tous les champs.'; return; }
+    const pwd   = document.getElementById('auth-password').value;
+    const err   = document.getElementById('auth-error');
+    err.textContent = '';
+    if (!email || !pwd) { err.textContent = 'Merci de remplir tous les champs.'; return; }
     const btn = document.getElementById('auth-submit-btn');
     btn.textContent = '...'; btn.disabled = true;
     try {
       if (currentMode === 'login') {
-        await window._signInWithEmailAndPassword(window._auth, email, password);
+        await window._signInWithEmailAndPassword(window._auth, email, pwd);
       } else {
-        const cred = await window._createUserWithEmailAndPassword(window._auth, email, password);
+        const cred = await window._createUserWithEmailAndPassword(window._auth, email, pwd);
         await window._setDoc(window._doc(window._db, 'users', cred.user.uid), {
           email, createdAt: new Date().toISOString(), subscriptions: {}
         });
       }
       closeModal();
       showToast(currentMode === 'login' ? 'Bienvenue !' : 'Compte créé — bienvenue !');
-    } catch (err) {
-      const messages = {
-        'auth/user-not-found': 'Aucun compte trouvé avec cet e-mail.',
-        'auth/wrong-password': 'Mot de passe incorrect.',
-        'auth/email-already-in-use': 'Cet e-mail est déjà utilisé.',
-        'auth/weak-password': 'Mot de passe trop court (6 caractères min).',
-        'auth/invalid-email': 'Adresse e-mail invalide.',
+    } catch (e) {
+      const msgs = {
+        'auth/user-not-found':      'Aucun compte trouvé avec cet e-mail.',
+        'auth/wrong-password':      'Mot de passe incorrect.',
+        'auth/email-already-in-use':'Cet e-mail est déjà utilisé.',
+        'auth/weak-password':       'Mot de passe trop court (6 caractères min).',
+        'auth/invalid-email':       'Adresse e-mail invalide.',
+        'auth/invalid-credential':  'Identifiants invalides.',
       };
-      errorEl.textContent = messages[err.code] || 'Une erreur est survenue.';
+      err.textContent = msgs[e.code] || 'Une erreur est survenue.';
     } finally {
-      btn.disabled = false;
-      updateModalUI();
+      btn.disabled = false; updateModalUI();
     }
   }
 
@@ -710,30 +991,34 @@
 
   async function handlePremium(appId) {
     const user = window._auth?.currentUser;
-    if (!user) { openModal('login'); showToast('Connectez-vous d\'abord pour souscrire.'); return; }
+    if (!user) { openModal('login'); showToast('Connectez-vous d\'abord.'); return; }
     const link = window._STRIPE_LINKS?.[appId];
-    if (link) {
-      window.open(link + '?prefilled_email=' + encodeURIComponent(user.email), '_blank');
-    } else {
-      showToast('⚙️ Lien Stripe non encore configuré.');
-    }
+    if (link) window.open(link + '?prefilled_email=' + encodeURIComponent(user.email), '_blank');
+    else showToast('⚙️ Lien Stripe non encore configuré.');
   }
 
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
+    setTimeout(() => t.classList.remove('show'), 3200);
   }
 
-  document.getElementById('auth-modal').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) closeModal();
+  // Close on overlay click
+  ['auth-modal','pwa-modal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', e => {
+      if (e.target === e.currentTarget) {
+        e.currentTarget.classList.remove('open');
+        if (id === 'auth-modal') document.getElementById('auth-error').textContent = '';
+      }
+    });
   });
 
+  // Smooth scroll
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
       const el = document.querySelector(a.getAttribute('href'));
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
     });
   });
 </script>
