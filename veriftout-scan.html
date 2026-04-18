@@ -956,6 +956,273 @@
     }
     .btn-check-premium:hover { border-color: var(--blue); }
 
+    /* ── FAB SIGNALEMENT APPEL ── */
+    .call-fab {
+      position: fixed;
+      bottom: 88px;
+      right: 1.1rem;
+      z-index: 500;
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+      color: #fff;
+      border: none;
+      box-shadow: 0 4px 18px rgba(220,38,38,0.45);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .call-fab:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(220,38,38,0.55); }
+    .call-fab::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid rgba(220,38,38,0.4);
+      animation: fabPulse 2s ease-out infinite;
+    }
+    @keyframes fabPulse {
+      0%   { transform: scale(1);   opacity: 1; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+    .fab-tooltip {
+      position: fixed;
+      bottom: 152px;
+      right: 1.1rem;
+      z-index: 499;
+      background: var(--navy);
+      color: #fff;
+      font-size: 0.73rem;
+      font-weight: 500;
+      padding: 0.35rem 0.7rem;
+      border-radius: 8px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: all 0.2s;
+    }
+    .call-fab:hover + .fab-tooltip { opacity: 1; transform: translateY(0); }
+
+    /* Bannière première visite */
+    .call-promo-banner {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 490;
+      background: linear-gradient(135deg, #1e3a5f, #1d4ed8);
+      color: #fff;
+      padding: 1rem 1.25rem 1.25rem;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.2);
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      border-radius: 20px 20px 0 0;
+    }
+    .call-promo-banner.show { transform: translateY(0); }
+    .cpb-handle {
+      width: 36px; height: 4px;
+      background: rgba(255,255,255,0.3); border-radius: 2px;
+      margin: 0 auto 0.85rem;
+    }
+    .cpb-row { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .cpb-icon { font-size: 2rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .cpb-text h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .cpb-text p  { font-size: 0.78rem; color: rgba(255,255,255,0.75); line-height: 1.5; }
+    .cpb-btns { display: flex; gap: 0.5rem; }
+    .cpb-btn-yes {
+      flex: 1; padding: 0.7rem;
+      background: #fff; color: var(--navy);
+      border: none; border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .cpb-btn-yes:hover { background: #e0e7ff; }
+    .cpb-btn-no {
+      padding: 0.7rem 1rem;
+      background: rgba(255,255,255,0.12); color: #fff;
+      border: 1px solid rgba(255,255,255,0.2); border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: 0.82rem;
+      cursor: pointer; white-space: nowrap;
+    }
+
+    /* Modal signalement appel */
+    .call-modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 1100;
+      background: rgba(15,28,46,0.7);
+      backdrop-filter: blur(4px);
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .call-modal-overlay.open { display: flex; }
+    .call-modal {
+      background: var(--surface);
+      border-radius: 24px 24px 0 0;
+      width: 100%; max-width: 600px;
+      max-height: 92vh;
+      overflow-y: auto;
+      animation: slideUp 0.32s cubic-bezier(0.34,1.56,0.64,1);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+    .cm-handle-bar {
+      width: 40px; height: 5px;
+      background: var(--border); border-radius: 3px;
+      margin: 0.75rem auto 0;
+    }
+    .cm-header {
+      padding: 1rem 1.25rem 0.75rem;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .cm-header-left { display: flex; align-items: center; gap: 0.65rem; }
+    .cm-header-icon {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: #fee2e2; display: flex; align-items: center;
+      justify-content: center; font-size: 1.2rem; flex-shrink: 0;
+    }
+    .cm-header h3 { font-size: 1rem; font-weight: 700; margin: 0; }
+    .cm-header p  { font-size: 0.75rem; color: var(--muted); margin: 0.1rem 0 0; }
+    .cm-close-btn {
+      background: none; border: none; font-size: 1.3rem; color: var(--muted);
+      cursor: pointer; padding: 0.25rem; border-radius: 50%;
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .cm-close-btn:hover { background: var(--bg); }
+    .cm-body { padding: 1.1rem 1.25rem; }
+
+    /* Champ numéro */
+    .cm-number-wrap { position: relative; margin-bottom: 0.75rem; }
+    .cm-number-wrap .cn-icon {
+      position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+      font-size: 1.1rem;
+    }
+    .cm-number-input {
+      width: 100%; padding: 0.85rem 1rem 0.85rem 2.8rem;
+      border: 2px solid var(--border); border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600;
+      color: var(--text); background: var(--bg); outline: none;
+      transition: border-color 0.2s; letter-spacing: 0.02em;
+    }
+    .cm-number-input:focus { border-color: var(--blue); }
+
+    /* Mini-analyse inline */
+    .cm-inline-analysis {
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 0.85rem;
+      font-size: 0.8rem;
+      margin-bottom: 0.85rem;
+      display: none;
+      align-items: center; gap: 0.55rem;
+    }
+    .cm-inline-analysis.show { display: flex; }
+    .cm-inline-analysis.safe    { background: var(--safe-bg);   color: var(--safe);   border: 1px solid #bbf7d0; }
+    .cm-inline-analysis.warning { background: var(--warn-bg);   color: #92400e;       border: 1px solid #fde68a; }
+    .cm-inline-analysis.danger  { background: var(--danger-bg); color: var(--danger); border: 1px solid #fca5a5; }
+    .cm-inline-analysis .cia-score {
+      font-weight: 800; font-size: 1.1rem; flex-shrink: 0;
+    }
+
+    /* Catégories */
+    .cm-label { font-size: 0.78rem; font-weight: 600; color: var(--navy);
+      letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .cm-categories {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0.4rem; margin-bottom: 0.85rem;
+    }
+    .cm-cat-btn {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.6rem 0.75rem; border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border); background: var(--bg);
+      font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 500;
+      cursor: pointer; transition: all 0.18s; color: var(--text);
+    }
+    .cm-cat-btn:hover  { border-color: var(--blue); color: var(--blue); background: #eff6ff; }
+    .cm-cat-btn.active { border-color: var(--danger); background: #fee2e2; color: var(--danger); font-weight: 700; }
+    .cm-cat-icon { font-size: 1rem; }
+
+    /* Commentaire */
+    .cm-comment {
+      width: 100%; padding: 0.65rem 0.85rem;
+      border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text);
+      background: var(--bg); outline: none; resize: none; height: 64px;
+      transition: border-color 0.2s; margin-bottom: 0.85rem;
+    }
+    .cm-comment:focus { border-color: var(--blue); }
+    .cm-comment::placeholder { color: var(--muted); }
+
+    /* Bouton principal */
+    .cm-submit-btn {
+      width: 100%; padding: 0.95rem;
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+      color: #fff; border: none; border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; margin-bottom: 0.5rem;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .cm-submit-btn:hover   { background: linear-gradient(135deg, #b91c1c, #7f1d1d); }
+    .cm-submit-btn:disabled{ opacity: 0.6; cursor: not-allowed; }
+    .cm-quick-actions {
+      display: flex; gap: 0.4rem; margin-bottom: 0.75rem;
+    }
+    .cm-quick-btn {
+      flex: 1; padding: 0.6rem;
+      background: var(--bg); color: var(--navy);
+      border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; transition: all 0.18s; text-align: center;
+      text-decoration: none; display: flex; align-items: center;
+      justify-content: center; gap: 0.3rem;
+    }
+    .cm-quick-btn:hover { border-color: var(--navy); }
+
+    /* Écran de confirmation */
+    .cm-confirm-screen {
+      display: none; flex-direction: column;
+      align-items: center; text-align: center; padding: 1.5rem 1.25rem 2rem;
+    }
+    .cm-confirm-screen.show { display: flex; }
+    .cm-confirm-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+    .cm-confirm-screen h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .cm-confirm-screen p  { font-size: 0.83rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.5; }
+    .cm-stat-box {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 0.75rem 1.25rem;
+      margin-bottom: 1.25rem; width: 100%;
+    }
+    .cm-stat-box .csb-num { font-size: 2rem; font-weight: 800; color: var(--danger); }
+    .cm-stat-box .csb-lbl { font-size: 0.75rem; color: var(--muted); }
+    .cm-confirm-actions { display: flex; flex-direction: column; gap: 0.45rem; width: 100%; }
+    .cm-conf-btn {
+      padding: 0.7rem; border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; border: none; text-decoration: none;
+      display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+      transition: all 0.18s;
+    }
+    .cm-conf-btn.primary   { background: var(--navy); color: #fff; }
+    .cm-conf-btn.primary:hover  { background: #0f172a; }
+    .cm-conf-btn.secondary { background: var(--bg); color: var(--text); border: 1.5px solid var(--border); }
+    .cm-conf-btn.secondary:hover { border-color: var(--navy); }
+
+    /* notification opt-in */
+    .notif-bar {
+      background: linear-gradient(90deg, #1d4ed8, #1e3a5f);
+      color: #fff; border-radius: var(--radius-sm);
+      padding: 0.65rem 0.85rem; margin-bottom: 0.85rem;
+      display: flex; align-items: center; gap: 0.7rem; font-size: 0.8rem;
+    }
+    .notif-bar-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .notif-bar-text { flex: 1; line-height: 1.4; }
+    .notif-enable-btn {
+      flex-shrink: 0; background: #fff; color: var(--navy);
+      border: none; border-radius: 6px; padding: 0.35rem 0.65rem;
+      font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 700;
+      cursor: pointer; white-space: nowrap;
+    }
+
     /* ── TOAST ── */
     .toast {
       position: fixed;
@@ -1304,6 +1571,115 @@
     <h3>CONTENU DANGEREUX DÉTECTÉ</h3>
     <p id="danger-msg">Ce contenu présente des signaux critiques de phishing, arnaque ou désinformation. <strong>Ne cliquez sur aucun lien, ne communiquez aucune information personnelle et ne répondez pas.</strong></p>
     <button class="btn-danger-ok" onclick="closeDangerOverlay()">J'ai compris — je ne donnerai aucune information</button>
+  </div>
+</div>
+
+<!-- ── FAB SIGNALEMENT APPEL ── -->
+<button class="call-fab" id="call-fab" onclick="openCallModal()" aria-label="Signaler un appel suspect">📞</button>
+<div class="fab-tooltip">Signaler un appel suspect</div>
+
+<!-- Bannière première visite -->
+<div class="call-promo-banner" id="call-promo-banner">
+  <div class="cpb-handle"></div>
+  <div class="cpb-row">
+    <div class="cpb-icon">🚨</div>
+    <div class="cpb-text">
+      <h4>Appel suspect en cours ?</h4>
+      <p>Signalez-le en temps réel depuis Vérif'Tout — analyse instantanée, signalement communautaire et transmission au 33700 en un seul clic.</p>
+    </div>
+  </div>
+  <div class="cpb-btns">
+    <button class="cpb-btn-yes" onclick="activateCallFeature()">📞 Activer le signalement d'appels</button>
+    <button class="cpb-btn-no"  onclick="dismissCallPromo()">Plus tard</button>
+  </div>
+</div>
+
+<!-- Modal signalement appel -->
+<div class="call-modal-overlay" id="call-modal" onclick="handleCallModalBackdrop(event)">
+  <div class="call-modal">
+    <div class="cm-handle-bar"></div>
+    <div class="cm-header">
+      <div class="cm-header-left">
+        <div class="cm-header-icon">🚨</div>
+        <div>
+          <h3>Signaler un appel suspect</h3>
+          <p>Analyse instantanée + signalement communautaire</p>
+        </div>
+      </div>
+      <button class="cm-close-btn" onclick="closeCallModal()">✕</button>
+    </div>
+
+    <!-- Formulaire (step 1) -->
+    <div class="cm-body" id="cm-form">
+      <!-- Opt-in notifications -->
+      <div class="notif-bar" id="cm-notif-bar" style="display:none;">
+        <span class="notif-bar-icon">🔔</span>
+        <span class="notif-bar-text">Activez les alertes pour signaler un appel en un tap depuis l'écran d'accueil.</span>
+        <button class="notif-enable-btn" onclick="requestCallNotifications()">Activer</button>
+      </div>
+
+      <!-- Numéro -->
+      <div class="cm-label">Numéro appelant</div>
+      <div class="cm-number-wrap">
+        <span class="cn-icon">📞</span>
+        <input type="tel" id="cm-number" class="cm-number-input"
+          placeholder="+33 6 12 34 56 78 · 0899 45 67 89"
+          oninput="onCallNumberInput(this.value)"
+          autocomplete="off" />
+      </div>
+      <!-- Analyse inline -->
+      <div class="cm-inline-analysis" id="cm-analysis">
+        <span class="cia-score" id="cm-score">—</span>
+        <span id="cm-analysis-text">Entrez un numéro pour l'analyser</span>
+      </div>
+
+      <!-- Catégorie -->
+      <div class="cm-label">Type d'appel</div>
+      <div class="cm-categories" id="cm-categories">
+        <button class="cm-cat-btn" data-cat="demarchage"  onclick="selectCallCat(this)"><span class="cm-cat-icon">📢</span> Démarchage</button>
+        <button class="cm-cat-btn" data-cat="arnaque"     onclick="selectCallCat(this)"><span class="cm-cat-icon">🦠</span> Arnaque / fraude</button>
+        <button class="cm-cat-btn" data-cat="robot"       onclick="selectCallCat(this)"><span class="cm-cat-icon">🤖</span> Robot / auto</button>
+        <button class="cm-cat-btn" data-cat="vishing"     onclick="selectCallCat(this)"><span class="cm-cat-icon">🕵️</span> Usurpation</button>
+        <button class="cm-cat-btn" data-cat="surtaxe"     onclick="selectCallCat(this)"><span class="cm-cat-icon">💰</span> Surtaxé</button>
+        <button class="cm-cat-btn" data-cat="silence"     onclick="selectCallCat(this)"><span class="cm-cat-icon">🔇</span> Silence</button>
+        <button class="cm-cat-btn" data-cat="loterie"     onclick="selectCallCat(this)"><span class="cm-cat-icon">🎁</span> Fausse loterie</button>
+        <button class="cm-cat-btn" data-cat="autre"       onclick="selectCallCat(this)"><span class="cm-cat-icon">❓</span> Autre</button>
+      </div>
+
+      <!-- Commentaire -->
+      <div class="cm-label">Contexte <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);">(optionnel)</span></div>
+      <textarea id="cm-comment" class="cm-comment"
+        placeholder="Ex : se prétendait être EDF, demandait des coordonnées bancaires…"
+        maxlength="200"></textarea>
+
+      <!-- Bouton submit -->
+      <button class="cm-submit-btn" id="cm-submit-btn" onclick="submitCallReport()">
+        🚨 Signaler cet appel maintenant
+      </button>
+
+      <!-- Actions rapides -->
+      <div class="cm-quick-actions">
+        <button class="cm-quick-btn" onclick="cm33700()">💬 Transférer au 33700</button>
+        <a class="cm-quick-btn" href="https://www.cybermalveillance.gouv.fr/diagnostic" target="_blank" rel="noopener">🛡️ Cybermalveillance</a>
+        <button class="cm-quick-btn" onclick="cmAnalyseComplet()">🔍 Analyse complète</button>
+      </div>
+    </div>
+
+    <!-- Écran confirmation (step 2) -->
+    <div class="cm-confirm-screen" id="cm-confirm">
+      <div class="cm-confirm-icon">✅</div>
+      <h3>Signalement enregistré !</h3>
+      <p>Merci — vous venez de contribuer à protéger toute la communauté Vérif'Tout.<br>Ce numéro est désormais dans notre base de données.</p>
+      <div class="cm-stat-box">
+        <div class="csb-num" id="cm-today-count">…</div>
+        <div class="csb-lbl">signalements d'appels enregistrés</div>
+      </div>
+      <div class="cm-confirm-actions">
+        <button class="cm-conf-btn primary" id="cm-conf-33700" onclick="cm33700Confirm()">💬 Transférer aussi au 33700</button>
+        <button class="cm-conf-btn secondary" onclick="cmGoSearch()">🔍 Rechercher ce numéro dans la base</button>
+        <button class="cm-conf-btn secondary" onclick="closeCallModal()">✕ Fermer</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2730,6 +3106,219 @@ const THREAT_LABELS = {
   SOCIAL_ENGINEERING:               'Phishing / ingénierie sociale',
   UNWANTED_SOFTWARE:                'Logiciel indésirable',
   POTENTIALLY_HARMFUL_APPLICATION:  'Application dangereuse'
+};
+
+// ── SIGNALEMENT APPEL EN TEMPS RÉEL ──────────────────────────────────────────
+let callCategory = null;
+let lastCallNumber = '';
+let callAnalysisDebounce = null;
+
+// ── Bannière première visite ──────────────────────────────────────────────────
+(function initCallPromo() {
+  if (localStorage.getItem('vt_call_promo_seen')) return;
+  setTimeout(() => {
+    const b = document.getElementById('call-promo-banner');
+    if (b) b.classList.add('show');
+  }, 3500);
+})();
+
+window.dismissCallPromo = function() {
+  document.getElementById('call-promo-banner').classList.remove('show');
+  localStorage.setItem('vt_call_promo_seen', '1');
+};
+window.activateCallFeature = function() {
+  dismissCallPromo();
+  setTimeout(() => openCallModal(), 400);
+};
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+window.openCallModal = function() {
+  document.getElementById('call-modal').classList.add('open');
+  document.getElementById('cm-form').style.display    = '';
+  document.getElementById('cm-confirm').classList.remove('show');
+  // Proposer notifications si pas encore accepté
+  if ('Notification' in window && Notification.permission === 'default') {
+    document.getElementById('cm-notif-bar').style.display = '';
+  }
+  setTimeout(() => document.getElementById('cm-number').focus(), 320);
+};
+window.closeCallModal = function() {
+  document.getElementById('call-modal').classList.remove('open');
+  // Reset form
+  document.getElementById('cm-number').value = '';
+  document.getElementById('cm-comment').value = '';
+  document.querySelectorAll('.cm-cat-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('cm-analysis').classList.remove('show');
+  callCategory = null; lastCallNumber = '';
+};
+window.handleCallModalBackdrop = function(e) {
+  if (e.target.id === 'call-modal') closeCallModal();
+};
+
+// ── Analyse inline au fil de la frappe ───────────────────────────────────────
+window.onCallNumberInput = function(val) {
+  lastCallNumber = val;
+  clearTimeout(callAnalysisDebounce);
+  const el = document.getElementById('cm-analysis');
+  if (!val || val.length < 6) { el.classList.remove('show'); return; }
+  callAnalysisDebounce = setTimeout(() => {
+    const res = analyzePhone(val);
+    const el  = document.getElementById('cm-analysis');
+    const icons = { safe:'✅', warning:'⚠️', danger:'🚨' };
+    const descs = {
+      safe:    'Aucun indicateur automatique de risque',
+      warning: res.findings[0]?.text?.replace(/<[^>]+>/g,'') || 'Caractéristiques suspectes',
+      danger:  res.findings[0]?.text?.replace(/<[^>]+>/g,'') || 'Numéro à haut risque'
+    };
+    document.getElementById('cm-score').textContent = `${icons[res.severity]} ${res.score}/100`;
+    document.getElementById('cm-analysis-text').textContent = descs[res.severity];
+    el.className = `cm-inline-analysis show ${res.severity}`;
+    // Auto-sélectionner catégorie si surtaxé
+    if (res.score >= 45 && !callCategory) {
+      const surtaxeBtn = document.querySelector('.cm-cat-btn[data-cat="surtaxe"]');
+      if (surtaxeBtn) selectCallCat(surtaxeBtn);
+    }
+  }, 420);
+};
+
+// ── Sélection catégorie ───────────────────────────────────────────────────────
+window.selectCallCat = function(btn) {
+  document.querySelectorAll('.cm-cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  callCategory = btn.dataset.cat;
+};
+
+// ── Soumission signalement ────────────────────────────────────────────────────
+window.submitCallReport = async function() {
+  const num = document.getElementById('cm-number').value.trim();
+  if (!num || num.length < 6) { showToast('Entrez un numéro de téléphone'); return; }
+  if (!callCategory)          { showToast('Choisissez le type d\'appel'); return; }
+
+  const btn = document.getElementById('cm-submit-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Enregistrement…';
+
+  try {
+    const cleaned  = num.replace(/[\s.\-]/g,'');
+    const hash     = await hashContent(cleaned.toLowerCase());
+    const comment  = document.getElementById('cm-comment').value.trim().substring(0,200);
+    const res      = analyzePhone(num);
+
+    // Sauvegarder dans Firestore
+    await addDoc(collection(db, 'verifTOUT_appels'), {
+      hash,
+      numberMasked: cleaned.substring(0,4) + '******',
+      category:     callCategory,
+      comment:      comment || null,
+      severity:     res.severity,
+      score:        res.score,
+      userId:       currentUser?.uid || 'anonymous',
+      reportedAt:   serverTimestamp()
+    });
+
+    // Mettre aussi dans verifTOUT_signalements pour cross-référencement
+    try {
+      const sigRef = doc(db, 'verifTOUT_signalements', hash);
+      const sigSnap = await getDoc(sigRef);
+      if (sigSnap.exists()) {
+        await updateDoc(sigRef, { reportCount: increment(1), lastReported: serverTimestamp() });
+      } else {
+        await setDoc(sigRef, {
+          hash, preview: cleaned.substring(0,4) + '***',
+          reportCount: 1, firstReported: serverTimestamp(), lastReported: serverTimestamp(),
+          dominantCat: 'Spam téléphonique', score: res.score, reporters: []
+        });
+      }
+    } catch(e) { /* non-bloquant */ }
+
+    // Compter les signalements d'appels (aujourd'hui)
+    let todayCount = '—';
+    try {
+      const today = new Date(); today.setHours(0,0,0,0);
+      const q = query(collection(db, 'verifTOUT_appels'), where('reportedAt','>=', today));
+      const snap = await getDocs(q);
+      todayCount = snap.size;
+    } catch(e) { todayCount = '—'; }
+
+    // Pré-remplir l'action 33700
+    document.getElementById('cm-conf-33700').dataset.num = cleaned;
+
+    // Afficher écran confirmation
+    document.getElementById('cm-today-count').textContent = todayCount;
+    document.getElementById('cm-form').style.display = 'none';
+    document.getElementById('cm-confirm').classList.add('show');
+
+    // Notification browser si activée
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Vérif\'Tout — Signalement enregistré ✅', {
+        body: `Appel ${callCategory} signalé. Score de risque : ${res.score}/100.`,
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><text y="28" font-size="28">🛡️</text></svg>'
+      });
+    }
+  } catch(e) {
+    console.error('Call report error:', e);
+    showToast('Erreur lors du signalement');
+    btn.disabled = false;
+    btn.innerHTML = '🚨 Signaler cet appel maintenant';
+  }
+};
+
+// ── Actions rapides dans la modal ─────────────────────────────────────────────
+window.cm33700 = function() {
+  const num = document.getElementById('cm-number').value.trim();
+  if (navigator.clipboard && num) {
+    navigator.clipboard.writeText(num).then(() =>
+      showToast(`✓ ${num} copié — transférez votre SMS au 33700`)
+    );
+  }
+  window.open('https://www.33700.fr/', '_blank', 'noopener');
+};
+window.cm33700Confirm = function() {
+  const num = document.getElementById('cm-conf-33700').dataset.num || '';
+  if (navigator.clipboard && num) {
+    navigator.clipboard.writeText(num).then(() =>
+      showToast(`✓ ${num} copié — transférez au 33700`)
+    );
+  }
+  window.open('https://www.33700.fr/', '_blank', 'noopener');
+};
+window.cmAnalyseComplet = function() {
+  const num = document.getElementById('cm-number').value.trim();
+  closeCallModal();
+  showTab('search');
+  setTimeout(() => {
+    setSearchType('phone');
+    document.getElementById('sinput-phone').value = num;
+    if (num.length >= 6) doSearch();
+  }, 350);
+};
+window.cmGoSearch = function() {
+  const num = document.getElementById('cm-number').value.trim();
+  closeCallModal();
+  showTab('search');
+  setTimeout(() => {
+    setSearchType('phone');
+    document.getElementById('sinput-phone').value = num;
+    doSearch();
+  }, 350);
+};
+
+// ── Notifications browser ─────────────────────────────────────────────────────
+window.requestCallNotifications = async function() {
+  if (!('Notification' in window)) { showToast('Notifications non supportées sur ce navigateur'); return; }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    document.getElementById('cm-notif-bar').style.display = 'none';
+    localStorage.setItem('vt_notif_granted', '1');
+    setTimeout(() => {
+      new Notification('Vérif\'Tout activé 🛡️', {
+        body: 'Tap le bouton 📞 rouge dès que vous recevez un appel suspect !',
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><text y="28" font-size="28">🛡️</text></svg>'
+      });
+    }, 500);
+    showToast('✓ Alertes activées !');
+  } else {
+    showToast('Autorisation refusée — vous pouvez toujours utiliser le bouton 📞');
+  }
 };
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
