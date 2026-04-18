@@ -1223,6 +1223,60 @@
       cursor: pointer; white-space: nowrap;
     }
 
+    /* ── DEBUNKER ── */
+    .dbk-textarea {
+      width: 100%; padding: .85rem 1rem; background: var(--navy-light);
+      border: 1px solid var(--border); border-radius: 10px; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: .9rem; resize: vertical;
+      outline: none; transition: border-color .2s; line-height: 1.6;
+    }
+    .dbk-textarea:focus { border-color: var(--accent); }
+    .dbk-verdict-bar {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1.25rem 1.5rem; border-radius: 12px;
+      border: 1.5px solid var(--border); background: var(--navy-light);
+      margin-bottom: 1.25rem; transition: all .4s;
+    }
+    .dbk-verdict-icon { font-size: 2rem; flex-shrink: 0; }
+    .dbk-verdict-text { flex: 1; }
+    .dbk-verdict-label { font-size: 1rem; font-weight: 700; letter-spacing: .04em; }
+    .dbk-verdict-sub { font-size: .78rem; color: var(--text-muted); margin-top: .15rem; }
+    .dbk-confidence { text-align: center; flex-shrink: 0; }
+    .dbk-conf-num { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 700; }
+    .dbk-conf-lbl { font-size: .65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; }
+    .dbk-section { margin-bottom: 1.25rem; }
+    .dbk-section-title { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: .5rem; }
+    .dbk-claim-box {
+      padding: .85rem 1rem; background: rgba(212,168,83,.07);
+      border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0;
+      font-size: .9rem; color: var(--text); line-height: 1.6; font-style: italic;
+    }
+    .dbk-sources-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: 1.25rem; }
+    .dbk-source-card {
+      background: var(--navy-light); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem; overflow: hidden;
+    }
+    .dbk-src-header { display: flex; align-items: center; gap: .5rem; margin-bottom: .75rem; }
+    .dbk-src-title { font-size: .8rem; font-weight: 600; flex: 1; }
+    .dbk-src-badge {
+      font-size: .68rem; padding: .2rem .55rem; border-radius: 100px;
+      background: rgba(255,255,255,.07); color: var(--text-muted); white-space: nowrap;
+    }
+    .dbk-src-body { font-size: .78rem; color: var(--text-muted); line-height: 1.5; }
+    .dbk-synthesis {
+      padding: 1rem 1.25rem; background: var(--navy-light);
+      border: 1px solid var(--border); border-radius: 10px; margin-bottom: 1.25rem;
+    }
+    .dbk-vote { padding: 1rem; background: rgba(44,182,125,.06); border: 1px solid rgba(44,182,125,.2); border-radius: 10px; }
+    .dbk-vote-title { font-size: .82rem; font-weight: 600; margin-bottom: .75rem; color: var(--text); }
+    .dbk-vote-btns { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .dbk-vote-btn { padding: .5rem 1rem; border-radius: 100px; border: 1px solid var(--border); background: var(--navy-light); color: var(--text); font-family: 'DM Sans',sans-serif; font-size: .82rem; cursor: pointer; transition: all .2s; }
+    .dbk-vote-true:hover  { border-color: #2cb67d; background: rgba(44,182,125,.15); }
+    .dbk-vote-false:hover { border-color: #e05252; background: rgba(224,82,82,.15); }
+    .dbk-vote-partial:hover { border-color: #d4a853; background: rgba(212,168,83,.15); }
+    .dbk-vote-btn:disabled { opacity: .4; cursor: default; }
+    @media (max-width: 520px) { .dbk-sources-grid { grid-template-columns: 1fr; } .dbk-verdict-bar { flex-wrap: wrap; } }
+
     /* ── TOAST ── */
     .toast {
       position: fixed;
@@ -1303,6 +1357,7 @@
     <div class="tab-bar">
       <button class="tab-btn active" id="tab-analyze"  onclick="showTab('analyze')">🔍 Analyser</button>
       <button class="tab-btn"        id="tab-search"   onclick="showTab('search')">🕵️ Rechercher</button>
+      <button class="tab-btn"        id="tab-debunk"   onclick="showTab('debunk')">🔬 Débunker</button>
       <button class="tab-btn"        id="tab-history"  onclick="showTab('history')">📋 Historique</button>
     </div>
 
@@ -1506,6 +1561,89 @@
           <div class="search-empty" id="search-empty">
             <div class="se-icon">🔍</div>
             <p>Saisissez une adresse e-mail ou un numéro de téléphone pour lancer l'analyse.<br><br>Le moteur consulte la base de signalements Vérif'Tout, vérifie les domaines jetables, les préfixes surtaxés et génère un profil de risque complet.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW : DEBUNKER ── -->
+    <div class="view" id="view-debunk">
+      <div class="search-card">
+        <div class="search-card-header">
+          <div class="sch-icon">🔬</div>
+          <h2>Vérificateur de faits</h2>
+          <p>Collez une rumeur, une info douteuse ou une affirmation — analyse multi-sources : algorithme, fact-checkers certifiés, Wikipedia et communauté.</p>
+        </div>
+        <div class="search-body">
+          <textarea id="dbk-input" class="dbk-textarea" placeholder="Collez ici le texte à vérifier, la rumeur, l'affirmation ou l'info suspecte...&#10;&#10;Ex : « Le vaccin X contient des nanopuces » ou « Le taux de chômage a baissé de 40% »" rows="5"></textarea>
+          <div class="search-input-wrap" style="margin-top:.75rem;">
+            <span class="si-icon">🔗</span>
+            <input type="url" id="dbk-url" class="search-main-input" placeholder="URL source (optionnel)" autocomplete="off" />
+          </div>
+          <button class="btn-search" id="btn-debunk" onclick="runDebunk()">
+            <span id="dbk-btn-label">🔬 Vérifier maintenant</span>
+          </button>
+          <p class="search-disclaimer">🔒 Analyse locale + Google Fact Check API + Wikipedia + base communautaire Vérif'Tout. Aucune donnée personnelle transmise.</p>
+
+          <!-- RÉSULTAT -->
+          <div id="dbk-result" style="display:none;margin-top:1.5rem;">
+            <!-- Verdict bar -->
+            <div class="dbk-verdict-bar" id="dbk-verdict-bar">
+              <div class="dbk-verdict-icon" id="dbk-verdict-icon">⏳</div>
+              <div class="dbk-verdict-text">
+                <div class="dbk-verdict-label" id="dbk-verdict-label">Analyse en cours…</div>
+                <div class="dbk-verdict-sub" id="dbk-verdict-sub">Consultation des sources</div>
+              </div>
+              <div class="dbk-confidence">
+                <div class="dbk-conf-num" id="dbk-conf-num">—</div>
+                <div class="dbk-conf-lbl">confiance</div>
+              </div>
+            </div>
+
+            <!-- Claim extrait -->
+            <div class="dbk-section">
+              <div class="dbk-section-title">📌 Affirmation principale identifiée</div>
+              <div class="dbk-claim-box" id="dbk-claim-box"></div>
+            </div>
+
+            <!-- 4 sources -->
+            <div class="dbk-sources-grid">
+              <div class="dbk-source-card">
+                <div class="dbk-src-header"><span>🤖</span><span class="dbk-src-title">Analyse algorithmique</span><span class="dbk-src-badge" id="dbk-algo-badge">⏳</span></div>
+                <div class="dbk-src-body" id="dbk-algo-body"></div>
+              </div>
+              <div class="dbk-source-card">
+                <div class="dbk-src-header"><span>📰</span><span class="dbk-src-title">Fact-checkers Google</span><span class="dbk-src-badge" id="dbk-fc-badge">⏳</span></div>
+                <div class="dbk-src-body" id="dbk-fc-body"></div>
+              </div>
+              <div class="dbk-source-card">
+                <div class="dbk-src-header"><span>🌐</span><span class="dbk-src-title">Contexte Wikipedia</span><span class="dbk-src-badge" id="dbk-wiki-badge">⏳</span></div>
+                <div class="dbk-src-body" id="dbk-wiki-body"></div>
+              </div>
+              <div class="dbk-source-card">
+                <div class="dbk-src-header"><span>👥</span><span class="dbk-src-title">Communauté</span><span class="dbk-src-badge" id="dbk-comm-badge">⏳</span></div>
+                <div class="dbk-src-body" id="dbk-comm-body"></div>
+              </div>
+            </div>
+
+            <!-- Synthèse -->
+            <div class="dbk-synthesis" id="dbk-synthesis"></div>
+
+            <!-- Vote communautaire -->
+            <div class="dbk-vote" id="dbk-vote">
+              <div class="dbk-vote-title">Vous avez d'autres infos sur cette affirmation ?</div>
+              <div class="dbk-vote-btns">
+                <button class="dbk-vote-btn dbk-vote-true"    onclick="castVote('vrai')">✅ C'est vrai</button>
+                <button class="dbk-vote-btn dbk-vote-false"   onclick="castVote('faux')">❌ C'est faux</button>
+                <button class="dbk-vote-btn dbk-vote-partial" onclick="castVote('partiel')">🟡 Partiel</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- État vide -->
+          <div class="search-empty" id="dbk-empty">
+            <div class="se-icon">🔬</div>
+            <p>Saisissez une affirmation à vérifier.<br><br>Le moteur consulte les fact-checkers certifiés (Google), Wikipedia, et la base communautaire Vérif'Tout pour établir une fiche complète.</p>
           </div>
         </div>
       </div>
@@ -1862,7 +2000,7 @@ window.checkPremiumStatus = async function() {
 
 // ── UI HELPERS ───────────────────────────────────────────────────────────────
 window.showTab = function(tab) {
-  ['analyze', 'search', 'history'].forEach(t => {
+  ['analyze', 'search', 'debunk', 'history'].forEach(t => {
     document.getElementById('view-' + t).classList.toggle('active', t === tab);
     document.getElementById('tab-' + t).classList.toggle('active', t === tab);
   });
@@ -3318,6 +3456,456 @@ window.requestCallNotifications = async function() {
     showToast('✓ Alertes activées !');
   } else {
     showToast('Autorisation refusée — vous pouvez toujours utiliser le bouton 📞');
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 🔬 DÉBUNKER — JavaScript complet
+// ══════════════════════════════════════════════════════════════════════════════
+
+const FACT_CHECK_API_KEY = 'AIzaSyB1TwbZSkqkAKEPhNJXuwn9zMEz2BqBk48'; // clé Google (Fact Check Tools API doit être activée dans Cloud Console)
+
+let _dbkCurrentHash = null;
+let _dbkCurrentClaim = '';
+let _dbkCurrentText = '';
+
+// ── Utilitaires ───────────────────────────────────────────────────────────────
+
+function extractKeywords(text) {
+  const stopWords = new Set(['le','la','les','un','une','des','de','du','et','en','au','aux','que','qui','quoi','dans','sur','par','pour','avec','sans','est','sont','a','ont','ce','se','sa','son','ses','je','tu','il','elle','nous','vous','ils','elles','pas','ne','si','ou','mais','donc','car','ni','or','plus','moins','très','bien','aussi','comme','tout','tous','toute','toutes','leur','leurs','même','autre','autres','avoir','être','faire','dire','aller','voir','savoir','pouvoir','vouloir','venir','selon','lors','après','avant','pendant','depuis','jusque','contre','entre','parmi','vers','chez']);
+  return text
+    .toLowerCase()
+    .replace(/[^a-zàâäéèêëîïôùûüçœæ\s]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 3 && !stopWords.has(w))
+    .slice(0, 5)
+    .join(' ');
+}
+
+function extractClaim(text) {
+  // Cherche guillemets d'abord
+  const quoted = text.match(/[«""]([^»""]{10,180})[»""]/);
+  if (quoted) return quoted[1].trim();
+  // Première phrase significative
+  const sentences = text.split(/[.!?]\s+/);
+  for (const s of sentences) {
+    const clean = s.trim();
+    if (clean.length >= 20 && clean.length <= 200) return clean;
+  }
+  return text.substring(0, 150).trim();
+}
+
+function setVerdictUI(state, data = {}) {
+  const bar  = document.getElementById('dbk-verdict-bar');
+  const icon = document.getElementById('dbk-verdict-icon');
+  const lbl  = document.getElementById('dbk-verdict-label');
+  const sub  = document.getElementById('dbk-verdict-sub');
+  const conf = document.getElementById('dbk-conf-num');
+
+  if (state === 'loading') {
+    bar.style.cssText = '';
+    icon.textContent = '⏳';
+    lbl.textContent  = 'Analyse en cours…';
+    sub.textContent  = 'Consultation des 4 sources';
+    conf.textContent = '—';
+    return;
+  }
+  // state = verdict object { label, icon, color, bg, sub, confidence }
+  bar.style.background = data.bg || '';
+  bar.style.borderColor = data.color || '';
+  icon.textContent = data.icon || '❓';
+  lbl.textContent  = data.label || '—';
+  lbl.style.color  = data.color || '';
+  sub.textContent  = data.sub || '';
+  conf.textContent = data.confidence != null ? data.confidence + '%' : '—';
+  conf.style.color = data.color || '';
+}
+
+function setSrcBadge(id, status) {
+  // status: 'ok' | 'warn' | 'err' | 'none' | 'loading'
+  const el = document.getElementById(id);
+  if (!el) return;
+  const map = {
+    loading: { text:'⏳', bg:'rgba(100,116,139,.15)',  color:'#64748b' },
+    ok:      { text:'✓',  bg:'rgba(44,182,125,.15)',   color:'#2cb67d' },
+    warn:    { text:'⚠',  bg:'rgba(217,119,6,.15)',    color:'#d97706' },
+    err:     { text:'✗',  bg:'rgba(220,38,38,.15)',    color:'#dc2626' },
+    none:    { text:'—',  bg:'rgba(100,116,139,.1)',   color:'#64748b' },
+  };
+  const m = map[status] || map['none'];
+  el.textContent = m.text;
+  el.style.background = m.bg;
+  el.style.color = m.color;
+}
+
+// ── Analyse algorithmique ─────────────────────────────────────────────────────
+
+function analyzeAlgo(text) {
+  // Réutilise analyzeContent() déjà défini dans le reste de l'app
+  try {
+    const res = analyzeContent(text);
+    return { score: res.score, severity: res.severity, category: res.category };
+  } catch(e) {
+    return { score: 0, severity: 'unknown', category: 'Inconnu' };
+  }
+}
+
+// ── Fact-Check Google ─────────────────────────────────────────────────────────
+
+async function analyzeFactCheck(claim) {
+  try {
+    const q = encodeURIComponent(claim.substring(0, 200));
+    const url = `https://factchecktools.googleapis.com/v1alpha1/claims:search?query=${q}&languageCode=fr&key=${FACT_CHECK_API_KEY}`;
+    const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const claims = data.claims || [];
+    if (!claims.length) {
+      // Retry in English
+      const q2 = encodeURIComponent(claim.substring(0, 200));
+      const r2 = await fetch(`https://factchecktools.googleapis.com/v1alpha1/claims:search?query=${q2}&key=${FACT_CHECK_API_KEY}`, { signal: AbortSignal.timeout(6000) });
+      const d2 = await r2.json();
+      return processFactCheckResults(d2.claims || []);
+    }
+    return processFactCheckResults(claims);
+  } catch(e) {
+    console.warn('FactCheck API:', e.message);
+    return { found: false, results: [], error: e.message };
+  }
+}
+
+function processFactCheckResults(claims) {
+  if (!claims.length) return { found: false, results: [] };
+  const results = claims.slice(0, 3).map(c => {
+    const review = c.claimReview?.[0] || {};
+    return {
+      claim:   c.text || '',
+      verdict: review.textualRating || '?',
+      source:  review.publisher?.name || 'Inconnu',
+      url:     review.url || '',
+      date:    review.reviewDate?.split('T')[0] || ''
+    };
+  });
+  return { found: true, results };
+}
+
+// ── Wikipedia ─────────────────────────────────────────────────────────────────
+
+async function analyzeWikipedia(claim) {
+  try {
+    const keywords = extractKeywords(claim);
+    if (!keywords) return { found: false };
+    // Opensearch
+    const searchUrl = `https://fr.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(keywords)}&limit=3&format=json&origin=*`;
+    const sr = await fetch(searchUrl, { signal: AbortSignal.timeout(6000) });
+    const sd = await sr.json();
+    const titles = sd[1] || [];
+    if (!titles.length) return { found: false };
+    // Extrait du premier article
+    const title = titles[0];
+    const extUrl = `https://fr.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=extracts&exintro=1&exchars=600&format=json&origin=*`;
+    const er = await fetch(extUrl, { signal: AbortSignal.timeout(6000) });
+    const ed = await er.json();
+    const pages = Object.values(ed.query?.pages || {});
+    const extract = pages[0]?.extract?.replace(/<[^>]+>/g, '').trim() || '';
+    return { found: !!extract, title, extract: extract.substring(0, 500), url: `https://fr.wikipedia.org/wiki/${encodeURIComponent(title)}` };
+  } catch(e) {
+    console.warn('Wikipedia:', e.message);
+    return { found: false, error: e.message };
+  }
+}
+
+// ── Communauté Firestore ──────────────────────────────────────────────────────
+
+async function analyzeCommunity(text) {
+  try {
+    const hash = await hashContent(text);
+    _dbkCurrentHash = hash;
+    const ref = doc(db, 'verifTOUT_debunks', hash);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return { found: false, hash };
+    const d = snap.data();
+    return {
+      found: true, hash,
+      vrai:    d.votes?.vrai    || 0,
+      faux:    d.votes?.faux    || 0,
+      partiel: d.votes?.partiel || 0,
+      total:   (d.votes?.vrai || 0) + (d.votes?.faux || 0) + (d.votes?.partiel || 0)
+    };
+  } catch(e) {
+    console.warn('Community:', e.message);
+    return { found: false };
+  }
+}
+
+// ── Calcul du verdict ─────────────────────────────────────────────────────────
+
+function computeVerdict(algo, fc, wiki, comm) {
+  let signals = [];
+
+  // Signal algo (score 0→100, plus haut = plus suspect)
+  if (algo.score >= 70)      signals.push({ v: 'faux',       w: 3 });
+  else if (algo.score >= 45) signals.push({ v: 'trompeur',   w: 2 });
+  else if (algo.score >= 20) signals.push({ v: 'partiel',    w: 1 });
+  else                       signals.push({ v: 'vrai',       w: 1 });
+
+  // Signals fact-check
+  if (fc.found) {
+    fc.results.forEach(r => {
+      const v = r.verdict.toLowerCase();
+      if (/(false|faux|wrong|incorrect|misleading)/i.test(v)) signals.push({ v: 'faux',     w: 3 });
+      else if (/(partly|partiel|mislead|trompeur)/i.test(v))  signals.push({ v: 'trompeur', w: 2 });
+      else if (/(true|vrai|correct|accurate)/i.test(v))       signals.push({ v: 'vrai',     w: 2 });
+      else                                                      signals.push({ v: 'incertain', w: 1 });
+    });
+  }
+
+  // Signal communauté
+  if (comm.found && comm.total >= 3) {
+    const max = Math.max(comm.vrai, comm.faux, comm.partiel);
+    if (comm.faux === max)    signals.push({ v: 'faux',     w: 2 });
+    else if (comm.vrai === max) signals.push({ v: 'vrai',   w: 2 });
+    else                        signals.push({ v: 'partiel', w: 1 });
+  }
+
+  // Agrégation pondérée
+  const counts = { vrai:0, faux:0, trompeur:0, partiel:0, incertain:0 };
+  let totalW = 0;
+  signals.forEach(s => { counts[s.v] = (counts[s.v] || 0) + s.w; totalW += s.w; });
+  const dominant = Object.entries(counts).sort((a,b) => b[1]-a[1])[0][0];
+  const dominantW = counts[dominant];
+  const confidence = totalW ? Math.round((dominantW / totalW) * 100) : 40;
+
+  const verdicts = {
+    vrai:      { label:'VRAI',         icon:'✅', color:'#16a34a', bg:'rgba(22,163,74,.08)',    sub:'Information vérifiée et confirmée' },
+    faux:      { label:'FAUX',         icon:'❌', color:'#dc2626', bg:'rgba(220,38,38,.08)',     sub:'Affirmation réfutée par les sources' },
+    trompeur:  { label:'TROMPEUR',     icon:'⚠️', color:'#d97706', bg:'rgba(217,119,6,.08)',    sub:'Partiellement vrai ou hors contexte' },
+    partiel:   { label:'PARTIELLEMENT VRAI', icon:'🟡', color:'#ca8a04', bg:'rgba(202,138,4,.08)', sub:'Contient des éléments vrais et faux' },
+    incertain: { label:'NON VÉRIFIÉ', icon:'❓', color:'#64748b', bg:'rgba(100,116,139,.08)',  sub:'Sources insuffisantes pour conclure' },
+  };
+
+  return { ...verdicts[dominant], confidence, dominant, counts, signals: signals.length };
+}
+
+// ── Rendu des cartes sources ──────────────────────────────────────────────────
+
+function renderAlgo(algo) {
+  const el = document.getElementById('dbk-algo-body');
+  if (!el) return;
+  const severityMap = {
+    safe:     { lbl:'Sûr',         color:'#16a34a' },
+    low:      { lbl:'Risque faible', color:'#65a30d' },
+    medium:   { lbl:'Risque moyen', color:'#d97706' },
+    high:     { lbl:'Risque élevé', color:'#dc2626' },
+    critical: { lbl:'Critique',     color:'#7f1d1d' },
+    unknown:  { lbl:'Indéterminé',  color:'#64748b' },
+  };
+  const sv = severityMap[algo.severity] || severityMap.unknown;
+  el.innerHTML = `
+    <div style="margin-bottom:.5rem;"><span style="font-weight:600;color:${sv.color}">${sv.lbl}</span> — Score désinformation : <strong>${algo.score}/100</strong></div>
+    <div style="font-size:.74rem;color:#64748b">Catégorie détectée : ${algo.category || '—'}</div>
+    <div style="margin-top:.5rem;background:rgba(0,0,0,.05);border-radius:6px;height:6px;overflow:hidden">
+      <div style="height:100%;width:${algo.score}%;background:${sv.color};transition:width .6s ease"></div>
+    </div>`;
+  setSrcBadge('dbk-algo-badge', algo.score >= 60 ? 'err' : algo.score >= 30 ? 'warn' : 'ok');
+}
+
+function renderFactCheck(fc) {
+  const el = document.getElementById('dbk-fc-body');
+  if (!el) return;
+  if (!fc.found) {
+    el.textContent = 'Aucune vérification trouvée dans la base Google Fact Check.';
+    setSrcBadge('dbk-fc-badge', 'none');
+    return;
+  }
+  el.innerHTML = fc.results.map(r => `
+    <div style="margin-bottom:.6rem;padding-bottom:.6rem;border-bottom:1px solid rgba(0,0,0,.07)">
+      <div style="font-weight:600;font-size:.78rem;margin-bottom:.2rem">${r.source}</div>
+      <div style="font-size:.75rem;margin-bottom:.2rem;color:#374151">${r.verdict}</div>
+      ${r.url ? `<a href="${r.url}" target="_blank" rel="noopener" style="font-size:.72rem;color:#2563eb">Voir la vérification →</a>` : ''}
+    </div>`).join('');
+  const hasNeg = fc.results.some(r => /(false|faux|wrong|mislead)/i.test(r.verdict));
+  setSrcBadge('dbk-fc-badge', hasNeg ? 'err' : 'ok');
+}
+
+function renderWiki(wiki) {
+  const el = document.getElementById('dbk-wiki-body');
+  if (!el) return;
+  if (!wiki.found) {
+    el.textContent = 'Aucun article Wikipedia trouvé pour cette affirmation.';
+    setSrcBadge('dbk-wiki-badge', 'none');
+    return;
+  }
+  el.innerHTML = `
+    <div style="font-weight:600;font-size:.78rem;margin-bottom:.4rem">${wiki.title}</div>
+    <div style="font-size:.75rem;color:#374151;line-height:1.5">${wiki.extract.substring(0, 300)}…</div>
+    ${wiki.url ? `<a href="${wiki.url}" target="_blank" rel="noopener" style="font-size:.72rem;color:#2563eb;display:inline-block;margin-top:.4rem">Lire l'article →</a>` : ''}`;
+  setSrcBadge('dbk-wiki-badge', 'ok');
+}
+
+function renderCommunity(comm) {
+  const el = document.getElementById('dbk-comm-body');
+  if (!el) return;
+  if (!comm.found || !comm.total) {
+    el.textContent = 'Aucun vote communautaire pour cette affirmation. Soyez le premier à voter !';
+    setSrcBadge('dbk-comm-badge', 'none');
+    return;
+  }
+  const pct = v => comm.total ? Math.round((v / comm.total) * 100) : 0;
+  el.innerHTML = `
+    <div style="font-size:.75rem;margin-bottom:.5rem">${comm.total} vote${comm.total>1?'s':''} de la communauté</div>
+    ${[['✅ Vrai','#16a34a',comm.vrai],['❌ Faux','#dc2626',comm.faux],['🟡 Partiel','#d97706',comm.partiel]].map(([lbl,color,count]) => `
+      <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.3rem;font-size:.74rem">
+        <span style="width:65px">${lbl}</span>
+        <div style="flex:1;background:rgba(0,0,0,.07);border-radius:4px;height:6px;overflow:hidden">
+          <div style="height:100%;width:${pct(count)}%;background:${color};transition:width .6s ease"></div>
+        </div>
+        <span style="width:30px;text-align:right;color:#64748b">${pct(count)}%</span>
+      </div>`).join('')}`;
+  const dominant = Math.max(comm.vrai, comm.faux, comm.partiel);
+  setSrcBadge('dbk-comm-badge', comm.faux === dominant ? 'err' : comm.vrai === dominant ? 'ok' : 'warn');
+}
+
+function renderVerdictFinal(verdict) {
+  setVerdictUI(null, verdict);
+}
+
+function renderSynthesis(verdict, algo, fc, wiki, comm) {
+  const el = document.getElementById('dbk-synthesis');
+  if (!el) return;
+  const parts = [];
+  if (algo.score >= 60) parts.push(`Notre algorithme détecte un score de désinformation élevé (${algo.score}/100)`);
+  if (fc.found && fc.results.length) parts.push(`${fc.results.length} fact-checker(s) ont vérifié des affirmations similaires`);
+  if (wiki.found) parts.push(`Un article Wikipedia (« ${wiki.title} ») apporte un contexte factuel`);
+  if (comm.found && comm.total >= 3) parts.push(`La communauté a voté à ${comm.total} reprises sur cette affirmation`);
+  if (!parts.length) parts.push('Données insuffisantes — le verdict repose principalement sur l\'analyse algorithmique');
+  el.innerHTML = `
+    <div style="font-size:.78rem;font-weight:600;margin-bottom:.5rem;color:var(--text)">📊 Synthèse</div>
+    <div style="font-size:.78rem;color:#374151;line-height:1.6">${parts.join('. ')}.</div>
+    <div style="margin-top:.75rem;padding:.5rem .75rem;background:${verdict.bg};border-left:3px solid ${verdict.color};border-radius:0 6px 6px 0;font-size:.78rem;font-weight:600;color:${verdict.color}">
+      Verdict final : ${verdict.icon} ${verdict.label} — Confiance ${verdict.confidence}%
+    </div>`;
+}
+
+// ── Orchestrateur principal ───────────────────────────────────────────────────
+
+window.runDebunk = async function() {
+  const text = document.getElementById('dbk-input')?.value?.trim();
+  const url  = document.getElementById('dbk-url')?.value?.trim();
+  if (!text || text.length < 15) {
+    showToast('Entrez au moins 15 caractères à analyser');
+    return;
+  }
+
+  _dbkCurrentText = text;
+  _dbkCurrentClaim = extractClaim(text);
+  _dbkCurrentHash = null;
+
+  // UI — show result zone
+  const resultEl = document.getElementById('dbk-result');
+  const emptyEl  = document.getElementById('dbk-empty');
+  if (resultEl) resultEl.style.display = 'block';
+  if (emptyEl)  emptyEl.style.display  = 'none';
+
+  const btn = document.getElementById('btn-debunk');
+  const lbl = document.getElementById('dbk-btn-label');
+  if (btn) btn.disabled = true;
+  if (lbl) lbl.textContent = '⏳ Analyse…';
+
+  // Reset badges
+  ['dbk-algo-badge','dbk-fc-badge','dbk-wiki-badge','dbk-comm-badge'].forEach(id => setSrcBadge(id, 'loading'));
+  setVerdictUI('loading');
+
+  // Afficher claim extrait
+  const claimBox = document.getElementById('dbk-claim-box');
+  if (claimBox) claimBox.textContent = _dbkCurrentClaim || text.substring(0, 150);
+
+  // Reset cartes
+  ['dbk-algo-body','dbk-fc-body','dbk-wiki-body','dbk-comm-body'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '<em style="color:#64748b;font-size:.75rem">Chargement…</em>';
+  });
+
+  try {
+    // Lancement en parallèle des 4 sources
+    const fullText = url ? text + '\n' + url : text;
+    const [algo, fc, wiki, comm] = await Promise.all([
+      Promise.resolve(analyzeAlgo(fullText)),
+      analyzeFactCheck(_dbkCurrentClaim),
+      analyzeWikipedia(_dbkCurrentClaim),
+      analyzeCommunity(fullText)
+    ]);
+
+    // Rendu des cartes
+    renderAlgo(algo);
+    renderFactCheck(fc);
+    renderWiki(wiki);
+    renderCommunity(comm);
+
+    // Verdict
+    const verdict = computeVerdict(algo, fc, wiki, comm);
+    renderVerdictFinal(verdict);
+    renderSynthesis(verdict, algo, fc, wiki, comm);
+
+    // Sauvegarde Firestore (non-bloquant)
+    try {
+      if (_dbkCurrentHash) {
+        const ref = doc(db, 'verifTOUT_debunks', _dbkCurrentHash);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          await setDoc(ref, {
+            preview:   _dbkCurrentClaim.substring(0, 120),
+            verdict:   verdict.dominant,
+            confidence: verdict.confidence,
+            algoScore: algo.score,
+            factCheck: fc.found ? fc.results.length : 0,
+            wikiFound: wiki.found,
+            votes:     { vrai: 0, faux: 0, partiel: 0 },
+            createdAt: serverTimestamp(),
+            userId:    currentUser?.uid || 'anonymous'
+          });
+        }
+      }
+    } catch(e) { /* non-bloquant */ }
+
+  } catch(e) {
+    console.error('runDebunk:', e);
+    showToast('Erreur lors de l\'analyse — réessayez');
+    ['dbk-algo-badge','dbk-fc-badge','dbk-wiki-badge','dbk-comm-badge'].forEach(id => setSrcBadge(id, 'none'));
+  } finally {
+    if (btn) btn.disabled = false;
+    if (lbl) lbl.textContent = '🔬 Vérifier maintenant';
+  }
+};
+
+// ── Vote communauté ───────────────────────────────────────────────────────────
+
+window.castVote = async function(vote) {
+  if (!_dbkCurrentHash) { showToast('Lancez d\'abord une analyse'); return; }
+  document.querySelectorAll('.dbk-vote-btn').forEach(b => b.disabled = true);
+  try {
+    const ref = doc(db, 'verifTOUT_debunks', _dbkCurrentHash);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      await updateDoc(ref, { [`votes.${vote}`]: increment(1) });
+    } else {
+      const init = { vrai:0, faux:0, partiel:0 };
+      init[vote] = 1;
+      await setDoc(ref, {
+        preview:   _dbkCurrentClaim.substring(0, 120),
+        verdict:   'community',
+        votes:     init,
+        createdAt: serverTimestamp(),
+        userId:    currentUser?.uid || 'anonymous'
+      });
+    }
+    showToast('✓ Vote enregistré — merci pour votre contribution !');
+    // Refresh communauté
+    const comm2 = await analyzeCommunity(_dbkCurrentText);
+    renderCommunity(comm2);
+  } catch(e) {
+    showToast('Erreur lors du vote');
+    document.querySelectorAll('.dbk-vote-btn').forEach(b => b.disabled = false);
   }
 };
 
