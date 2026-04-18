@@ -631,10 +631,10 @@
 <!-- ─── APP LOGIC ─── -->
 <script>
   /* ── EMAILJS CONFIG ── (à remplir dans votre compte EmailJS) */
-  const EMAILJS_PUBLIC_KEY  = 'VOTRE_CLE_PUBLIQUE';   // Account > API Keys
-  const EMAILJS_SERVICE_ID  = 'VOTRE_SERVICE_ID';      // Email Services
-  const EMAILJS_TPL_CLIENT  = 'template_lta_client';   // créer ce template
-  const EMAILJS_TPL_ADMIN   = 'template_lta_admin';    // créer ce template
+  const EMAILJS_PUBLIC_KEY  = 'CjqOSJR15J3dGY0MD';
+  const EMAILJS_SERVICE_ID  = 'service_21cls2q';
+  const EMAILJS_TPL_CLIENT  = '6fpygi1';
+  const EMAILJS_TPL_ADMIN   = 'b90sz3u';
   const ADMIN_EMAIL         = 'franfran120374@gmail.com';
 
   /* ── STATE ── */
@@ -650,31 +650,31 @@
 
   /* ── FEATURES DEFINITION ── */
   const FEATURES = [
-    { id:'contact',      label:'Formulaire de contact',    icon:'📬', cost:{ min:100, max:200 },  tier:'€'      },
-    { id:'galerie',      label:'Galerie photos / vidéos',  icon:'🖼️', cost:{ min:150, max:300 },  tier:'€'      },
-    { id:'blog',         label:'Blog / Actualités',         icon:'📝', cost:{ min:200, max:450 },  tier:'€€'     },
-    { id:'seo',          label:'Optimisation SEO',          icon:'📈', cost:{ min:200, max:400 },  tier:'€€'     },
-    { id:'analytics',    label:'Analytics & Stats',         icon:'📊', cost:{ min:150, max:350 },  tier:'€€'     },
-    { id:'multilingue',  label:'Multilingue',               icon:'🌍', cost:{ min:300, max:600 },  tier:'€€'     },
-    { id:'notifications',label:'Notifications push',        icon:'🔔', cost:{ min:200, max:400 },  tier:'€€'     },
-    { id:'pwa',          label:'Mode PWA (hors-ligne)',     icon:'📲', cost:{ min:300, max:600 },  tier:'€€'     },
-    { id:'recherche',    label:'Moteur de recherche',       icon:'🔍', cost:{ min:250, max:500 },  tier:'€€'     },
-    { id:'membres',      label:'Espace membre / Connexion', icon:'👤', cost:{ min:400, max:800 },  tier:'€€€'    },
-    { id:'admin',        label:'Tableau de bord admin',     icon:'⚙️', cost:{ min:600, max:1200 }, tier:'€€€'    },
-    { id:'api',          label:'API / Intégrations',        icon:'🔌', cost:{ min:400, max:900 },  tier:'€€€'    },
-    { id:'chat',         label:'Chat / Messagerie',         icon:'💬', cost:{ min:500, max:1000 }, tier:'€€€'    },
-    { id:'geo',          label:'Géolocalisation / Carte',   icon:'📍', cost:{ min:300, max:700 },  tier:'€€€'    },
-    { id:'paiement',     label:'Paiement en ligne',         icon:'💳', cost:{ min:600, max:1200 }, tier:'€€€€'   },
-    { id:'ia',           label:'Intelligence artificielle', icon:'🤖', cost:{ min:800, max:2000 }, tier:'€€€€€'  },
+    { id:'contact',      label:'Formulaire de contact',    icon:'📬', cost:{ min:50,  max:100 },  tier:'€'      },
+    { id:'galerie',      label:'Galerie photos / vidéos',  icon:'🖼️', cost:{ min:75,  max:150 },  tier:'€'      },
+    { id:'blog',         label:'Blog / Actualités',         icon:'📝', cost:{ min:100, max:225 },  tier:'€€'     },
+    { id:'seo',          label:'Optimisation SEO',          icon:'📈', cost:{ min:100, max:200 },  tier:'€€'     },
+    { id:'analytics',    label:'Analytics & Stats',         icon:'📊', cost:{ min:75,  max:175 },  tier:'€€'     },
+    { id:'multilingue',  label:'Multilingue',               icon:'🌍', cost:{ min:150, max:300 },  tier:'€€'     },
+    { id:'notifications',label:'Notifications push',        icon:'🔔', cost:{ min:100, max:200 },  tier:'€€'     },
+    { id:'pwa',          label:'Mode PWA (hors-ligne)',     icon:'📲', cost:{ min:150, max:300 },  tier:'€€'     },
+    { id:'recherche',    label:'Moteur de recherche',       icon:'🔍', cost:{ min:125, max:250 },  tier:'€€'     },
+    { id:'membres',      label:'Espace membre / Connexion', icon:'👤', cost:{ min:200, max:400 },  tier:'€€€'    },
+    { id:'admin',        label:'Tableau de bord admin',     icon:'⚙️', cost:{ min:300, max:600 },  tier:'€€€'    },
+    { id:'api',          label:'API / Intégrations',        icon:'🔌', cost:{ min:200, max:450 },  tier:'€€€'    },
+    { id:'chat',         label:'Chat / Messagerie',         icon:'💬', cost:{ min:250, max:500 },  tier:'€€€'    },
+    { id:'geo',          label:'Géolocalisation / Carte',   icon:'📍', cost:{ min:150, max:350 },  tier:'€€€'    },
+    { id:'paiement',     label:'Paiement en ligne',         icon:'💳', cost:{ min:300, max:600 },  tier:'€€€€'   },
+    { id:'ia',           label:'Intelligence artificielle', icon:'🤖', cost:{ min:400, max:1000 }, tier:'€€€€€'  },
   ];
 
   const BASE_PRICE = {
-    vitrine:   { min:600,  max:1800, label:'Site vitrine' },
-    landing:   { min:350,  max:900,  label:'Landing page' },
-    webapp:    { min:1800, max:6000, label:'Application web' },
-    mobile:    { min:2500, max:9000, label:'Application mobile' },
-    ecommerce: { min:1200, max:4500, label:'Site e-commerce' },
-    autre:     { min:800,  max:3500, label:'Projet sur mesure' },
+    vitrine:   { min:300,  max:900,  label:'Site vitrine' },
+    landing:   { min:175,  max:450,  label:'Landing page' },
+    webapp:    { min:900,  max:3000, label:'Application web' },
+    mobile:    { min:1250, max:4500, label:'Application mobile' },
+    ecommerce: { min:600,  max:2250, label:'Site e-commerce' },
+    autre:     { min:400,  max:1750, label:'Projet sur mesure' },
   };
 
   /* ── INIT ── */
@@ -1099,8 +1099,8 @@
       <tbody>
         <tr><td><strong>${base.label}</strong></td><td>Conception, développement, intégration de base</td><td style="text-align:right;">${base.min.toLocaleString('fr-FR')} €</td><td style="text-align:right;">${base.max.toLocaleString('fr-FR')} €</td></tr>
         ${featRows}
-        ${d.has_charte ? '' : '<tr><td>Charte graphique</td><td>Création identité visuelle</td><td style="text-align:right;">400 €</td><td style="text-align:right;">900 €</td></tr>'}
-        ${d.has_logo ? '' : '<tr><td>Création logo</td><td>Conception + déclinaisons</td><td style="text-align:right;">250 €</td><td style="text-align:right;">600 €</td></tr>'}
+        ${d.has_charte ? '' : '<tr><td>Charte graphique</td><td>Création identité visuelle</td><td style="text-align:right;">200 €</td><td style="text-align:right;">450 €</td></tr>'}
+        ${d.has_logo ? '' : '<tr><td>Création logo</td><td>Conception + déclinaisons</td><td style="text-align:right;">125 €</td><td style="text-align:right;">300 €</td></tr>'}
         <tr class="total-row"><td colspan="2"><strong>TOTAL ESTIMATIF HT</strong></td><td style="text-align:right;"><strong>${q.min.toLocaleString('fr-FR')} €</strong></td><td style="text-align:right;"><strong>${q.max.toLocaleString('fr-FR')} €</strong></td></tr>
         <tr style="font-size:.82rem;color:#888;"><td colspan="2">TVA 20%</td><td style="text-align:right;">${Math.round(q.min*0.2).toLocaleString('fr-FR')} €</td><td style="text-align:right;">${Math.round(q.max*0.2).toLocaleString('fr-FR')} €</td></tr>
         <tr class="total-row" style="background:#0b0f1a;"><td colspan="2"><strong style="color:white;">TOTAL TTC</strong></td><td style="text-align:right;"><strong>${Math.round(q.min*1.2).toLocaleString('fr-FR')} €</strong></td><td style="text-align:right;"><strong>${Math.round(q.max*1.2).toLocaleString('fr-FR')} €</strong></td></tr>
