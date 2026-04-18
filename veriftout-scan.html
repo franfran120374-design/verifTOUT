@@ -968,7 +968,7 @@ const STRIPE_LINK = "https://buy.stripe.com/6oUfZaeW15x561W4Pu4Vy03";
 // ── GOOGLE SAFE BROWSING (optionnel) ─────────────────────────────────────────
 // Obtenez une clé GRATUITE sur https://console.cloud.google.com → APIs → Safe Browsing API
 // Puis remplacez '' par votre clé ci-dessous
-const GOOGLE_SAFE_BROWSING_KEY = 'AIzaSyB1TwbZSkqkAKEPhNJXuwn9zMEz2BqBk48';
+const GOOGLE_SAFE_BROWSING_KEY = '';
 // ── ÉTAT ────────────────────────────────────────────────────────────────────────
 let currentUser = null;
 let isPremium   = false;
@@ -1132,143 +1132,293 @@ function showToast(msg) {
 }
 window.showToast = showToast;
 
-// ── COMPREHENSIVE HEURISTIC ENGINE ────────────────────────────────────────────
+// ── HEURISTIC ENGINE v2 — MULTI-VECTEUR ─────────────────────────────────────
 function analyzeContent(input) {
   const text  = input.trim();
   const lower = text.toLowerCase();
   const isUrl = /^(https?:\/\/|www\.)/i.test(text);
 
-  let sc = { phishing: 0, spam: 0, desinformation: 0, urlSuspect: 0 };
+  let sc = { phishing: 0, spam: 0, desinformation: 0, urlSuspect: 0, phone: 0 };
   let flags = [];
 
-  // ── URL ANALYSIS ──────────────────────────────────────────────────────────
+  // ── 1. DÉTECTION DU TYPE DE CONTENU ──────────────────────────────────────
+  const FR_PHONE_RE = /(?:(?:\+33|0033|33)[\s.\-]?|0)([67]\d{8}|[1-9]\d{8})/g;
+  const phoneMatches = [...text.matchAll(FR_PHONE_RE)];
+  const hasPhone     = phoneMatches.length > 0;
+  const hasEmailHdr  = /^(de\s*:|from\s*:|expéditeur\s*:|reply-to\s*:|objet\s*:|subject\s*:)/im.test(text);
+  const urlsInText   = [...(text.match(/https?:\/\/\S+/gi) || [])];
+  const wordCount    = text.split(/\s+/).filter(Boolean).length;
+  const isSmsStyle   = text.length < 350 && (hasPhone || /sms|mms|message reçu/i.test(lower));
+
+  // ── 2. URL ANALYSIS (enrichie) ───────────────────────────────────────────
   if (isUrl) {
     let url;
     try { url = new URL(text.startsWith('http') ? text : 'https://' + text); } catch {}
     if (url) {
       const h = url.hostname.toLowerCase();
-      // IP-based
-      if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(h)) {
+      // IP brute
+      if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h)) {
         sc.urlSuspect += 40; sc.phishing += 30;
-        flags.push({ cat: 'url', msg: 'Adresse IP brute — aucun domaine légitime ne l\'utilise' });
+        flags.push({ cat:'url', msg:'Adresse IP brute — aucun service légitime n\'utilise une IP directe' });
       }
-      // Suspicious TLDs
-      const sTLDs = ['.xyz','.top','.click','.tk','.ml','.ga','.cf','.gq','.bid','.win','.loan','.download','.stream','.gdn','.trade','.date','.review','.faith','.cricket','.work','.party','.racing','.link','.cam','.xin'];
+      // TLD suspects
+      const sTLDs = ['.xyz','.top','.click','.tk','.ml','.ga','.cf','.gq','.bid','.win','.loan','.download','.stream','.gdn','.trade','.date','.review','.faith','.cricket','.work','.party','.racing','.link','.cam','.xin','.icu','.club','.buzz','.rest','.vip'];
       if (sTLDs.some(t => h.endsWith(t))) {
         sc.urlSuspect += 25;
-        flags.push({ cat: 'url', msg: `Extension de domaine suspecte (.${h.split('.').pop()}) — très utilisée pour les arnaques` });
+        flags.push({ cat:'url', msg:`Extension de domaine très suspecte (.${h.split('.').pop()}) — massivement utilisée pour les arnaques` });
       }
       // URL shorteners
-      const shorteners = ['bit.ly','tinyurl.com','t.co','goo.gl','ow.ly','buff.ly','rebrand.ly','cutt.ly','short.io','rb.gy','lnk.bio'];
-      if (shorteners.includes(h)) {
-        sc.urlSuspect += 20;
-        flags.push({ cat: 'url', msg: 'URL raccourcie — la destination réelle est masquée' });
+      const shorteners = ['bit.ly','tinyurl.com','t.co','goo.gl','ow.ly','buff.ly','rebrand.ly','cutt.ly','short.io','rb.gy','lnk.bio','is.gd','v.gd','bl.ink','t.ly','tiny.cc','shrinkme.io','shrtco.de'];
+      if (shorteners.some(s => h === s || h.endsWith('.' + s))) {
+        sc.urlSuspect += 22;
+        flags.push({ cat:'url', msg:'URL raccourcie — destination réelle masquée' });
       }
-      // Typosquatting (marques françaises et internationales)
+      // Typosquatting (marques FR + internationales)
       const brands = [
-        { b:'google',   p:['g00gle','go0gle','g0ogle','googIe','googel'] },
-        { b:'facebook', p:['faceb00k','facebok','facbook','faceebook','faecbook'] },
-        { b:'paypal',   p:['paypa1','paypai','paypaI','pay-pal','paypall','paypa-l'] },
-        { b:'amazon',   p:['arnazon','amazom','amaz0n','amaz-on'] },
-        { b:'apple',    p:['app1e','appIe','apple-support','icloud-security','apple-verify'] },
-        { b:'microsoft',p:['micros0ft','microsokt','microsofft','microsoft-support','windows-security'] },
-        { b:'orange',   p:['0range','orange-fr','orange-assistance','orange-confirm'] },
-        { b:'ameli',    p:['ame1i','amelii','ameli-fr','ameli-sante','amelifr'] },
-        { b:'impots',   p:['imp0ts','impots-gouv','impots-fr','remboursement-fiscal'] },
-        { b:'caf',      p:['caf-fr','caf-aides','ma-caf'] },
-        { b:'labanquepostale',p:['labanque-postale','banquepostale-secure'] },
-        { b:'créditAgricole',p:['credit-agr1cole','creditagricole-secure','ca-secure'] },
-        { b:'netflix',  p:['netflx','nettflix','netfl1x','netflix-billing'] },
-        { b:'chronopost',p:['chron0post','chronopost-livraison','chronopost-fr'] },
+        { b:'google',          p:['g00gle','go0gle','g0ogle','googIe','googel','gooogle'] },
+        { b:'facebook',        p:['faceb00k','facebok','facbook','faceebook','faecbook','facebock'] },
+        { b:'paypal',          p:['paypa1','paypai','paypaI','pay-pal','paypall','paypal-secure','paypal-verify'] },
+        { b:'amazon',          p:['arnazon','amazom','amaz0n','amaz-on','amazon-secure','amazon-verify'] },
+        { b:'apple',           p:['app1e','appIe','apple-support','icloud-security','apple-verify','applecare'] },
+        { b:'microsoft',       p:['micros0ft','microsokt','microsofft','microsoft-support','windows-security','microsoft-account'] },
+        { b:'orange',          p:['0range','orange-fr','orange-assistance','orange-confirm','orange-espace'] },
+        { b:'ameli',           p:['ame1i','amelii','ameli-fr','ameli-sante','amelifr','ameli-cpam'] },
+        { b:'impots',          p:['imp0ts','impots-gouv','impots-fr','remboursement-fiscal','dgfip-remboursement'] },
+        { b:'caf',             p:['caf-fr','caf-aides','ma-caf','caf-allocations'] },
+        { b:'labanquepostale', p:['labanque-postale','banquepostale-secure','banque-postale-client'] },
+        { b:'creditagricole',  p:['credit-agr1cole','creditagricole-secure','ca-secure','credit-agricole-fr'] },
+        { b:'sociétégénérale', p:['societegenerale-secure','sg-particuliers-fr','sg-secure'] },
+        { b:'bnpparibas',      p:['bnp-paribas-fr','bnpparibas-secure','bnp-secure'] },
+        { b:'lcl',             p:['lcl-banque-fr','lcl-secure','lcl-particuliers'] },
+        { b:'netflix',         p:['netflx','nettflix','netfl1x','netflix-billing','netflix-account'] },
+        { b:'chronopost',      p:['chron0post','chronopost-livraison','chronopost-fr','chronopost-suivi'] },
+        { b:'laposte',         p:['la-poste-fr','laposte-colis','laposte-suivi','lapost-fr'] },
+        { b:'dhl',             p:['dhl-express-fr','dhl-livraison','dhl-suivi-fr'] },
+        { b:'sfr',             p:['sfr-fr','sfr-espace-client','sfr-secure'] },
+        { b:'bouygues',        p:['bouygues-telecom-fr','bouyguestelecom-secure'] },
       ];
       for (const bp of brands) {
         if (bp.p.some(p => h.includes(p))) {
           sc.phishing += 60; sc.urlSuspect += 35;
-          flags.push({ cat: 'phishing', msg: `Usurpation probable de "${bp.b}" (typosquatting)` });
+          flags.push({ cat:'phishing', msg:`Usurpation probable de "${bp.b}" (typosquatting détecté)` });
+          break;
         }
       }
-      // Excessive subdomains
-      const sub = h.split('.').length - 2;
-      if (sub >= 3) {
+      // Sous-domaines excessifs
+      const subCount = h.split('.').length - 2;
+      if (subCount >= 3) {
         sc.urlSuspect += 20;
-        flags.push({ cat: 'url', msg: `${sub} sous-domaines imbriqués — souvent utilisés pour masquer l'origine` });
+        flags.push({ cat:'url', msg:`${subCount} niveaux de sous-domaines — technique courante pour masquer l'origine réelle` });
       }
-      // HTTP
+      // HTTP non chiffré
       if (url.protocol === 'http:') {
         sc.urlSuspect += 15;
-        flags.push({ cat: 'url', msg: 'Connexion non chiffrée (HTTP) — vos données transitent en clair' });
+        flags.push({ cat:'url', msg:'Connexion non chiffrée (HTTP) — données en transit non protégées' });
       }
-      // Non-standard port
+      // Port non standard
       if (url.port && !['80','443',''].includes(url.port)) {
         sc.urlSuspect += 25;
-        flags.push({ cat: 'url', msg: `Port non standard (${url.port}) — inhabituel pour un site légitime` });
+        flags.push({ cat:'url', msg:`Port non standard (${url.port}) — anormal pour un site légitime` });
       }
-      // Multiple redirects in path
+      // Chemin trop long (redirection chaîne)
       if ((url.pathname.match(/\//g)||[]).length > 6) {
         sc.urlSuspect += 15;
-        flags.push({ cat: 'url', msg: 'Chemin URL anormalement long — possible chaîne de redirection' });
+        flags.push({ cat:'url', msg:'Chemin URL anormalement profond — possible chaîne de redirection malveillante' });
       }
-      // Phishing keywords in URL
-      const urlKw = ['login','signin','secure','verify','confirm','account','update','password','credential','banking','payement','invoice','urgent','refund','suspended'];
-      const uMatched = urlKw.filter(k => lower.includes(k));
+      // Mots-clés phishing dans l'URL
+      const urlKw = ['login','signin','secure','verify','confirm','account','update','password','credential','banking','payement','invoice','urgent','refund','suspended','reset','validate','webscr','checkout'];
+      const uMatched = urlKw.filter(k => url.pathname.toLowerCase().includes(k) || url.search.toLowerCase().includes(k));
       if (uMatched.length >= 2) {
-        sc.phishing += 20;
-        flags.push({ cat: 'phishing', msg: `Mots-clés de phishing dans l'URL : ${uMatched.slice(0,3).join(', ')}` });
+        sc.phishing += 22;
+        flags.push({ cat:'phishing', msg:`Mots-clés de phishing dans l'URL : ${uMatched.slice(0,3).join(', ')}` });
+      }
+      // Paramètres d'URL en excès (souvent tracking/redirect)
+      const paramCount = [...url.searchParams].length;
+      if (paramCount >= 5) {
+        sc.urlSuspect += 12;
+        flags.push({ cat:'url', msg:`${paramCount} paramètres GET — souvent utilisés pour le tracking ou les redirections forcées` });
+      }
+      // Data URI (exécution de code)
+      if (text.startsWith('data:')) {
+        sc.urlSuspect += 50; sc.phishing += 35;
+        flags.push({ cat:'url', msg:'Data URI détecté — peut exécuter du code malveillant directement' });
+      }
+      // Punycode IDN (homoglyphes dans le domaine)
+      if (h.includes('xn--')) {
+        sc.urlSuspect += 30; sc.phishing += 20;
+        flags.push({ cat:'phishing', msg:'Domaine IDN/Punycode — technique d\'homoglyph pour imiter des marques connues' });
       }
     }
   }
 
-  // ── PHISHING (texte) ──────────────────────────────────────────────────────
+  // URLs intégrées dans du texte
+  if (!isUrl && urlsInText.length > 0) {
+    const shorteners = ['bit.ly','tinyurl.com','rb.gy','t.ly','is.gd','cutt.ly','short.io','lnk.bio'];
+    const hasShortUrl = urlsInText.some(u => shorteners.some(s => u.includes(s)));
+    if (hasShortUrl) {
+      sc.urlSuspect += 18; sc.phishing += 10;
+      flags.push({ cat:'url', msg:'URL raccourcie intégrée dans le message — destination masquée' });
+    }
+    if (urlsInText.length >= 3) {
+      sc.spam += 12;
+      flags.push({ cat:'spam', msg:`${urlsInText.length} liens dans le message — densité élevée de liens (patron de spam)` });
+    }
+  }
+
+  // ── 3. SPAM TÉLÉPHONIQUE & VISHING ───────────────────────────────────────
+  if (hasPhone) {
+    // Analyse chaque numéro détecté
+    for (const m of phoneMatches) {
+      const num = m[0].replace(/[\s.\-]/g,'');
+      // Numéros surtaxés / géographiques suspects dans un contexte alarme
+      const isSurcharged = /^(0899|0898|0897|0895|0892|0891|0836|0835|0826|0825|0824|0823|0822|0821|082|0810|0811|3[0-9]{3}|118)/.test(num.replace(/^\+33/,'0'));
+      if (isSurcharged) {
+        sc.phone += 35;
+        flags.push({ cat:'phone', msg:`Numéro surtaxé détecté (${m[0].trim()}) — facturation élevée si appelé` });
+      }
+    }
+  }
+
+  const phoneRules = [
+    { w:['rappeler ce numéro','rappellez le','appelez le','composez le','contactez-nous au'],       s:20, m:'Instruction d\'appel — vishing possible' },
+    { w:['service client au','assistance au','support technique au','hotline'],                      s:15, m:'Faux service client par téléphone' },
+    { w:['votre ligne va être coupée','votre abonnement expire','ligne suspendue','ligne bloquée'],  s:30, m:'Fausse alerte opérateur — arnaque téléphonique documentée' },
+    { w:['police nationale','gendarmerie','europol','interpol','tribunal'],                          s:35, m:'Usurpation de forces de l\'ordre — "police scam"' },
+    { w:['votre pc est infecté','virus détecté','microsoft vous contacte','windows support'],        s:40, m:'Faux support technique Windows ("tech support scam")' },
+    { w:['numéro gratuit','appel offert','sans frais','freephone','numéro vert'],                    s:10, m:'Incitation à l\'appel (numéro soi-disant gratuit)' },
+    { w:['répondez par sms','envoyez oui','envoyez stop','répondre ce message','répondez 1'],        s:18, m:'Collecte de confirmation par SMS' },
+    { w:['vous avez été sélectionné','votre numéro a été tiré','vous êtes l\'heureux','numéro gagnant'], s:32, m:'Loterie téléphonique frauduleuse' },
+    { w:['fraude détectée sur votre carte','banque vous contacte','votre banque a bloqué'],          s:35, m:'Vishing bancaire — fausse alerte fraude par téléphone' },
+    { w:['ne raccrochez pas','restez en ligne','opérateur en ligne','transfert d\'appel'],           s:25, m:'Technique de rétention téléphonique — signal de fraude' },
+    { w:['wangiri','rappel manqué','missed call','numéro étranger'],                                 s:28, m:'Arnaque Wangiri (rappel de numéros surtaxés)' },
+  ];
+  for (const r of phoneRules) {
+    const m = r.w.find(w => lower.includes(w));
+    if (m) {
+      sc.phone += r.s;
+      flags.push({ cat:'phone', msg:`${r.m} : "${m}"` });
+    }
+  }
+  // Bonus contextuel : SMS court + numéro + urgence
+  if (isSmsStyle && hasPhone && (lower.includes('urgent') || lower.includes('immédiat') || lower.includes('maintenant'))) {
+    sc.phone += 20;
+    flags.push({ cat:'phone', msg:'SMS court avec numéro + urgence — profil typique de smishing/vishing' });
+  }
+
+  // ── 4. ANALYSE DES EN-TÊTES EMAIL ────────────────────────────────────────
+  if (hasEmailHdr) {
+    // Reply-To différent du From
+    const fromMatch   = text.match(/^(?:from|de|expéditeur)\s*:\s*(.+)/im);
+    const replyMatch  = text.match(/^reply-to\s*:\s*(.+)/im);
+    if (fromMatch && replyMatch) {
+      const fromDomain  = (fromMatch[1].match(/@([\w.\-]+)/) || [])[1] || '';
+      const replyDomain = (replyMatch[1].match(/@([\w.\-]+)/) || [])[1] || '';
+      if (fromDomain && replyDomain && fromDomain !== replyDomain) {
+        sc.phishing += 35;
+        flags.push({ cat:'phishing', msg:`Reply-To (${replyDomain}) différent du domaine expéditeur (${fromDomain}) — technique d\'hameçonnage classique` });
+      }
+    }
+    // Domaine expéditeur suspect
+    if (fromMatch) {
+      const senderFull = fromMatch[1].toLowerCase();
+      const noreplySpoof = /noreply@(?!.*(?:google|microsoft|apple|amazon|paypal|orange|sfr|free|laposte|ameli|impots|caf|gouv\.fr))[a-z0-9\-]{2,20}\.[a-z]{2,6}/.test(senderFull);
+      if (noreplySpoof) {
+        sc.phishing += 15;
+        flags.push({ cat:'phishing', msg:`Adresse "noreply" d'un domaine inconnu — souvent utilisée pour imiter des services officiels` });
+      }
+      // Admin/security/support depuis domaine générique
+      if (/(?:admin|security|securite|support|service|info|alert|account)@/.test(senderFull) && !senderFull.includes('gouv.fr')) {
+        sc.phishing += 12;
+        flags.push({ cat:'phishing', msg:'Expéditeur générique "admin/security/support" — fréquent dans le phishing' });
+      }
+    }
+    // Objet alarmiste
+    const subjectMatch = text.match(/^(?:objet|subject)\s*:\s*(.+)/im);
+    if (subjectMatch) {
+      const sub = subjectMatch[1].toLowerCase();
+      const alarmKw = ['urgent','alerte','suspendu','bloqué','vérifiez','action requise','confirmer','suspect','inhabituel','votre compte'];
+      const alarmFound = alarmKw.filter(k => sub.includes(k));
+      if (alarmFound.length >= 2) {
+        sc.phishing += 20;
+        flags.push({ cat:'phishing', msg:`Objet alarmiste ("${alarmFound.slice(0,2).join('", "')}") — technique de social engineering` });
+      }
+    }
+  }
+
+  // ── 5. PHISHING (texte enrichi) ───────────────────────────────────────────
   const phishingRules = [
-    { w:['urgent','immédiatement','immédiat','agissez','act now','expires dans'],     s:15, m:'Langage d\'urgence artificielle' },
-    { w:['mot de passe','password','identifiant','credentials','saisir vos'],         s:20, m:'Demande d\'identifiants' },
-    { w:['votre compte','compte suspendu','accès bloqué','compte désactivé'],         s:25, m:'Fausse alerte de compte' },
-    { w:['cliquez ici','cliquez maintenant','appuyez ici','cliquez pour confirmer','cliquez pour valider','cliquez pour accéder'], s:12, m:'Appel à l\'action suspect' },
-    { w:['vérification requise','confirmez votre','confirm your','verify your'],      s:20, m:'Demande de vérification forcée' },
-    { w:['activité suspecte','unusual activity','connexion inhabituelle'],             s:25, m:'Fausse alerte de sécurité' },
-    { w:['remboursement','trop-perçu','refund','réclamez votre'],                     s:18, m:'Fausse promesse de remboursement' },
-    { w:['mise à jour requise','update required','mettre à jour vos informations'],   s:20, m:'Fausse mise à jour de données' },
-    { w:['amende','contravention','infraction','pénalité','amenende impayée'],        s:25, m:'Fausse amende/pénalité gouvernementale' },
-    { w:['colis en attente','livraison bloquée','tracking','chronopost','colissimo'], s:12, m:'Smishing livraison (arnaque très répandue)' },
-    { w:['votre carte','carte bancaire','numéro de carte','iban','rib'],              s:30, m:'Demande de données bancaires' },
-    { w:['impôts','dgfip','trésor public','remboursement fiscal'],                    s:25, m:'Usurpation de l\'administration fiscale' },
-    { w:['ameli','sécurité sociale','cpam','remboursement sécu'],                     s:22, m:'Usurpation de l\'Assurance Maladie' },
-    { w:['caf','aide exceptionnelle','prime','allocation'],                            s:18, m:'Usurpation d\'organismes sociaux' },
+    { w:['urgent','immédiatement','immédiat','agissez','act now','expires dans','dans les 24h','sous 48h','dans les 48 heures'],    s:15, m:'Langage d\'urgence artificielle' },
+    { w:['mot de passe','password','identifiant','credentials','saisir vos','entrez votre code'],                                   s:20, m:'Demande d\'identifiants' },
+    { w:['votre compte','compte suspendu','accès bloqué','compte désactivé','accès restreint','compte limité'],                     s:25, m:'Fausse alerte de compte' },
+    { w:['cliquez ici','cliquez maintenant','appuyez ici','cliquez pour confirmer','cliquez pour valider','cliquez pour accéder','tapez ici'], s:12, m:'Appel à l\'action suspect' },
+    { w:['vérification requise','confirmez votre','confirm your','verify your','valider votre identité'],                           s:20, m:'Demande de vérification forcée' },
+    { w:['activité suspecte','unusual activity','connexion inhabituelle','activité anormale','connexion non reconnue'],             s:25, m:'Fausse alerte de sécurité' },
+    { w:['remboursement','trop-perçu','refund','réclamez votre','crédit en attente'],                                               s:18, m:'Fausse promesse de remboursement' },
+    { w:['mise à jour requise','update required','mettre à jour vos informations','actualiser vos données'],                       s:20, m:'Fausse mise à jour de données' },
+    { w:['amende','contravention','infraction','pénalité','amenende impayée','procès-verbal','radar'],                             s:28, m:'Fausse amende/pénalité gouvernementale' },
+    { w:['colis en attente','livraison bloquée','tracking','chronopost','colissimo','dhl','fedex','ups','mondial relay'],          s:12, m:'Smishing livraison' },
+    { w:['votre carte','carte bancaire','numéro de carte','iban','rib','coordonnées bancaires'],                                   s:30, m:'Demande de données bancaires' },
+    { w:['impôts','dgfip','trésor public','remboursement fiscal','avis d\'imposition','déclaration fiscale'],                      s:25, m:'Usurpation de l\'administration fiscale' },
+    { w:['ameli','sécurité sociale','cpam','remboursement sécu','carte vitale','assurance maladie'],                               s:22, m:'Usurpation de l\'Assurance Maladie' },
+    { w:['caf','aide exceptionnelle','prime','allocation','rsa','aide sociale'],                                                    s:18, m:'Usurpation d\'organismes sociaux' },
+    { w:['renouveler votre','renouvellement obligatoire','expiration de','votre abonnement expire'],                               s:20, m:'Fausse notification d\'expiration' },
+    { w:['votre session','session expirée','reconnectez-vous','déconnecté automatiquement'],                                       s:18, m:'Fausse expiration de session' },
+    { w:['document partagé','fichier partagé','vous a partagé','shared with you'],                                                 s:15, m:'Faux partage de document (phishing clouds)' },
+    { w:['code otp','code de sécurité','code de confirmation','saisissez le code','code à 6 chiffres'],                           s:28, m:'Tentative d\'interception OTP/2FA' },
   ];
   for (const r of phishingRules) {
     const m = r.w.find(w => lower.includes(w));
     if (m) { sc.phishing += r.s; flags.push({ cat:'phishing', msg:`${r.m} : "${m}"` }); }
   }
 
-  // ── SPAM ──────────────────────────────────────────────────────────────────
+  // ── 6. SPAM (enrichi) ────────────────────────────────────────────────────
   const spamRules = [
-    { w:['gratuit','gratos','offre exclusive','100% gratuit'],                       s:15, m:'Offre gratuite — typique du spam' },
-    { w:['félicitations','vous avez gagné','gagnant','winner','tirage'],             s:28, m:'Fausse victoire / loterie' },
-    { w:['acheter maintenant','buy now','commandez','order now','ajoutez au panier'],s:12, m:'Spam commercial agressif' },
-    { w:['offre limitée','dernière chance','ne ratez pas','limited time'],           s:15, m:'FOMO — pression temporelle artificielle' },
-    { w:['million','milliard','riche','€€€','$$$','fortune'],                       s:22, m:'Promesse financière exagérée' },
-    { w:['héritage','succession','prince','funds transfer','inheritance'],           s:35, m:'Arnaque à l\'héritage (fraude 419)' },
-    { w:['investissement garanti','rendement garanti','sans risque','10x votre'],    s:32, m:'Investissement frauduleux (rendement garanti = fraude)' },
-    { w:['crypto','bitcoin','btc','eth','nft'],                                      s:10, m:'Contenu crypto (risque accru de fraude)' },
-    { w:['désabonnez','unsubscribe','se désabonner','opt-out'],                      s:8,  m:'Indicateur de liste de spam' },
+    { w:['gratuit','gratos','offre exclusive','100% gratuit','totalement gratuit'],                  s:15, m:'Offre gratuite — typique du spam' },
+    { w:['félicitations','vous avez gagné','gagnant','winner','tirage au sort','loterie'],           s:28, m:'Fausse victoire / loterie' },
+    { w:['acheter maintenant','buy now','commandez','order now','ajoutez au panier','achat immédiat'], s:12, m:'Spam commercial agressif' },
+    { w:['offre limitée','dernière chance','ne ratez pas','limited time','expires bientôt','plus que'],s:15, m:'FOMO — pression temporelle artificielle' },
+    { w:['million','milliard','riche','€€€','$$$','fortune','enrichissement'],                       s:22, m:'Promesse financière exagérée' },
+    { w:['héritage','succession','prince','funds transfer','inheritance','avocat successoral'],       s:35, m:'Arnaque à l\'héritage (fraude 419)' },
+    { w:['investissement garanti','rendement garanti','sans risque','10x votre','doublez votre'],     s:32, m:'Investissement frauduleux (rendement garanti = fraude)' },
+    { w:['crypto','bitcoin','btc','eth','nft','altcoin','staking','yield farming'],                  s:10, m:'Contenu crypto (risque accru de fraude)' },
+    { w:['désabonnez','unsubscribe','se désabonner','opt-out','retirer de la liste'],                 s:8,  m:'Indicateur de liste de spam' },
+    { w:['viagra','cialis','levitra','pilule amaigrissante','perdre du poids','brûle graisses'],      s:30, m:'Spam pharmaceutique / santé frauduleux' },
+    { w:['casino','poker','jackpot','bonus de bienvenue','pari sportif','mise gratuite'],             s:20, m:'Spam jeux d\'argent / casino' },
+    { w:['rencontres','célibataires près de chez','femmes disponibles','profil en attente'],          s:22, m:'Spam rencontres / escroquerie sentimentale' },
+    { w:['gagnez de l\'argent depuis chez','revenu passif','travailler depuis','gagner argent facile'], s:25, m:'Spam travail à domicile / escroquerie' },
   ];
   for (const r of spamRules) {
     const m = r.w.find(w => lower.includes(w));
     if (m) { sc.spam += r.s; flags.push({ cat:'spam', msg:`${r.m} : "${m}"` }); }
   }
+
   // Bonus fraude crypto-investissement combinée
   if (sc.spam >= 32 && (lower.includes('crypto') || lower.includes('bitcoin') || lower.includes('btc') || lower.includes('eth') || lower.includes('nft'))) {
     sc.spam += 25;
     flags.push({ cat:'spam', msg:'Signal combiné : investissement frauduleux + crypto — arnaque hautement probable' });
   }
-  // Smishing livraison contextuel (colis + cliquez sans phrase exacte)
-  const hasLivraison = lower.includes('colis') || lower.includes('livraison') || lower.includes('coli') || lower.includes('chronopost') || lower.includes('colissimo');
-  const hasClic = lower.includes('cliquez') || lower.includes('confirmer') || lower.includes('cliquer');
+
+  // Smishing livraison contextuel
+  const hasLivraison = /colis|livraison|chronopost|colissimo|dhl|fedex|ups|mondial relay|la poste/.test(lower);
+  const hasClic = /cliquez|confirmer|cliquer|valider|accéder/.test(lower);
   if (hasLivraison && hasClic && sc.phishing < 25) {
     sc.phishing += 18;
     flags.push({ cat:'phishing', msg:'Smishing livraison contextuel — lien de confirmation suspect' });
   }
 
+  // ── 7. DÉTECTION D'OBFUSCATION ───────────────────────────────────────────
+  // Obfuscation par substitution (v1agra, b1tc0in, s.p.a.m)
+  const obfuscChars = /[a-z]\d[a-z]|[a-z]\.[a-z]\.[a-z]|\$[a-z]+|[а-яА-Я]/i;
+  if (obfuscChars.test(text)) {
+    sc.spam += 15;
+    flags.push({ cat:'spam', msg:'Caractères de substitution / obfuscation détectés — technique pour contourner les filtres' });
+  }
+  // Excès d'emojis (spam agressif)
+  const emojiCount = [...text].filter(c => /\p{Emoji}/u.test(c) && c.charCodeAt(0) > 127).length;
+  if (emojiCount >= 5) {
+    sc.spam += 12;
+    flags.push({ cat:'spam', msg:`${emojiCount} emojis — saturation visuelle typique du spam commercial agressif` });
+  }
   // Ponctuation excessive
   const exclCount = (text.match(/!/g)||[]).length;
   if (exclCount >= 3) {
@@ -1277,42 +1427,73 @@ function analyzeContent(input) {
   }
   // ALL CAPS
   const letters = text.replace(/[^a-zA-ZÀ-ÿ]/g,'');
-  const upper = text.replace(/[^A-ZÀÂÄÉÈÊËÎÏÔÙÛÜÇ]/g,'');
+  const upper   = text.replace(/[^A-ZÀÂÄÉÈÊËÎÏÔÙÛÜÇ]/g,'');
   if (letters.length > 15 && upper.length / letters.length > 0.45) {
     sc.spam += 20;
     flags.push({ cat:'spam', msg:'Texte majoritairement en majuscules — technique d\'attention forcée' });
   }
+  // Répétition de symboles monétaires
+  const currencySymbols = (text.match(/[€$£¥₿]/g)||[]).length;
+  if (currencySymbols >= 3) {
+    sc.spam += 14;
+    flags.push({ cat:'spam', msg:`${currencySymbols} symboles monétaires — appât financier caractéristique` });
+  }
 
-  // ── DÉSINFORMATION ────────────────────────────────────────────────────────
+  // ── 8. DÉSINFORMATION (enrichi) ──────────────────────────────────────────
   const desinfRules = [
-    { w:['les médias cachent','la vérité cachée','ce que les médias ne vous disent pas','mainstream cache'],  s:38, m:'Rhétorique complotiste anti-médias' },
-    { w:['big pharma','vaccin tue','5g dangereux','gouvernement ment','nwo','nouvel ordre mondial'],          s:42, m:'Contenu complotiste documenté' },
-    { w:['urgent partagez','partagez avant','before they delete','avant censure','avant suppression'],        s:28, m:'Appel viral pré-censure — manipulation émotionnelle' },
-    { w:['remède miracle','guérit tout','médecins ne veulent pas','cure cachée','plante interdite'],          s:32, m:'Pseudo-médecine — arnaque santé' },
-    { w:['prouvé scientifiquement','études prouvent','experts confirment'],                                   s:12, m:'Autorité scientifique sans source' },
-    { w:['soros','bill gates microchip','puce sous la peau','élites mondiales'],                             s:45, m:'Désinformation identifiée à haut risque' },
-    { w:['astuce de grand-mère','médecine naturelle interdit','interdit par les médecins'],                  s:22, m:'Fausses informations santé' },
-    { w:['documentaire censuré','vidéo interdite','truth documentary'],                                      s:25, m:'Contenu censuré (signal de manipulation)' },
+    { w:['les médias cachent','la vérité cachée','ce que les médias ne vous disent pas','mainstream cache','médias mentent'],    s:38, m:'Rhétorique complotiste anti-médias' },
+    { w:['big pharma','vaccin tue','5g dangereux','gouvernement ment','nwo','nouvel ordre mondial','état profond'],              s:42, m:'Contenu complotiste documenté' },
+    { w:['urgent partagez','partagez avant','before they delete','avant censure','avant suppression','ils vont supprimer'],      s:28, m:'Appel viral pré-censure — manipulation émotionnelle' },
+    { w:['remède miracle','guérit tout','médecins ne veulent pas','cure cachée','plante interdite','traitement supprimé'],       s:32, m:'Pseudo-médecine — arnaque santé' },
+    { w:['prouvé scientifiquement','études prouvent','experts confirment','les scientifiques le cachent'],                       s:12, m:'Autorité scientifique sans source vérifiable' },
+    { w:['soros','bill gates microchip','puce sous la peau','élites mondiales','illuminati','franc-maçon'],                     s:45, m:'Désinformation identifiée à haut risque' },
+    { w:['astuce de grand-mère','médecine naturelle interdit','interdit par les médecins','médecine cachée'],                   s:22, m:'Fausses informations santé' },
+    { w:['documentaire censuré','vidéo interdite','truth documentary','scandale caché','rapport secret'],                       s:25, m:'Contenu prétendument censuré (signal de manipulation)' },
+    { w:['chemtrails','sillages d\'avion','géo-ingénierie','empoisonnement de l\'air'],                                         s:35, m:'Complot chemtrails — théorie infondée' },
+    { w:['plandémie','covid inventé','pandémie fabriquée','laboratoire wuhan délibéré'],                                        s:38, m:'Désinformation sanitaire documentée' },
   ];
   for (const r of desinfRules) {
     const m = r.w.find(w => lower.includes(w));
     if (m) { sc.desinformation += r.s; flags.push({ cat:'desinformation', msg:r.m }); }
   }
 
-  // ── FINAL SCORE (agrégation pondérée) ────────────────────────────────────
-  // max() capture l'attaque dominante, bonus() récompense les signaux multi-vecteurs
-  const maxScore = Math.max(sc.phishing, sc.spam, sc.desinformation, sc.urlSuspect);
-  const secondarySum = (sc.phishing + sc.spam + sc.desinformation + sc.urlSuspect) - maxScore;
-  const raw = maxScore + secondarySum * 0.35; // 35% des scores secondaires s'ajoutent
-  const finalScore = Math.min(100, Math.round(raw));
+  // ── 9. ANALYSE COMPORTEMENTALE MULTI-VECTEURS ────────────────────────────
+  // Urgence + action + récompense = arnaque classique
+  const hasUrgency = /urgent|immédiat|maintenant|expires|dans les 24|sous 48h|aujourd'hui seulement/.test(lower);
+  const hasAction  = /cliquez|appelez|rappeler|confirmez|validez|téléchargez|installez/.test(lower);
+  const hasReward  = /gagné|gratuit|remboursement|prime|cadeau|récompense|offre/.test(lower);
+  if (hasUrgency && hasAction && hasReward) {
+    const bonus = 18;
+    sc.phishing = Math.min(100, sc.phishing + bonus);
+    flags.push({ cat:'phishing', msg:'Combinaison urgence + action + récompense — triptyque classique des arnaques en ligne' });
+  }
+  // Autorité + demande de données = phishing institutionnel
+  const hasAuthority = /police|gendarmerie|tribunal|dgfip|impôts|cpam|ameli|caf|banque|microsoft|apple|amazon/.test(lower);
+  const hasDataRequest = /mot de passe|identifiant|iban|rib|carte bancaire|code otp|numéro de sécurité|code secret/.test(lower);
+  if (hasAuthority && hasDataRequest) {
+    sc.phishing = Math.min(100, sc.phishing + 25);
+    flags.push({ cat:'phishing', msg:'Usurpation d\'autorité + demande de données sensibles — phishing institutionnel à haut risque' });
+  }
+  // Phone + urgence + action = vishing
+  if (sc.phone >= 20 && hasUrgency && hasAction) {
+    sc.phone = Math.min(100, sc.phone + 20);
+    flags.push({ cat:'phone', msg:'Combinaison téléphone + urgence + action — profil de vishing/smishing confirmé' });
+  }
+
+  // ── 10. FINAL SCORE (agrégation pondérée 5 vecteurs) ─────────────────────
+  const allScores = [sc.phishing, sc.spam, sc.desinformation, sc.urlSuspect, sc.phone];
+  const maxScore      = Math.max(...allScores);
+  const secondarySum  = allScores.reduce((a,b) => a+b, 0) - maxScore;
+  const raw           = maxScore + secondarySum * 0.35;
+  const finalScore    = Math.min(100, Math.round(raw));
 
   let label, severity;
-  if (finalScore >= 55) { label = 'Dangereux';  severity = 'danger';  }
-  else if (finalScore >= 18) { label = 'Suspect';    severity = 'warning'; }
-  else { label = 'Fiable';     severity = 'safe';    }
+  if (finalScore >= 55)      { label = 'Dangereux'; severity = 'danger';  }
+  else if (finalScore >= 18) { label = 'Suspect';   severity = 'warning'; }
+  else                       { label = 'Fiable';    severity = 'safe';    }
 
-  // Dominant category
-  const catMap = { phishing:'Phishing', spam:'Spam', desinformation:'Désinformation', urlSuspect:'URL suspecte' };
+  // Catégorie dominante
+  const catMap = { phishing:'Phishing', spam:'Spam', desinformation:'Désinformation', urlSuspect:'URL suspecte', phone:'Spam téléphonique' };
   let domCat = 'Aucun risque détecté', domMax = 0;
   for (const [k,v] of Object.entries(sc)) {
     if (v > domMax) { domMax = v; domCat = catMap[k]; }
@@ -1325,10 +1506,11 @@ function analyzeContent(input) {
       phishing:      Math.min(100, sc.phishing),
       spam:          Math.min(100, sc.spam),
       desinformation:Math.min(100, sc.desinformation),
-      urlSuspect:    Math.min(100, sc.urlSuspect)
+      urlSuspect:    Math.min(100, sc.urlSuspect),
+      phone:         Math.min(100, sc.phone)
     },
     dominantCat: domCat,
-    flags: flags.slice(0, 10)
+    flags: flags.slice(0, 12)
   };
 }
 
@@ -1386,10 +1568,11 @@ function renderResult(res, communityCount = 0, gsbThreat = null) {
     premiumLock.style.display    = 'none';
     // Score rows
     const cats = [
-      { key:'phishing',      label:'Phishing',       icon:'🎣' },
-      { key:'spam',          label:'Spam',            icon:'📧' },
-      { key:'desinformation',label:'Désinformation',  icon:'🗞️' },
-      { key:'urlSuspect',    label:'URL suspecte',    icon:'🔗' },
+      { key:'phishing',      label:'Phishing',            icon:'🎣' },
+      { key:'spam',          label:'Spam',                icon:'📧' },
+      { key:'desinformation',label:'Désinformation',      icon:'🗞️' },
+      { key:'urlSuspect',    label:'URL suspecte',        icon:'🔗' },
+      { key:'phone',         label:'Spam téléphonique',   icon:'📞' },
     ];
     let rowsHtml = '';
     for (const c of cats) {
@@ -1413,7 +1596,7 @@ function renderResult(res, communityCount = 0, gsbThreat = null) {
       flagsEl.innerHTML = `<div class="flag-item"><span class="flag-badge safe">✓ Aucun</span><span class="flag-msg">Aucun indicateur suspect détecté.</span></div>`;
     } else {
       flagsEl.innerHTML = res.flags.map(f => {
-        const catLabels = { phishing:'🎣 Phishing', spam:'📧 Spam', desinformation:'🗞️ Désinfo', url:'🔗 URL' };
+        const catLabels = { phishing:'🎣 Phishing', spam:'📧 Spam', desinformation:'🗞️ Désinfo', url:'🔗 URL', phone:'📞 Tél.' };
         const label = catLabels[f.cat] || f.cat;
         return `<div class="flag-item">
           <span class="flag-badge ${f.cat}">${label}</span>
@@ -1486,12 +1669,12 @@ window.doAnalyze = async function() {
           userEmail: currentUser.email,
           input:     val.substring(0, 500),
           inputMode,
-          result:    result.label,
-          severity:  result.severity,
-          score:     result.score,
-          scores:    result.scores,
+          result:      result.label,
+          severity:    result.severity,
+          score:       result.score,
+          scores:      result.scores,
           dominantCat: result.dominantCat,
-          flagCount: result.flags.length,
+          flagCount:   result.flags.length,
           createdAt: serverTimestamp()
         });
       } catch(e) { console.error('Firestore save error:', e); }
