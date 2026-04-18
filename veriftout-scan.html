@@ -1225,55 +1225,56 @@
 
     /* ── DEBUNKER ── */
     .dbk-textarea {
-      width: 100%; padding: .85rem 1rem; background: var(--navy-light);
-      border: 1px solid var(--border); border-radius: 10px; color: var(--text);
+      width: 100%; padding: .85rem 1rem; background: #fff;
+      border: 1px solid #c8d6e8; border-radius: 10px; color: #0f1c2e;
       font-family: 'DM Sans', sans-serif; font-size: .9rem; resize: vertical;
       outline: none; transition: border-color .2s; line-height: 1.6;
     }
-    .dbk-textarea:focus { border-color: var(--accent); }
+    .dbk-textarea:focus { border-color: #2563eb; }
     .dbk-verdict-bar {
       display: flex; align-items: center; gap: 1rem;
       padding: 1.25rem 1.5rem; border-radius: 12px;
-      border: 1.5px solid var(--border); background: var(--navy-light);
+      border: 1.5px solid #c8d6e8; background: #fff;
       margin-bottom: 1.25rem; transition: all .4s;
     }
     .dbk-verdict-icon { font-size: 2rem; flex-shrink: 0; }
     .dbk-verdict-text { flex: 1; }
-    .dbk-verdict-label { font-size: 1rem; font-weight: 700; letter-spacing: .04em; }
-    .dbk-verdict-sub { font-size: .78rem; color: var(--text-muted); margin-top: .15rem; }
+    .dbk-verdict-label { font-size: 1rem; font-weight: 700; letter-spacing: .04em; color: #0f1c2e; }
+    .dbk-verdict-sub { font-size: .78rem; color: #475569; margin-top: .15rem; }
     .dbk-confidence { text-align: center; flex-shrink: 0; }
-    .dbk-conf-num { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 700; }
-    .dbk-conf-lbl { font-size: .65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; }
+    .dbk-conf-num { font-size: 1.6rem; font-weight: 700; color: #0f1c2e; }
+    .dbk-conf-lbl { font-size: .65rem; color: #64748b; text-transform: uppercase; letter-spacing: .08em; }
     .dbk-section { margin-bottom: 1.25rem; }
-    .dbk-section-title { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: .5rem; }
+    .dbk-section-title { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: #475569; margin-bottom: .5rem; font-weight: 600; }
     .dbk-claim-box {
-      padding: .85rem 1rem; background: rgba(212,168,83,.07);
-      border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0;
-      font-size: .9rem; color: var(--text); line-height: 1.6; font-style: italic;
+      padding: .85rem 1rem; background: #fffbf0;
+      border-left: 3px solid #d97706; border-radius: 0 8px 8px 0;
+      font-size: .9rem; color: #1e293b; line-height: 1.6; font-style: italic;
     }
     .dbk-sources-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: 1.25rem; }
     .dbk-source-card {
-      background: var(--navy-light); border: 1px solid var(--border);
+      background: #fff; border: 1px solid #d1dbe8;
       border-radius: 10px; padding: 1rem; overflow: hidden;
+      box-shadow: 0 1px 4px rgba(30,58,95,.06);
     }
     .dbk-src-header { display: flex; align-items: center; gap: .5rem; margin-bottom: .75rem; }
-    .dbk-src-title { font-size: .8rem; font-weight: 600; flex: 1; }
+    .dbk-src-title { font-size: .8rem; font-weight: 600; color: #0f1c2e; flex: 1; }
     .dbk-src-badge {
       font-size: .68rem; padding: .2rem .55rem; border-radius: 100px;
-      background: rgba(255,255,255,.07); color: var(--text-muted); white-space: nowrap;
+      background: #f1f5f9; color: #475569; white-space: nowrap; font-weight: 600;
     }
-    .dbk-src-body { font-size: .78rem; color: var(--text-muted); line-height: 1.5; }
+    .dbk-src-body { font-size: .78rem; color: #334155; line-height: 1.6; }
     .dbk-synthesis {
-      padding: 1rem 1.25rem; background: var(--navy-light);
-      border: 1px solid var(--border); border-radius: 10px; margin-bottom: 1.25rem;
+      padding: 1rem 1.25rem; background: #f8fafc;
+      border: 1px solid #d1dbe8; border-radius: 10px; margin-bottom: 1.25rem;
     }
-    .dbk-vote { padding: 1rem; background: rgba(44,182,125,.06); border: 1px solid rgba(44,182,125,.2); border-radius: 10px; }
-    .dbk-vote-title { font-size: .82rem; font-weight: 600; margin-bottom: .75rem; color: var(--text); }
+    .dbk-vote { padding: 1rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; }
+    .dbk-vote-title { font-size: .82rem; font-weight: 600; margin-bottom: .75rem; color: #0f1c2e; }
     .dbk-vote-btns { display: flex; gap: .5rem; flex-wrap: wrap; }
-    .dbk-vote-btn { padding: .5rem 1rem; border-radius: 100px; border: 1px solid var(--border); background: var(--navy-light); color: var(--text); font-family: 'DM Sans',sans-serif; font-size: .82rem; cursor: pointer; transition: all .2s; }
-    .dbk-vote-true:hover  { border-color: #2cb67d; background: rgba(44,182,125,.15); }
-    .dbk-vote-false:hover { border-color: #e05252; background: rgba(224,82,82,.15); }
-    .dbk-vote-partial:hover { border-color: #d4a853; background: rgba(212,168,83,.15); }
+    .dbk-vote-btn { padding: .5rem 1rem; border-radius: 100px; border: 1px solid #c8d6e8; background: #fff; color: #0f1c2e; font-family: 'DM Sans',sans-serif; font-size: .82rem; cursor: pointer; transition: all .2s; font-weight: 500; }
+    .dbk-vote-true:hover  { border-color: #16a34a; background: #f0fdf4; color: #16a34a; }
+    .dbk-vote-false:hover { border-color: #dc2626; background: #fef2f2; color: #dc2626; }
+    .dbk-vote-partial:hover { border-color: #d97706; background: #fffbeb; color: #d97706; }
     .dbk-vote-btn:disabled { opacity: .4; cursor: default; }
     @media (max-width: 520px) { .dbk-sources-grid { grid-template-columns: 1fr; } .dbk-verdict-bar { flex-wrap: wrap; } }
 
@@ -3780,8 +3781,8 @@ function renderSynthesis(verdict, algo, fc, wiki, comm) {
   if (comm.found && comm.total >= 3) parts.push(`La communauté a voté à ${comm.total} reprises sur cette affirmation`);
   if (!parts.length) parts.push('Données insuffisantes — le verdict repose principalement sur l\'analyse algorithmique');
   el.innerHTML = `
-    <div style="font-size:.78rem;font-weight:600;margin-bottom:.5rem;color:var(--text)">📊 Synthèse</div>
-    <div style="font-size:.78rem;color:#374151;line-height:1.6">${parts.join('. ')}.</div>
+    <div style="font-size:.78rem;font-weight:600;margin-bottom:.5rem;color:#0f1c2e">📊 Synthèse</div>
+    <div style="font-size:.78rem;color:#1e293b;line-height:1.6">${parts.join('. ')}.</div>
     <div style="margin-top:.75rem;padding:.5rem .75rem;background:${verdict.bg};border-left:3px solid ${verdict.color};border-radius:0 6px 6px 0;font-size:.78rem;font-weight:600;color:${verdict.color}">
       Verdict final : ${verdict.icon} ${verdict.label} — Confiance ${verdict.confidence}%
     </div>`;
