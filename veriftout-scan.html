@@ -308,6 +308,95 @@
     .community-badge .cb-icon { font-size: 1.1rem; flex-shrink: 0; }
     .community-badge strong { color: #f87171; }
 
+    /* ── PANNEAU SIGNALEMENT MULTI-DESTINATIONS ── */
+    .report-panel {
+      display: none;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 0.75rem;
+      border: 1.5px solid var(--danger);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 4px 20px rgba(220,38,38,0.12);
+      animation: slideIn 0.22s ease;
+    }
+    .report-panel.show { display: flex; }
+    @keyframes slideIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+    .report-panel-header {
+      background: linear-gradient(135deg, #7f1d1d, #991b1b);
+      color: #fff;
+      padding: 0.85rem 1.1rem;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .report-panel-header .rph-icon { font-size: 1.3rem; }
+    .report-panel-header h4 { font-size: 0.95rem; font-weight: 600; margin: 0; }
+    .report-panel-header p  { font-size: 0.75rem; color: rgba(255,255,255,0.75); margin: 0.15rem 0 0; }
+    .report-section {
+      padding: 0.85rem 1.1rem;
+      border-bottom: 1px solid #fee2e2;
+    }
+    .report-section:last-child { border-bottom: none; }
+    .report-section-title {
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--danger); margin-bottom: 0.55rem;
+    }
+    .report-btns { display: flex; flex-direction: column; gap: 0.45rem; }
+    .report-btn {
+      display: flex; align-items: center; gap: 0.65rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.83rem; font-weight: 500;
+      cursor: pointer; text-decoration: none;
+      transition: all 0.18s; border: none;
+      width: 100%; text-align: left;
+    }
+    .report-btn-primary {
+      background: var(--danger); color: #fff;
+    }
+    .report-btn-primary:hover { background: #b91c1c; }
+    .report-btn-secondary {
+      background: #fff; color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+    .report-btn-secondary:hover { border-color: var(--danger); color: var(--danger); background: #fff5f5; }
+    .report-btn-gsb {
+      background: #1a73e8; color: #fff;
+    }
+    .report-btn-gsb:hover { background: #1557b0; }
+    .report-btn-pharos {
+      background: #1e3a5f; color: #fff;
+    }
+    .report-btn-pharos:hover { background: #152c49; }
+    .report-btn-icon { font-size: 1.05rem; flex-shrink: 0; }
+    .report-btn-info { line-height: 1.3; }
+    .report-btn-info small { display: block; font-size: 0.72rem; opacity: 0.75; }
+    .report-tip {
+      font-size: 0.78rem; color: var(--muted);
+      background: #f8fafc; border-radius: var(--radius-sm);
+      padding: 0.6rem 0.8rem; line-height: 1.5;
+      border-left: 3px solid var(--border);
+    }
+    .report-community-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.1rem;
+      background: #fef2f2;
+    }
+    .report-community-row .rci { font-size: 1.1rem; }
+    .report-community-row p { font-size: 0.8rem; color: var(--muted); margin: 0; }
+    .report-community-row strong { color: var(--danger); }
+    .report-close-row {
+      padding: 0.6rem 1.1rem;
+      border-top: 1px solid #fee2e2;
+      text-align: right;
+    }
+    .report-close-btn {
+      background: none; border: none; font-size: 0.8rem;
+      color: var(--muted); cursor: pointer; padding: 0.2rem 0.4rem;
+    }
+    .report-close-btn:hover { color: var(--danger); }
+
     /* ── BADGE GOOGLE SAFE BROWSING ── */
     .gsb-badge {
       display: none;
@@ -855,7 +944,91 @@
         <!-- Actions -->
         <div class="result-action-row" id="result-action-row" style="display:none;">
           <button class="btn-share" id="btn-share" onclick="shareResult()">📤 Partager par e-mail</button>
-          <button class="btn-signaler" id="btn-signaler" onclick="signalerContenu()">🚨 Signaler</button>
+          <button class="btn-signaler" id="btn-signaler" onclick="toggleReportPanel()">🛡 Signaler &amp; Alerter</button>
+        </div>
+
+        <!-- Panneau signalement multi-destinations -->
+        <div class="report-panel" id="report-panel">
+          <div class="report-panel-header">
+            <span class="rph-icon">🚨</span>
+            <div>
+              <h4>Signaler cette menace</h4>
+              <p>Contribuez à un web plus sûr — chaque signalement compte</p>
+            </div>
+          </div>
+
+          <!-- Section URL : Google Safe Browsing -->
+          <div class="report-section" id="rp-gsb-section" style="display:none;">
+            <div class="report-section-title">🔍 URL malveillante — Signaler à Google</div>
+            <div class="report-btns">
+              <a id="rp-gsb-phish" href="#" target="_blank" rel="noopener" class="report-btn report-btn-gsb">
+                <span class="report-btn-icon">🎣</span>
+                <span class="report-btn-info">Signaler à Google Safe Browsing — Phishing<small>google.com/safebrowsing · formulaire officiel</small></span>
+              </a>
+              <a id="rp-gsb-malware" href="#" target="_blank" rel="noopener" class="report-btn report-btn-gsb" style="display:none;">
+                <span class="report-btn-icon">🦠</span>
+                <span class="report-btn-info">Signaler à Google Safe Browsing — Malware<small>google.com/safebrowsing · formulaire officiel</small></span>
+              </a>
+              <a id="rp-gsb-unwanted" href="#" target="_blank" rel="noopener" class="report-btn report-btn-secondary" style="display:none;">
+                <span class="report-btn-icon">⚠️</span>
+                <span class="report-btn-info">Signaler — Logiciel indésirable<small>google.com/safebrowsing</small></span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Section PHAROS -->
+          <div class="report-section" id="rp-pharos-section">
+            <div class="report-section-title">🇫🇷 Signalement officiel français</div>
+            <div class="report-btns">
+              <a href="https://www.internet-signalement.gouv.fr/PharosS1/" target="_blank" rel="noopener" class="report-btn report-btn-pharos">
+                <span class="report-btn-icon">⚖️</span>
+                <span class="report-btn-info">PHAROS — Plateforme de signalement<small>internet-signalement.gouv.fr · Ministère de l'Intérieur</small></span>
+              </a>
+              <a href="https://www.cybermalveillance.gouv.fr/diagnostic" target="_blank" rel="noopener" class="report-btn report-btn-secondary">
+                <span class="report-btn-icon">🛡️</span>
+                <span class="report-btn-info">Cybermalveillance.gouv.fr — Diagnostic &amp; assistance<small>Agence nationale de la sécurité des systèmes d'information</small></span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Section Signal-Spam (email) -->
+          <div class="report-section" id="rp-spam-section" style="display:none;">
+            <div class="report-section-title">📧 Spam par email</div>
+            <div class="report-btns">
+              <a href="https://www.signal-spam.fr/" target="_blank" rel="noopener" class="report-btn report-btn-primary">
+                <span class="report-btn-icon">📨</span>
+                <span class="report-btn-info">Signal-Spam.fr — Signalement email<small>Plateforme nationale de lutte anti-spam</small></span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Section téléphone (SMS/vishing) -->
+          <div class="report-section" id="rp-phone-section" style="display:none;">
+            <div class="report-section-title">📞 Spam téléphonique / SMS</div>
+            <div class="report-btns">
+              <a id="rp-sms-33700" href="#" class="report-btn report-btn-primary" onclick="copy33700(event)">
+                <span class="report-btn-icon">💬</span>
+                <span class="report-btn-info">Transférer au 33700 (SMS spam)<small>Service national gratuit · Copiez le n° dans le presse-papiers</small></span>
+              </a>
+              <a href="https://www.33700.fr/" target="_blank" rel="noopener" class="report-btn report-btn-secondary">
+                <span class="report-btn-icon">ℹ️</span>
+                <span class="report-btn-info">33700.fr — En savoir plus sur le service<small>Transfert gratuit depuis un mobile</small></span>
+              </a>
+            </div>
+            <div class="report-tip" id="rp-phone-tip" style="margin-top:0.5rem;">
+              📱 <strong>Comment signaler un SMS spam :</strong> transférez le SMS au <strong>33700</strong>, puis envoyez le numéro de l'expéditeur dans un 2ème SMS.
+            </div>
+          </div>
+
+          <!-- Signalement communauté Vérif'Tout -->
+          <div class="report-community-row">
+            <span class="rci">👥</span>
+            <p><strong>Base communauté Vérif'Tout</strong> — <button onclick="signalerContenu()" id="btn-signaler-inner" style="background:none;border:none;color:var(--danger);font-weight:600;cursor:pointer;font-family:inherit;font-size:inherit;padding:0;">Signaler dans notre base</button> pour alerter les autres utilisateurs.</p>
+          </div>
+
+          <div class="report-close-row">
+            <button class="report-close-btn" onclick="toggleReportPanel()">✕ Fermer</button>
+          </div>
         </div>
 
         <!-- Free lock -->
@@ -1742,6 +1915,7 @@ window.clearAll = function() {
   document.getElementById('result-action-row').style.display = 'none';
   document.getElementById('community-badge').classList.remove('show');
   document.getElementById('gsb-badge').classList.remove('show');
+  document.getElementById('report-panel').classList.remove('show');
   lastResult = null;
   showToast('Champs effacés');
 };
@@ -1803,15 +1977,93 @@ async function checkSignalements(hash) {
   } catch { return 0; }
 }
 
+// ── PANNEAU SIGNALEMENT MULTI-DESTINATIONS ────────────────────────────────────
+window.toggleReportPanel = function() {
+  const panel = document.getElementById('report-panel');
+  const isOpen = panel.classList.contains('show');
+  if (isOpen) { panel.classList.remove('show'); return; }
+  buildReportPanel();
+  panel.classList.add('show');
+  panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+};
+
+function buildReportPanel() {
+  if (!lastResult) return;
+  const val = inputMode === 'url'
+    ? document.getElementById('input-url').value.trim()
+    : document.getElementById('input-text').value.trim();
+
+  const s    = lastResult.scores;
+  const isUrl = lastResult.isUrl;
+  const encodedUrl = encodeURIComponent(val);
+
+  // ── Google Safe Browsing (URLs uniquement) ──
+  const gsbSection = document.getElementById('rp-gsb-section');
+  if (isUrl) {
+    gsbSection.style.display = '';
+    // Phishing link
+    const phishLink = document.getElementById('rp-gsb-phish');
+    phishLink.href = `https://safebrowsing.google.com/safebrowsing/report_phish/?url=${encodedUrl}`;
+    phishLink.style.display = (s.phishing >= 18 || s.urlSuspect >= 18) ? 'flex' : 'none';
+    // Malware link
+    const malwareLink = document.getElementById('rp-gsb-malware');
+    malwareLink.href = `https://safebrowsing.google.com/safebrowsing/report_badware/?url=${encodedUrl}`;
+    malwareLink.style.display = (lastResult.score >= 40) ? 'flex' : 'none';
+    // Unwanted software
+    const unwantedLink = document.getElementById('rp-gsb-unwanted');
+    unwantedLink.href = `https://safebrowsing.google.com/safebrowsing/report_unwanted/?url=${encodedUrl}`;
+    unwantedLink.style.display = (lastResult.score >= 30) ? 'flex' : 'none';
+    // S'assurer qu'au moins le lien phishing s'affiche si URL analysée
+    if (phishLink.style.display === 'none' && malwareLink.style.display === 'none') {
+      phishLink.style.display = 'flex';
+    }
+  } else {
+    gsbSection.style.display = 'none';
+  }
+
+  // ── Signal-Spam (texte + score spam) ──
+  const spamSection = document.getElementById('rp-spam-section');
+  spamSection.style.display = (s.spam >= 15 || (!isUrl && lastResult.score >= 18)) ? '' : 'none';
+
+  // ── Téléphone 33700 ──
+  const phoneSection = document.getElementById('rp-phone-section');
+  phoneSection.style.display = (s.phone >= 15) ? '' : 'none';
+  if (s.phone >= 15) {
+    // Pré-remplir le lien sms avec le numéro source si détecté
+    const FR_PHONE_RE = /(?:(?:\+33|0033|33)[\s.\-]?|0)([67]\d{8}|[1-9]\d{8})/;
+    const phoneMatch = val.match(FR_PHONE_RE);
+    const smsBtn = document.getElementById('rp-sms-33700');
+    if (phoneMatch) {
+      smsBtn.dataset.phoneNum = phoneMatch[0].trim();
+      smsBtn.querySelector('.report-btn-info small').textContent = `Expéditeur suspect : ${phoneMatch[0].trim()} — Copier pour signaler`;
+    }
+  }
+}
+
+window.copy33700 = function(e) {
+  e.preventDefault();
+  const btn = e.currentTarget;
+  const num = btn.dataset.phoneNum || '(numéro détecté non disponible)';
+  const msg = `Transférez votre SMS suspect au 33700, puis envoyez le numéro expéditeur : ${num}`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(num).then(() => {
+      showToast(`✓ Numéro ${num} copié — transférez votre SMS au 33700`);
+    });
+  } else {
+    showToast('Transférez ce SMS au 33700 et envoyez le numéro expéditeur');
+  }
+};
+
 window.signalerContenu = async function() {
   if (!currentUser) { openAuthModal(); showToast('Connectez-vous pour signaler'); return; }
   const val = inputMode === 'url'
     ? document.getElementById('input-url').value.trim()
     : document.getElementById('input-text').value.trim();
   if (!val || !lastResult) return;
-  const btn = document.getElementById('btn-signaler');
-  btn.disabled = true;
-  btn.textContent = '⏳';
+  const btn      = document.getElementById('btn-signaler');
+  const btnInner = document.getElementById('btn-signaler-inner');
+  if (btn)      { btn.disabled = true; }
+  if (btnInner) { btnInner.disabled = true; btnInner.textContent = '⏳'; }
   try {
     const hash = await hashContent(val);
     const ref  = doc(db, 'verifTOUT_signalements', hash);
@@ -1840,15 +2092,15 @@ window.signalerContenu = async function() {
         score:         lastResult.score
       });
     }
-    btn.textContent = '✓ Signalé';
+    if (btn)      { btn.textContent = '✓ Signalé'; }
+    if (btnInner) { btnInner.textContent = '✓ Signalé dans notre base'; btnInner.disabled = true; }
     showToast('✓ Signalement enregistré — merci pour la communauté');
-    // Mettre à jour le badge
     const newCount = snap.exists() ? (snap.data().reportCount || 0) + 1 : 1;
     showCommunityBadge(newCount);
   } catch(e) {
     console.error('Signalement error:', e);
-    btn.disabled = false;
-    btn.textContent = '🚨 Signaler';
+    if (btn)      { btn.disabled = false; }
+    if (btnInner) { btnInner.disabled = false; btnInner.textContent = 'Signaler dans notre base'; }
     showToast('Erreur lors du signalement');
   }
 };
