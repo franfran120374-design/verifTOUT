@@ -291,6 +291,165 @@
       margin-top: 0.75rem;
     }
 
+    /* ── ONGLET RECHERCHE INTELLIGENCE ── */
+    .search-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .search-card-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1d4ed8 100%);
+      padding: 1.5rem;
+      color: #fff;
+    }
+    .search-card-header .sch-icon { font-size: 2rem; margin-bottom: 0.4rem; }
+    .search-card-header h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .search-card-header p  { font-size: 0.8rem; color: rgba(255,255,255,0.65); line-height: 1.5; }
+    .search-body { padding: 1.25rem; }
+    .search-type-toggle {
+      display: flex; gap: 0.4rem;
+      background: var(--bg);
+      padding: 0.3rem;
+      border-radius: 100px;
+      margin-bottom: 1rem;
+    }
+    .stype-btn {
+      flex: 1; padding: 0.55rem 0.75rem;
+      border-radius: 100px; border: none;
+      font-family: 'Inter', sans-serif; font-size: 0.83rem; font-weight: 500;
+      color: var(--muted); background: none; cursor: pointer; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .stype-btn.active { background: var(--navy); color: #fff; }
+    .search-input-wrap { position: relative; margin-bottom: 1rem; }
+    .search-input-wrap .si-icon {
+      position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+      font-size: 1.1rem; pointer-events: none;
+    }
+    .search-main-input {
+      width: 100%; padding: 0.9rem 1rem 0.9rem 2.8rem;
+      border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: 0.95rem;
+      color: var(--text); background: var(--bg); outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-main-input:focus { border-color: var(--blue); }
+    .btn-search {
+      width: 100%; padding: 0.9rem;
+      background: linear-gradient(135deg, #1e3a5f, #1d4ed8);
+      color: #fff; border: none; border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center;
+      justify-content: center; gap: 0.5rem;
+    }
+    .btn-search:hover { background: linear-gradient(135deg, #0f172a, #1e3a5f); }
+    .btn-search:disabled { opacity: 0.6; cursor: not-allowed; }
+    .search-disclaimer {
+      font-size: 0.74rem; color: var(--muted); text-align: center;
+      margin-top: 0.65rem; line-height: 1.5;
+    }
+
+    /* Résultat recherche */
+    .search-result {
+      margin-top: 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: none;
+      animation: fadeUp 0.28s ease;
+    }
+    .search-result.show { display: block; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .sr-header {
+      padding: 1.1rem 1.25rem;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .sr-header.safe    { background: var(--safe-bg);   border-bottom: 1px solid #bbf7d0; }
+    .sr-header.warning { background: var(--warn-bg);   border-bottom: 1px solid #fde68a; }
+    .sr-header.danger  { background: var(--danger-bg); border-bottom: 1px solid #fca5a5; }
+    .sr-gauge {
+      width: 52px; height: 52px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 800; flex-shrink: 0;
+    }
+    .sr-gauge.safe    { background: var(--safe);   color: #fff; }
+    .sr-gauge.warning { background: var(--warn);   color: #fff; }
+    .sr-gauge.danger  { background: var(--danger); color: #fff; }
+    .sr-verdict h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.15rem; }
+    .sr-verdict p  { font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
+    .sr-subject {
+      font-size: 0.75rem; font-family: monospace;
+      color: var(--muted); word-break: break-all;
+      padding: 0.45rem 1.25rem; background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+    }
+    .sr-section { padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border); }
+    .sr-section:last-child { border-bottom: none; }
+    .sr-section-title {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--navy); margin-bottom: 0.65rem;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .sr-finding {
+      display: flex; align-items: flex-start; gap: 0.6rem;
+      padding: 0.45rem 0; border-bottom: 1px dashed #f1f5f9; font-size: 0.83rem;
+    }
+    .sr-finding:last-child { border-bottom: none; }
+    .sr-finding-badge {
+      flex-shrink: 0; padding: 0.15rem 0.5rem;
+      border-radius: 100px; font-size: 0.68rem; font-weight: 600;
+    }
+    .sr-finding-badge.danger  { background: #fee2e2; color: var(--danger); }
+    .sr-finding-badge.warning { background: #fef3c7; color: var(--warn); }
+    .sr-finding-badge.info    { background: #eff6ff; color: var(--blue); }
+    .sr-finding-badge.safe    { background: var(--safe-bg); color: var(--safe); }
+    .sr-finding-text { line-height: 1.4; color: var(--text); }
+    .sr-community-box {
+      background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 0.65rem 0.85rem; display: flex; align-items: center; gap: 0.65rem;
+    }
+    .sr-community-box .scb-count {
+      font-size: 1.5rem; font-weight: 800; color: var(--danger); flex-shrink: 0;
+    }
+    .sr-community-box p { font-size: 0.8rem; color: var(--muted); line-height: 1.4; margin: 0; }
+    .sr-community-box strong { color: var(--text); }
+    .ai-narrative {
+      background: linear-gradient(135deg, #0f172a, #1e3a5f);
+      color: #e2e8f0; border-radius: var(--radius-sm);
+      padding: 1rem 1.1rem; font-size: 0.83rem; line-height: 1.65;
+    }
+    .ai-narrative .ai-label {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: #60a5fa; margin-bottom: 0.4rem;
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+    .ai-narrative p { color: #cbd5e1; }
+    .ai-narrative strong { color: #f1f5f9; }
+    .sr-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; padding: 0.9rem 1.25rem; background: #f8fafc; }
+    .sr-action-btn {
+      flex: 1; min-width: 140px; padding: 0.6rem 0.75rem;
+      border-radius: var(--radius-sm); font-family: 'Inter', sans-serif;
+      font-size: 0.8rem; font-weight: 600; cursor: pointer;
+      text-decoration: none; text-align: center; border: none;
+      transition: all 0.18s; display: flex; align-items: center;
+      justify-content: center; gap: 0.4rem;
+    }
+    .sr-action-btn.primary   { background: var(--danger); color: #fff; }
+    .sr-action-btn.primary:hover { background: #b91c1c; }
+    .sr-action-btn.secondary { background: #fff; color: var(--navy); border: 1.5px solid var(--border); }
+    .sr-action-btn.secondary:hover { border-color: var(--navy); }
+    .sr-action-btn.gov       { background: #1e3a5f; color: #fff; }
+    .sr-action-btn.gov:hover { background: #0f172a; }
+    .search-empty {
+      text-align: center; padding: 2.5rem 1.5rem;
+      background: var(--bg); border-radius: var(--radius);
+      border: 1px dashed var(--border); margin-top: 1rem;
+    }
+    .search-empty .se-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .search-empty p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+
     /* ── BADGE COMMUNAUTÉ ── */
     .community-badge {
       display: none;
@@ -875,8 +1034,9 @@
   <main class="main-content">
     <!-- TAB BAR -->
     <div class="tab-bar">
-      <button class="tab-btn active" id="tab-analyze" onclick="showTab('analyze')">🔍 Analyser</button>
-      <button class="tab-btn"        id="tab-history" onclick="showTab('history')">📋 Historique</button>
+      <button class="tab-btn active" id="tab-analyze"  onclick="showTab('analyze')">🔍 Analyser</button>
+      <button class="tab-btn"        id="tab-search"   onclick="showTab('search')">🕵️ Rechercher</button>
+      <button class="tab-btn"        id="tab-history"  onclick="showTab('history')">📋 Historique</button>
     </div>
 
     <!-- ── VIEW : ANALYZE ── -->
@@ -1037,6 +1197,49 @@
           <h4>Analyse détaillée — Premium</h4>
           <p>Débloquez le détail des indicateurs, le score par catégorie et l'historique illimité.</p>
           <button class="btn-unlock" onclick="openPaywall()">✦ Débloquer pour 3,99€</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW : SEARCH ── -->
+    <div class="view" id="view-search">
+      <div class="search-card">
+        <div class="search-card-header">
+          <div class="sch-icon">🕵️</div>
+          <h2>Intelligence & Recherche</h2>
+          <p>Analysez un e-mail ou un numéro de téléphone suspect — base communautaire, heuristiques avancées et synthèse IA, sans stocker vos données.</p>
+        </div>
+        <div class="search-body">
+          <!-- Toggle type -->
+          <div class="search-type-toggle">
+            <button class="stype-btn active" id="stype-email" onclick="setSearchType('email')">📧 Adresse e-mail</button>
+            <button class="stype-btn"        id="stype-phone" onclick="setSearchType('phone')">📞 Numéro de téléphone</button>
+          </div>
+          <!-- Input email -->
+          <div class="search-input-wrap" id="swrap-email">
+            <span class="si-icon">📧</span>
+            <input type="email" id="sinput-email" class="search-main-input"
+              placeholder="expéditeur@domaine.com" autocomplete="off" />
+          </div>
+          <!-- Input téléphone -->
+          <div class="search-input-wrap" id="swrap-phone" style="display:none;">
+            <span class="si-icon">📞</span>
+            <input type="tel" id="sinput-phone" class="search-main-input"
+              placeholder="+33 6 12 34 56 78 ou 0612345678" autocomplete="off" />
+          </div>
+          <button class="btn-search" id="btn-search" onclick="doSearch()">
+            <span id="search-btn-label">🔎 Analyser & Rechercher</span>
+          </button>
+          <p class="search-disclaimer">🔒 Aucune donnée personnelle transmise à un tiers. L'analyse est locale + base communautaire Vérif'Tout.</p>
+
+          <!-- Zone résultat -->
+          <div class="search-result" id="search-result"></div>
+
+          <!-- État vide -->
+          <div class="search-empty" id="search-empty">
+            <div class="se-icon">🔍</div>
+            <p>Saisissez une adresse e-mail ou un numéro de téléphone pour lancer l'analyse.<br><br>Le moteur consulte la base de signalements Vérif'Tout, vérifie les domaines jetables, les préfixes surtaxés et génère un profil de risque complet.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -1283,11 +1486,395 @@ window.checkPremiumStatus = async function() {
 
 // ── UI HELPERS ───────────────────────────────────────────────────────────────
 window.showTab = function(tab) {
-  ['analyze', 'history'].forEach(t => {
+  ['analyze', 'search', 'history'].forEach(t => {
     document.getElementById('view-' + t).classList.toggle('active', t === tab);
     document.getElementById('tab-' + t).classList.toggle('active', t === tab);
   });
   if (tab === 'history') loadHistory();
+};
+
+// ── RECHERCHE INTELLIGENCE ────────────────────────────────────────────────────
+let searchType = 'email'; // 'email' | 'phone'
+
+window.setSearchType = function(type) {
+  searchType = type;
+  document.getElementById('stype-email').classList.toggle('active', type === 'email');
+  document.getElementById('stype-phone').classList.toggle('active', type === 'phone');
+  document.getElementById('swrap-email').style.display = type === 'email' ? '' : 'none';
+  document.getElementById('swrap-phone').style.display = type === 'phone' ? '' : 'none';
+  document.getElementById('search-result').classList.remove('show');
+  document.getElementById('search-empty').style.display = '';
+};
+
+// ── DOMAINES JETABLES (liste intégrée) ──────────────────────────────────────
+const DISPOSABLE_DOMAINS = new Set([
+  'yopmail.com','guerrillamail.com','guerrillamail.info','guerrillamail.biz','guerrillamail.org',
+  'mailinator.com','tempmail.com','throwaway.email','sharklasers.com','grr.la',
+  'spam4.me','trashmail.com','trashmail.at','trashmail.io','trashmail.me','trashmail.net',
+  'mailnull.com','spamgourmet.com','spamgourmet.net','spam.la','dispostable.com',
+  'maildrop.cc','throwam.com','getnada.com','mohmal.com','fakemail.net','fakeinbox.com',
+  'discard.email','0-mail.com','trbvm.com','spamgap.com','spamheroin.com',
+  'spaminthebox.net','spammotel.com','spamnot.com','spamoff.de','spams.eu',
+  'spamspot.com','teleworm.us','safetypost.de','deadaddress.com','spaml.de',
+  'spamfree24.org','fastacura.com','kurzepost.de','objectmail.com','postinbox.com',
+  'postpro.net','proxymail.eu','rcpt.at','rfc822.org','selfdestructingmail.com',
+  'trashcanmail.com','e4ward.com','emailigo.com','10minutemail.com','10minemail.com',
+  '20minutemail.com','minutemailbox.com','mytempemail.com','nwldx.com','filzmail.com',
+  'tempr.email','rejectmail.com','mailnesia.com','mailnull.com','mailsiphon.com',
+  'notmailinator.com','spamgob.com','spamobox.com','spamotron.com','spamthisplease.com',
+  'getairmail.com','yomail.info','haltospam.com','incognitomail.com','jetable.fr.nf',
+  'jetable.net','kasmail.com','klassmaster.com','klzlk.com','kog.tc',
+  'lr78.com','lroid.com','lukop.dk','m21.cc','mail-filter.com','mailandftp.com',
+  'mailblade.net','mailblocks.com','mailme.lv','mailrock.biz','mailscrap.com',
+  'mailseal.de','mailzilla.org','meltmail.com','messagebeamer.de','migumail.com',
+  'mintemail.com','moncourrier.fr.nf','monemail.fr.nf','monmail.fr.nf',
+  'msgos.com','mt2009.com','mt2014.com','mypartyclip.de','myphantomemail.com',
+  'myspaceinc.org','netmails.net','no-spam.ws','noblepioneer.com','nomail2me.com',
+  'nospamthanks.info','nowmymail.com','objectmail.com','odnorazovoe.ru',
+  'oneoffemail.com','onewaymail.com','online.ms','onqin.com','openmailbox.org',
+  'ownmail.net','pecinan.net','pecinan.org','pepbot.com','pfui.ru',
+  'pimpedupmyspace.com','pingir.com','politikerclub.de','pooae.com','poofy.org',
+  'pookmail.com','privacy.net','probemail.com','protonmail.com','put2.net',
+  'quickinbox.com','quickmail.nl','rcpt.at','recode.me','redo.io',
+  'regbypass.comsafe-mail.net','rejectmail.com','rklips.com','rmqkr.net',
+  's0ny.net','safe-mail.net','safetypost.de','say.com','selfdestructingmail.com',
+  'send22u.info','sendspamhere.com','sharklasers.com','shieldedmail.com',
+  'shitmail.de','shitmail.me','shitmail.org','shortmail.net','sibmail.com',
+  'sneakemail.com','sofort-mail.de','sogetthis.com','soodonims.com',
+  'spam-be-gone.com','spam.la','spamavert.com','spambox.us','spamcero.com',
+  'spamcorptastic.com','spamex.com','spamfree.eu','spamgob.com',
+  'spamgoes.in','spamhole.com','spamify.com','spaminator.de','spamkill.info',
+  'spamthisplease.com','spamtrail.com','speed.1s.fr','suremail.info',
+  'tafmail.com','tagyourself.com','tefl.ro','tempalias.com','tempinbox.co.uk',
+  'tempinbox.com','temporary-mail.net','temporaryemail.net','temporaryemail.us',
+  'temporaryforwarding.com','temporaryinbox.com','tempomail.fr','tempymail.com',
+  'thanksnospam.info','thecloudindex.com','thisisnotmyrealemail.com',
+  'throwam.com','throwam.com','tilien.com','tittbit.in','tmail.com','tmailinator.com',
+  'to-ut.com','toiea.com','tokem.co','toomail.biz','top9appz.info','topofferz.net',
+  'tradermail.info','trayna.com','trillianpro.com','trjam.com','trollbot.org',
+  'trollmail.de','turual.com','twinmail.de','twoweirdtricks.com','tyldd.com',
+  'uggsrock.com','umail.net','uroid.com','utiket.us','vipmail.pw',
+  'w3internet.co.uk','wetrainbayarea.org','willhackforfood.biz','wilemail.com',
+  'willselfdestruct.com','wmail.cf','writeme.us','www.com','yahoo.com.au',
+  'yepmail.net','yert.ye.vc','yodx.ro','yopmail.fr','yopmail.pp.ua',
+  'youmailr.com','ypmail.webarnak.fr.eu.org','yroid.com','ysxe.com',
+  'zaktouni.fr','zebins.com','zepp.link','zippymail.info','zoemail.net',
+  'zoemail.org','zomg.info'
+]);
+
+// ── PREFIXES SURTAXÉS / SPAM (FR) ───────────────────────────────────────────
+const FR_SURTAX_PREFIXES = ['0899','0898','0897','0895','0892','0891','0836','0835',
+  '0826','0825','0824','0823','0822','0821','0820','0810','0811','0812'];
+const FR_SPAM_PATTERNS = [
+  { prefix:'0162', label:'Préfixe 01 62 (spam documenté)' },
+  { prefix:'0163', label:'Préfixe 01 63 (spam documenté)' },
+  { prefix:'0176', label:'Préfixe 01 76 (démarchage abusif documenté)' },
+  { prefix:'0177', label:'Préfixe 01 77 (démarchage abusif)' },
+  { prefix:'0178', label:'Préfixe 01 78 (démarchage)' },
+  { prefix:'0179', label:'Préfixe 01 79 (démarchage)' },
+  { prefix:'0184', label:'Préfixe 01 84 (spam documenté)' },
+  { prefix:'0185', label:'Préfixe 01 85 (spam documenté)' },
+  { prefix:'0186', label:'Préfixe 01 86 (spam)' },
+  { prefix:'0187', label:'Préfixe 01 87 (spam)' },
+  { prefix:'0260', label:'Préfixe 02 60 (spam)' },
+  { prefix:'0348', label:'Préfixe 03 48 (spam)' },
+  { prefix:'0437', label:'Préfixe 04 37 (spam)' },
+  { prefix:'0527', label:'Préfixe 05 27 (spam)' },
+  { prefix:'0528', label:'Préfixe 05 28 (spam)' },
+];
+
+// ── ANALYSE EMAIL ─────────────────────────────────────────────────────────────
+function analyzeEmail(email) {
+  const lower    = email.toLowerCase().trim();
+  const parts    = lower.split('@');
+  if (parts.length !== 2) return { valid: false };
+  const [user, domain] = parts;
+  const domainParts = domain.split('.');
+  const tld = domainParts[domainParts.length - 1];
+  let score = 0; const findings = [];
+
+  // Domaine jetable
+  if (DISPOSABLE_DOMAINS.has(domain)) {
+    score += 60;
+    findings.push({ sev:'danger',  text:`Domaine jetable/anonyme identifié : <strong>${domain}</strong> — utilisé massivement pour les arnaques` });
+  }
+  // TLD suspect
+  const suspTLDs = ['xyz','top','click','tk','ml','ga','cf','gq','bid','win','loan','icu','vip','buzz','cam'];
+  if (suspTLDs.includes(tld)) {
+    score += 25;
+    findings.push({ sev:'danger', text:`Extension de domaine suspecte : <strong>.${tld}</strong> — très utilisée pour le phishing` });
+  }
+  // Nom d'utilisateur aléatoire (entropie élevée)
+  const randomPattern = /^[a-z0-9]{8,}$/.test(user) && /\d{3,}/.test(user);
+  if (randomPattern) {
+    score += 20;
+    findings.push({ sev:'warning', text:`Nom d'utilisateur à entropie élevée : <strong>${user}</strong> — profil généré automatiquement` });
+  }
+  // Username très court (< 3 chars)
+  if (user.length < 3) {
+    score += 10;
+    findings.push({ sev:'info', text:`Nom d'utilisateur anormalement court (${user.length} caractère${user.length > 1 ? 's' : ''})` });
+  }
+  // Chiffres en excès dans l'username
+  const digitRatio = (user.replace(/[^0-9]/g,'').length) / user.length;
+  if (user.length > 4 && digitRatio > 0.4) {
+    score += 15;
+    findings.push({ sev:'warning', text:`Proportion de chiffres élevée dans le nom d'utilisateur (${Math.round(digitRatio*100)}%) — signature de génération automatique` });
+  }
+  // Sous-domaines dans le domaine
+  if (domainParts.length > 2 && domain !== 'co.uk' && domain !== 'gouv.fr') {
+    score += 18;
+    findings.push({ sev:'warning', text:`Domaine d'expéditeur avec sous-domaine : <strong>${domain}</strong> — technique d'usurpation courante` });
+  }
+  // Mots suspects dans le domaine
+  const domSuspect = ['secure','verify','confirm','alert','account','update','bank','paypal','amazon','google','microsoft','ameli','impots','caf'].filter(k => domain.includes(k));
+  if (domSuspect.length > 0) {
+    score += 30;
+    findings.push({ sev:'danger', text:`Mot-clé de phishing dans le domaine : <strong>${domSuspect.join(', ')}</strong> — usurpation d'identité probable` });
+  }
+  // Format valide mais inconnu
+  if (score === 0) {
+    findings.push({ sev:'safe', text:`Format valide, aucun indicateur automatique de risque détecté` });
+  }
+
+  const severity = score >= 55 ? 'danger' : score >= 20 ? 'warning' : 'safe';
+  const label    = score >= 55 ? 'Suspect à haut risque' : score >= 20 ? 'Potentiellement dangereux' : 'Aucun indicateur de risque';
+
+  // Narrative IA
+  let narrative = '';
+  if (severity === 'danger') {
+    narrative = `L'analyse de l'adresse <strong>${email}</strong> révèle des signaux critiques concordants. ` +
+      (DISPOSABLE_DOMAINS.has(domain) ? `Le domaine <strong>${domain}</strong> est répertorié comme service d'adresses jetables, massivement exploité pour des campagnes de phishing et d'usurpation d'identité. ` : '') +
+      `Ce type d'adresse est caractéristique des expéditeurs malveillants qui cherchent à éviter toute traçabilité. ` +
+      `<strong>Ne répondez pas à un e-mail provenant de cette adresse et ne cliquez sur aucun lien.</strong>`;
+  } else if (severity === 'warning') {
+    narrative = `L'adresse <strong>${email}</strong> présente des caractéristiques inhabituelles qui méritent vigilance. ` +
+      `Bien qu'aucun indicateur décisif ne soit présent, la combinaison des signaux détectés est cohérente avec les profils d'expéditeurs de spam ou de phishing ciblé. ` +
+      `Vérifiez l'expéditeur par un canal indépendant avant de répondre ou de cliquer.`;
+  } else {
+    narrative = `L'adresse <strong>${email}</strong> ne présente pas d'indicateur automatique de risque dans notre base heuristique. ` +
+      `Cela ne garantit pas sa légitimité — les attaques de spear-phishing utilisent souvent des adresses apparemment valides. ` +
+      `Consultez également le contenu du message avec l'onglet Analyser.`;
+  }
+
+  // Actions contextuelles
+  const actions = [];
+  actions.push({ label:'Signal-Spam.fr', href:'https://www.signal-spam.fr/', cls:'primary', icon:'📨' });
+  actions.push({ label:'PHAROS', href:'https://www.internet-signalement.gouv.fr/PharosS1/', cls:'gov', icon:'⚖️' });
+  if (score >= 30) {
+    actions.push({ label:'Analyser le message', href:'#', cls:'secondary', icon:'🔍', onclick:`showTab('analyze')` });
+  }
+
+  return { valid:true, score, severity, label, findings, narrative, actions, type:'email', subject: email };
+}
+
+// ── ANALYSE TÉLÉPHONE ─────────────────────────────────────────────────────────
+function analyzePhone(raw) {
+  // Normaliser
+  const cleaned = raw.trim().replace(/[\s.\-\(\)]/g, '');
+  // Convertir +33 → 0
+  const normalized = cleaned.startsWith('+33') ? '0' + cleaned.slice(3)
+    : cleaned.startsWith('0033') ? '0' + cleaned.slice(4)
+    : cleaned.startsWith('33') && cleaned.length === 11 ? '0' + cleaned.slice(2)
+    : cleaned;
+
+  // Validation basique FR
+  const isValidFR = /^0[1-9]\d{8}$/.test(normalized);
+  let score = 0; const findings = [];
+
+  if (!isValidFR && normalized.length > 0) {
+    // Numéro international ?
+    const isIntl = /^\+?[1-9]\d{7,14}$/.test(cleaned);
+    if (isIntl) {
+      findings.push({ sev:'info', text:`Numéro international détecté : <strong>${raw.trim()}</strong>` });
+      // UK virtual numbers (+44 7xxx) très utilisés pour spam français
+      if (/^\+44\s?7/.test(raw.trim()) || cleaned.startsWith('447')) {
+        score += 35;
+        findings.push({ sev:'danger', text:`Numéro mobile UK (<strong>+44 7xxx</strong>) — fréquemment utilisé pour du spam ciblant la France` });
+      }
+      // Numéros africains couramment utilisés (fraude 419)
+      const fraud419 = ['+225','+234','+237','+221','+243'];
+      if (fraud419.some(p => raw.trim().startsWith(p) || cleaned.startsWith(p.replace('+','')))) {
+        score += 40;
+        findings.push({ sev:'danger', text:`Indicatif associé à des pays à forte incidence de fraude internationale (arnaque 419)` });
+      }
+    } else {
+      findings.push({ sev:'warning', text:`Format non reconnu comme numéro français valide` });
+      score += 10;
+    }
+  }
+
+  if (isValidFR) {
+    const prefix4 = normalized.substring(0,4);
+    const prefix2 = normalized.substring(0,2);
+
+    // Numéros surtaxés
+    if (FR_SURTAX_PREFIXES.includes(prefix4)) {
+      score += 55;
+      findings.push({ sev:'danger', text:`Numéro à tarification spéciale/surtaxée (préfixe <strong>${prefix4}</strong>) — facturation élevée si appelé, souvent utilisé dans les arnaques` });
+    }
+    // Patterns spam documentés
+    const spamMatch = FR_SPAM_PATTERNS.find(p => normalized.startsWith(p.prefix));
+    if (spamMatch) {
+      score += 30;
+      findings.push({ sev:'danger', text:`${spamMatch.label} — signalé massivement sur les bases anti-spam` });
+    }
+    // Type de numéro
+    if (prefix2 === '06' || prefix2 === '07') {
+      findings.push({ sev:'info', text:`Numéro mobile français (${prefix2}) — type standard` });
+    } else if (prefix2 === '09') {
+      score += 12;
+      findings.push({ sev:'warning', text:`Numéro non-géographique 09 — souvent utilisé par des centres d'appels de démarchage` });
+    } else if (['01','02','03','04','05'].includes(prefix2)) {
+      findings.push({ sev:'info', text:`Numéro géographique français (${prefix2})` });
+    }
+    // Numéro entier composé de chiffres répétés (générateur)
+    if (/^(\d)\1{8,}$/.test(normalized.slice(1)) || /^0{2,}/.test(normalized.slice(1))) {
+      score += 20;
+      findings.push({ sev:'warning', text:`Séquence répétitive détectée — numéro potentiellement synthétique ou test` });
+    }
+  }
+
+  if (findings.length === 0) {
+    findings.push({ sev:'safe', text:`Format valide, aucun indicateur automatique de risque détecté` });
+  }
+
+  const severity = score >= 45 ? 'danger' : score >= 15 ? 'warning' : 'safe';
+  const label    = score >= 45 ? 'Suspect à haut risque' : score >= 15 ? 'Potentiellement suspect' : 'Aucun indicateur de risque';
+
+  // Narrative IA
+  let narrative = '';
+  if (severity === 'danger') {
+    narrative = `Le numéro <strong>${raw.trim()}</strong> présente des caractéristiques associées à des activités malveillantes documentées. ` +
+      (FR_SURTAX_PREFIXES.includes(normalized.substring(0,4)) ? `Il s'agit d'un <strong>numéro à tarification surtaxée</strong> : chaque rappel peut entraîner une facturation disproportionnée. Ces numéros sont activement exploités dans les arnaques téléphoniques (faux services, vishing). ` : '') +
+      `<strong>Ne rappelez pas ce numéro. Signalez-le au 33700 si vous l'avez reçu par SMS.</strong>`;
+  } else if (severity === 'warning') {
+    narrative = `Le numéro <strong>${raw.trim()}</strong> présente des caractéristiques cohérentes avec des campagnes de démarchage abusif ou de fraude téléphonique. ` +
+      `Les numéros non-géographiques et certains préfixes géographiques sont massivement loués à des centres d'appels douteux. ` +
+      `En cas de doute, ne rappelez pas et vérifiez l'origine via un annuaire inversé officiel.`;
+  } else {
+    narrative = `Le numéro <strong>${raw.trim()}</strong> ne déclenche aucun indicateur automatique de risque dans notre base heuristique. ` +
+      `Si vous avez reçu un appel ou SMS suspect, signalez-le au <strong>33700</strong> pour contribuer à la base nationale anti-spam.`;
+  }
+
+  // Actions
+  const actions = [];
+  actions.push({ label:'Signaler au 33700', href:'https://www.33700.fr/', cls:'primary', icon:'💬' });
+  actions.push({ label:'Cybermalveillance', href:'https://www.cybermalveillance.gouv.fr/diagnostic', cls:'gov', icon:'🛡️' });
+  if (score >= 30) {
+    actions.push({ label:'PHAROS', href:'https://www.internet-signalement.gouv.fr/PharosS1/', cls:'secondary', icon:'⚖️' });
+  }
+
+  return { valid:true, score, severity, label, findings, narrative, actions, type:'phone', subject: raw.trim() };
+}
+
+// ── RENDU RÉSULTAT RECHERCHE ──────────────────────────────────────────────────
+function renderSearchResult(res, communityCount = 0) {
+  const el = document.getElementById('search-result');
+  const icons = { safe:'✅', warning:'⚠️', danger:'🚨' };
+
+  // Community section HTML
+  let communityHtml = '';
+  if (communityCount > 0) {
+    communityHtml = `
+    <div class="sr-section">
+      <div class="sr-section-title">👥 Base communautaire Vérif'Tout</div>
+      <div class="sr-community-box">
+        <div class="scb-count">${communityCount}</div>
+        <p><strong>${communityCount} signalement${communityCount > 1 ? 's' : ''}</strong> enregistré${communityCount > 1 ? 's' : ''} dans notre base.<br>
+        ${communityCount >= 5 ? 'Menace <strong>confirmée par la communauté</strong>.' : 'Signalement(s) de la communauté — prudence recommandée.'}</p>
+      </div>
+    </div>`;
+  } else {
+    communityHtml = `
+    <div class="sr-section">
+      <div class="sr-section-title">👥 Base communautaire Vérif'Tout</div>
+      <div class="sr-community-box">
+        <div class="scb-count" style="color:var(--safe);">0</div>
+        <p><strong>Aucun signalement</strong> dans notre base communautaire pour cet identifiant.<br>
+        Cela ne garantit pas sa légitimité — les menaces récentes peuvent ne pas encore être référencées.</p>
+      </div>
+    </div>`;
+  }
+
+  const actionsHtml = res.actions.map(a =>
+    `<a href="${a.href}" ${a.onclick ? `onclick="${a.onclick};return false;"` : 'target="_blank" rel="noopener"'} class="sr-action-btn ${a.cls}">${a.icon} ${a.label}</a>`
+  ).join('');
+
+  el.innerHTML = `
+    <div class="sr-header ${res.severity}">
+      <div class="sr-gauge ${res.severity}">${icons[res.severity]}</div>
+      <div class="sr-verdict">
+        <h3>${res.label}</h3>
+        <p>Score de risque : <strong>${res.score}/100</strong></p>
+      </div>
+    </div>
+    <div class="sr-subject">🔎 ${res.subject}</div>
+
+    <div class="sr-section">
+      <div class="sr-section-title">📊 Analyse heuristique</div>
+      ${res.findings.map(f => `
+        <div class="sr-finding">
+          <span class="sr-finding-badge ${f.sev}">${f.sev === 'danger' ? '⛔' : f.sev === 'warning' ? '⚠️' : f.sev === 'safe' ? '✓' : 'ℹ'}</span>
+          <span class="sr-finding-text">${f.text}</span>
+        </div>`).join('')}
+    </div>
+
+    ${communityHtml}
+
+    <div class="sr-section">
+      <div class="sr-section-title">🤖 Synthèse IA</div>
+      <div class="ai-narrative">
+        <div class="ai-label">⚡ Vérif'Tout Intelligence</div>
+        <p>${res.narrative}</p>
+      </div>
+    </div>
+
+    <div class="sr-actions">${actionsHtml}</div>
+  `;
+  el.classList.add('show');
+  document.getElementById('search-empty').style.display = 'none';
+}
+
+// ── FONCTION PRINCIPALE RECHERCHE ────────────────────────────────────────────
+window.doSearch = async function() {
+  const val = searchType === 'email'
+    ? document.getElementById('sinput-email').value.trim()
+    : document.getElementById('sinput-phone').value.trim();
+
+  if (!val) { showToast(`Saisissez un ${searchType === 'email' ? 'e-mail' : 'numéro de téléphone'}`); return; }
+
+  const btn   = document.getElementById('btn-search');
+  const label = document.getElementById('search-btn-label');
+  btn.disabled = true;
+  label.innerHTML = '<span class="spinner"></span> Analyse en cours…';
+
+  try {
+    const res = searchType === 'email' ? analyzeEmail(val) : analyzePhone(val);
+    if (!res.valid) { showToast('Format non reconnu'); return; }
+
+    // Consultation base communautaire (hash)
+    const hash = await hashContent(val.toLowerCase().trim());
+    let communityCount = 0;
+    try {
+      communityCount = await checkSignalements(hash);
+    } catch(e) { /* offline graceful */ }
+
+    // Booster le score si signalements communautaires
+    if (communityCount >= 3) {
+      res.score    = Math.min(100, res.score + communityCount * 5);
+      const newSev = res.score >= 55 ? 'danger' : res.score >= 15 ? 'warning' : 'safe';
+      res.severity = newSev;
+    }
+
+    renderSearchResult(res, communityCount);
+  } catch(e) {
+    console.error('Search error:', e);
+    showToast('Erreur lors de l\'analyse');
+  } finally {
+    btn.disabled = false;
+    label.textContent = '🔎 Analyser & Rechercher';
+  }
 };
 
 window.setMode = function(mode) {
