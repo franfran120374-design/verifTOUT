@@ -1047,20 +1047,20 @@
         database.ref('noms_reserves/' + slugName).once('value').then((snap) => {
             if (snap.exists()) {
                 database.ref('colocs/' + secretPath).once('value').then((colocSnap) => {
-                    if (colocSnap.exists()) { 
+                    if (colocSnap.exists()) {
                         if (colocSnap.val().migrated) {
                             alert("Ces identifiants sont obsolètes (modifiés par l'administrateur). Veuillez demander les nouveaux codes.");
                             return;
                         }
-                        validerAcces(u, secretPath, false, "", c); 
+                        validerAcces(u, secretPath, false, "", c);
                     } else { alert(t('alertWrongPass')); }
-                });
+                }).catch(err => alert("Erreur de connexion : " + err.message));
             } else {
                 database.ref('noms_reserves/' + slugName).set(true).then(() => {
                     database.ref('colocs/' + secretPath + '/created').set(true).then(() => { validerAcces(u, secretPath, true, p, c); });
                 }).catch(err => alert(t('alertError') + err.message));
             }
-        });
+        }).catch(err => alert("❌ Erreur Firebase : " + err.message + "\n\nSolution : Firebase Console → Realtime Database → Règles → passer read/write à true."));
     }
 
     function validerAcces(user, path, isNew = false, rawPass = "", rawName = "") {
