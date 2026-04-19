@@ -43,4 +43,11 @@ self.addEventListener('push', event => {
   if (event.data) {
     try {
       const payload = event.data.json();
-      title = payload.notificati
+      title = payload.notification?.title || title;
+      body = payload.notification?.body || body;
+    } catch(e) {}
+  }
+  event.waitUntil(
+    self.registration.showNotification(title, { body })
+  );
+});
