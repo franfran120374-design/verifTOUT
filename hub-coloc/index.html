@@ -1696,7 +1696,10 @@ Raphaël`;
     }
 
     function revoquerAdmin(nom) {
-        if (!confirm(`Révoquer les droits admin de ${nom} ?`)) return;
+        const pwd = prompt(`🔑 Mot de passe de la colocation pour révoquer ${nom} :`);
+        if (pwd === null) return;
+        if (pwd !== (db.password || "")) { alert("❌ Mot de passe incorrect."); return; }
+        if (!confirm(`Révoquer les droits admin de ${nom} et devenir administrateur ?`)) return;
         db.admin = currentUser;
         if (db.demandesAdmin) db.demandesAdmin = db.demandesAdmin.filter(d => d !== nom);
         sync();
@@ -1764,7 +1767,7 @@ Raphaël`;
                     ${m === currentUser ? '<span style="font-size:0.75rem; color:var(--text-muted);">(Moi)</span>' : ''}
                     ${isAdmin && m !== currentUser && m !== currentAdmin ? `<button class="btn-outline" onclick="promouvoirAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#fbc02d; color:#fbc02d;">👑 Promouvoir</button>` : ''}
                     ${isAdmin && hasDemande && m !== currentAdmin ? `<button class="btn-outline" onclick="promouvoirAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#25D366; color:#25D366;">✅ Accepter</button><button class="btn-outline" onclick="refuserDemandeAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#e53935; color:#e53935;">❌ Refuser</button>` : ''}
-                    ${isPlatformOwner && isThisAdmin && m !== currentUser ? `<button class="btn-outline" onclick="revoquerAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#e53935; color:#e53935;">🔑 Révoquer Admin</button>` : ''}
+                    ${isThisAdmin && m !== currentUser ? `<button class="btn-outline" onclick="revoquerAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#e53935; color:#e53935;">🔑 Révoquer Admin</button>` : ''}
                     ${isAdmin && m !== currentUser ? `<button class="btn-danger" onclick="supprimerMembre('${m}')" style="font-size:0.65rem; padding:3px 8px;">✖ Retrait</button>` : ''}
                 </div>
             </div>`;
@@ -1876,7 +1879,7 @@ Raphaël`;
                         ${f.img ? `<div style="margin-top:5px;"><span class="btn-outline" style="font-size:0.7rem; padding:2px 6px; cursor:pointer;" onclick="window.open('${f.img}')">📎 ${t('invoicePhoto')}</span></div>` : ''}
                     </div>
                     <div style="display:flex;gap:4px;">
-                      ${f.p === currentUser || isAdmin || isPlatformOwner ? `<button class="btn-outline" style="margin:0;font-size:0.65rem;padding:3px 7px;width:auto;" onclick="editerDepense(${f.id})">✏ Éditer</button>` : ''}
+                      ${isAdmin || isPlatformOwner ? `<button class="btn-outline" style="margin:0;font-size:0.65rem;padding:3px 7px;width:auto;" onclick="editerDepense(${f.id})">✏ Éditer</button>` : ''}
                       ${f.p === currentUser || isAdmin || isPlatformOwner ? `<button class="btn-danger" style="margin:0;" onclick="del('finances', ${f.id})">✖</button>` : ''}
                     </div>
                 </div>
