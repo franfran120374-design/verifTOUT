@@ -1582,11 +1582,14 @@ Raphaël`;
 
     // ✅ FONCTIONS PREMIUM
     async function checkPremiumStatus(email) {
+        // Propriétaire de la plateforme — accès permanent
+        if (email === 'franfran120374@gmail.com') return true;
         try {
             const snapshot = await firestore.collection('users').where('email', '==', email).get();
             if (!snapshot.empty) {
                 const userData = snapshot.docs[0].data();
-                return !!(userData.subscriptions && userData.subscriptions['hub-coloc'] && userData.subscriptions['hub-coloc'].premium === true);
+                const sub = userData.subscriptions && userData.subscriptions['hub-coloc'];
+                return !!(sub && (sub.premium === true || sub.active === true));
             }
         } catch(e) { console.warn("Erreur vérification premium:", e); }
         return false;
