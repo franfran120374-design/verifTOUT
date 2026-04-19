@@ -1864,7 +1864,10 @@ Raphaël`;
         `).join('');
         
         document.getElementById('fin-payeur').innerHTML = membresArr.map(m => `<option value="${m}">${m}</option>`).join('');
-        document.getElementById('fin-involves').innerHTML = membresArr.map(m => `<label><input type="checkbox" class="fin-check" value="${m}" checked> ${m}</label>`).join('');
+        const existingChecked = new Set(Array.from(document.querySelectorAll('.fin-check:checked')).map(c => c.value));
+        const finInvolves = document.getElementById('fin-involves');
+        const hasExisting = finInvolves.children.length > 0;
+        finInvolves.innerHTML = membresArr.map(m => `<label><input type="checkbox" class="fin-check" value="${m}" ${!hasExisting || existingChecked.has(m) ? 'checked' : ''}> ${m}</label>`).join('');
         
         document.getElementById('historique-finances').innerHTML = getSafeArray(db.finances).slice().reverse().map(f => {
             const isSettled = (f.owers || f.parts || []).every(o => o.settled);
