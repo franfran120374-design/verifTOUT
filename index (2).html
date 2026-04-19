@@ -281,7 +281,7 @@
             <span id="user-badge" style="font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; display:flex; align-items:center; gap:5px;">
                 <img id="header-avatar" src="" style="width:24px; height:24px; border-radius:50%; display:none; object-fit:cover;">
                 <span id="header-name"></span>
-                <span id="premium-badge" class="premium-badge" style="display:none;">⭐ PREMIUM</span> <button id="btn-prefs-hub" style="display:none;background:rgba(255,255,255,.15);border:none;cursor:pointer;font-size:1rem;padding:.2rem .5rem;border-radius:6px;color:white;" onclick="openPrefs_hub_coloc()" aria-label="Thème">⚙️</button> <button id="btn-prefs-hub" style="display:none;background:rgba(255,255,255,.15);border:none;cursor:pointer;font-size:1rem;padding:.2rem .5rem;border-radius:6px;color:white;" onclick="openPrefs_hub_coloc()" aria-label="Thème">⚙️</button>
+                <span id="premium-badge" class="premium-badge" style="display:none;">⭐ PREMIUM</span> <button id="btn-prefs-hub" style="display:none;background:rgba(255,255,255,.15);border:none;cursor:pointer;font-size:1rem;padding:.2rem .5rem;border-radius:6px;color:white;" onclick="openPrefs_hub_coloc()" aria-label="Thème">⚙️</button>
             </span>
         </header>
 
@@ -1587,7 +1587,6 @@ Raphaël`;
             sync();
             alert("⭐ Premium activé ! Colocataires illimités débloqués.");
         const pb=document.getElementById('btn-prefs-hub'); if(pb) pb.style.display='inline-block';
-        const pb=document.getElementById('btn-prefs-hub'); if(pb) pb.style.display='inline-block';
         } else {
             alert("❌ Aucun abonnement Premium trouvé pour cet e-mail.\n\nAbonnez-vous d'abord sur VérifTOUT.");
         }
@@ -1657,8 +1656,27 @@ Raphaël`;
     function promouvoirAdmin(nom) {
         if (!confirm(`Voulez-vous vraiment donner le rôle d'administrateur à ${nom} ?`)) return;
         db.admin = nom;
+        if (db.demandesAdmin) db.demandesAdmin = db.demandesAdmin.filter(d => d !== nom);
         sync();
         alert(`👑 ${nom} est maintenant administrateur.`);
+    }
+
+    function refuserDemandeAdmin(nom) {
+        if (!confirm(`Refuser la demande admin de ${nom} ?`)) return;
+        if (db.demandesAdmin) db.demandesAdmin = db.demandesAdmin.filter(d => d !== nom);
+        sync();
+        alert(`❌ Demande de ${nom} refusée.`);
+    }
+
+    function revoquerAdmin(nom) {
+        const pwd = prompt(`🔑 Entrez le mot de passe de la colocation pour révoquer les droits admin de ${nom} :`);
+        if (pwd === null) return;
+        if (pwd !== (db.password || "")) { alert("❌ Mot de passe incorrect."); return; }
+        if (!confirm(`Révoquer l'admin ${nom} et devenir administrateur à sa place ?`)) return;
+        db.admin = currentUser;
+        if (db.demandesAdmin) db.demandesAdmin = db.demandesAdmin.filter(d => d !== currentUser);
+        sync();
+        alert(`✅ Vous êtes maintenant administrateur. ${nom} a perdu ses droits.`);
     }
 
     function reclamerAdmin() {
@@ -1719,8 +1737,9 @@ Raphaël`;
                 <span>👤 <b>${m}</b> ${isThisAdmin ? '<span style="color:var(--danger); font-weight:bold;">👑 Admin</span>' : ''}</span>
                 <div style="display:flex; gap:5px; margin-left:auto; flex-wrap:wrap;">
                     ${m === currentUser ? '<span style="font-size:0.75rem; color:var(--text-muted);">(Moi)</span>' : ''}
-                    ${isAdmin && m !== currentUser && m !== currentAdmin ? `<button class="btn-outline" onclick="promouvoirAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#fbc02d; color:#fbc02d;">👑 Admin</button>` : ''}
-                    ${isAdmin && hasDemande && m !== currentAdmin ? `<span style="font-size:0.65rem; color:#fbc02d; font-weight:bold;">🙋 Demande admin</span>` : ''}
+                    ${isAdmin && m !== currentUser && m !== currentAdmin ? `<button class="btn-outline" onclick="promouvoirAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#fbc02d; color:#fbc02d;">👑 Promouvoir</button>` : ''}
+                    ${isAdmin && hasDemande && m !== currentAdmin ? `<button class="btn-outline" onclick="promouvoirAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#25D366; color:#25D366;">✅ Accepter</button><button class="btn-outline" onclick="refuserDemandeAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#e53935; color:#e53935;">❌ Refuser</button>` : ''}
+                    ${!isAdmin && isThisAdmin && m === currentAdmin ? `<button class="btn-outline" onclick="revoquerAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#e53935; color:#e53935;">🔄 Révoquer</button>` : ''}
                     ${isAdmin && m !== currentUser ? `<button class="btn-danger" onclick="supprimerMembre('${m}')" style="font-size:0.65rem; padding:3px 8px;">✖ Retrait</button>` : ''}
                 </div>
             </div>`;
@@ -2037,96 +2056,6 @@ loadTheme_hub_coloc();
 })();
 
 
-// ── THEME ENGINE ──
-const THEMES_hub_coloc = {
-  vert: { id:'vert', label:'💚 Vert', dot:'#075E54', vars:{'--primary':'#25D366', '--primary-dark':'#075E54', '--tab-active-color':'#075E54', '--tab-active-bg':'#25D366', '--header-bg':'#075E54', '--tab-active-text':'#ffffff'}, night:false },
-  night: { id:'night', label:'🌙 Nuit', dot:'#0f172a', vars:{'--primary':'#3b82f6', '--primary-dark':'#0f172a', '--tab-active-color':'#60a5fa', '--tab-active-bg':'#1e293b', '--header-bg':'#0f172a', '--tab-active-text':'#ffffff'}, night:true },
-  ocean: { id:'ocean', label:'🌊 Océan', dot:'#1e3a5f', vars:{'--primary':'#3b82f6', '--primary-dark':'#1e3a5f', '--tab-active-color':'#1e3a5f', '--tab-active-bg':'#dbeafe', '--header-bg':'#1e3a5f', '--tab-active-text':'#ffffff'}, night:false },
-  bordeaux: { id:'bordeaux', label:'🔴 Bordeaux', dot:'#7f1d1d', vars:{'--primary':'#ef4444', '--primary-dark':'#7f1d1d', '--tab-active-color':'#7f1d1d', '--tab-active-bg':'#fee2e2', '--header-bg':'#7f1d1d', '--tab-active-text':'#ffffff'}, night:false },
-  violet: { id:'violet', label:'⚡ Violet', dot:'#4c1d95', vars:{'--primary':'#7c3aed', '--primary-dark':'#4c1d95', '--tab-active-color':'#4c1d95', '--tab-active-bg':'#f3e8ff', '--header-bg':'#4c1d95', '--tab-active-text':'#ffffff'}, night:false },
-};
-
-let currentThemeId_hub_coloc = 'vert';
-let pendingThemeId_hub_coloc = 'vert';
-
-function applyTheme_hub_coloc(themeId) {
-  const theme = THEMES_hub_coloc[themeId] || THEMES_hub_coloc['vert'];
-  const root = document.documentElement;
-  Object.entries(theme.vars).forEach(([k,v]) => root.style.setProperty(k,v));
-  document.body.classList.toggle('theme-night-hub_coloc', theme.night);
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = theme.vars['--header-bg'] || theme.vars['--tab-active-color'] || '';
-  currentThemeId_hub_coloc = themeId;
-  document.querySelectorAll('#theme-grid-hub-coloc .theme-swatch').forEach(s => {
-    s.classList.toggle('selected', s.dataset.theme === themeId);
-  });
-}
-
-async function applyAndSaveTheme_hub_coloc() {
-  applyTheme_hub_coloc(pendingThemeId_hub_coloc);
-  currentThemeId_hub_coloc = pendingThemeId_hub_coloc;
-  try { localStorage.setItem('hubcoloc_theme', pendingThemeId_hub_coloc); } catch {}
-  
-  closePrefs_hub_coloc();
-  if (typeof showToast === 'function') showToast('✓ Thème appliqué !');
-  else { const t=document.createElement('div'); t.textContent='✓ Thème appliqué !'; t.style='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e3a5f;color:#fff;padding:.6rem 1.25rem;border-radius:100px;font-size:.82rem;z-index:9999;'; document.body.appendChild(t); setTimeout(()=>t.remove(),2500); }
-}
-
-function loadTheme_hub_coloc() {
-  let id = 'vert';
-  try { const ls = localStorage.getItem('hubcoloc_theme'); if (ls && THEMES_hub_coloc[ls]) id = ls; } catch {}
-  applyTheme_hub_coloc(id);
-}
-
-window.openPrefs_hub_coloc = function() {
-  pendingThemeId_hub_coloc = currentThemeId_hub_coloc;
-  const grid = document.getElementById('theme-grid-hub-coloc');
-  if (!grid) return;
-  grid.innerHTML = Object.values(THEMES_hub_coloc).map(t => `
-    <div class="theme-swatch ${t.id === pendingThemeId_hub_coloc ? 'selected' : ''}"
-         data-theme="${t.id}" role="radio" aria-checked="${t.id === pendingThemeId_hub_coloc}"
-         tabindex="0"
-         onclick="selectTheme_hub_coloc('${t.id}')"
-         onkeydown="if(event.key==='Enter'||event.key===' ')selectTheme_hub_coloc('${t.id}')">
-      <div class="swatch-dot" style="background:${t.dot}"></div>
-      <div class="swatch-label">${t.label}</div>
-    </div>`).join('');
-  document.getElementById('pref-modal').classList.add('open');
-};
-
-window.closePrefs_hub_coloc = function() {
-  applyTheme_hub_coloc(currentThemeId_hub_coloc);
-  document.getElementById('pref-modal').classList.remove('open');
-};
-
-window.selectTheme_hub_coloc = function(id) {
-  pendingThemeId_hub_coloc = id;
-  applyTheme_hub_coloc(id);
-  document.querySelectorAll('#theme-grid-hub-coloc .theme-swatch').forEach(s => {
-    s.classList.toggle('selected', s.dataset.theme === id);
-    s.setAttribute('aria-checked', s.dataset.theme === id);
-  });
-};
-
-// Init theme on page load
-loadTheme_hub_coloc();
-
-// Show ⚙️ btn when premium is already set from localStorage db
-(function() {
-  const id = 'btn-prefs-hub';
-  function checkAndShow() {
-    if (typeof db !== 'undefined' && db.isPremium) {
-      const btn = document.getElementById(id);
-      if (btn) btn.style.display = 'inline-block';
-    }
-  }
-  // Poll until db is ready
-  let attempts = 0;
-  const interval = setInterval(() => {
-    checkAndShow();
-    if (++attempts > 20) clearInterval(interval);
-  }, 300);
-})();
 
 </script>
 
@@ -2145,28 +2074,8 @@ loadTheme_hub_coloc();
         <div class="preview-tab">Inactif</div>
       </div>
     </div>
-    <button class="btn-apply-theme" onclick="applyAndSaveTheme_hub-coloc()">✓ Appliquer ce thème</button>
-    <button class="btn-close-pref" onclick="closePrefs_hub-coloc()">Annuler</button>
-  </div>
-</div>
-
-<!-- ── PREFERENCES PANEL ── -->
-<div class="pref-overlay" id="pref-modal" role="dialog" aria-modal="true" aria-label="Préférences d'apparence">
-  <div class="pref-card">
-    <div class="pref-handle"></div>
-    <div class="pref-title">⚙️ Apparence — Exclusif Premium</div>
-    <p class="pref-sub">Choisissez un thème pour personnaliser votre interface.</p>
-    <div class="pref-section-label">Thème de couleur</div>
-    <div class="theme-grid" id="theme-grid-hub-coloc"></div>
-    <div class="pref-preview">
-      <div class="pref-preview-label">Aperçu</div>
-      <div class="preview-tab-bar">
-        <div class="preview-tab active-preview" id="preview-tab-active-hub-coloc">Actif</div>
-        <div class="preview-tab">Inactif</div>
-      </div>
-    </div>
-    <button class="btn-apply-theme" onclick="applyAndSaveTheme_hub-coloc()">✓ Appliquer ce thème</button>
-    <button class="btn-close-pref" onclick="closePrefs_hub-coloc()">Annuler</button>
+    <button class="btn-apply-theme" onclick="applyAndSaveTheme_hub_coloc()">✓ Appliquer ce thème</button>
+    <button class="btn-close-pref" onclick="closePrefs_hub_coloc()">Annuler</button>
   </div>
 </div>
 </body>
