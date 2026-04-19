@@ -1648,6 +1648,10 @@ Raphaël`;
     }
     window.deconnecterColoc = deconnecterColoc;
     window.ajouterMembreBtn = ajouterMembreBtn;
+    window.supprimerMembre = supprimerMembre;
+    window.promouvoirAdmin = promouvoirAdmin;
+    window.revoquerAdmin = revoquerAdmin;
+    window.refuserDemandeAdmin = refuserDemandeAdmin;
 
     // ✅ ANNIVERSAIRES
     function sauvegarderAnnif() {
@@ -1782,7 +1786,7 @@ Raphaël`;
                     ${isAdmin && m !== currentUser && m !== currentAdmin ? `<button class="btn-outline" onclick="promouvoirAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#fbc02d; color:#fbc02d;">👑 Promouvoir</button>` : ''}
                     ${isAdmin && hasDemande && m !== currentAdmin ? `<button class="btn-outline" onclick="promouvoirAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#25D366; color:#25D366;">✅ Accepter</button><button class="btn-outline" onclick="refuserDemandeAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#e53935; color:#e53935;">❌ Refuser</button>` : ''}
                     ${isPlatformOwner && isThisAdmin && m !== currentUser ? `<button class="btn-outline" onclick="revoquerAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#e53935; color:#e53935;">🔑 Révoquer Admin</button>` : ''}
-                    ${isAdmin && m !== currentUser ? `<button class="btn-danger" onclick="supprimerMembre('${m}')" style="font-size:0.65rem; padding:3px 8px;">✖ Retrait</button>` : ''}
+                    ${(isAdmin || isPlatformOwner) && m !== currentUser ? `<button class="btn-danger" onclick="supprimerMembre('${m}')" style="font-size:0.65rem; padding:3px 8px;">✖ Retrait</button>` : ''}
                 </div>
             </div>`;
         }).join('');
