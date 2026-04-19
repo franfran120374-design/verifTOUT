@@ -1696,6 +1696,8 @@ Raphaël`;
 
     // ✅ GESTION ADMIN
     function promouvoirAdmin(nom) {
+        const isPO = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'franfran120374@gmail.com';
+        if (!isPO) { alert('⛔ Seul le propriétaire de la plateforme peut changer l\'administrateur.'); return; }
         if (!confirm(`Voulez-vous vraiment donner le rôle d'administrateur à ${nom} ?`)) return;
         db.admin = nom;
         if (db.demandesAdmin) db.demandesAdmin = db.demandesAdmin.filter(d => d !== nom);
@@ -1749,8 +1751,14 @@ Raphaël`;
         
         if(db.membresPhotos && db.membresPhotos[currentUser]) { document.getElementById('my-profile-preview').src = db.membresPhotos[currentUser]; document.getElementById('my-profile-preview').style.display = 'block'; document.getElementById('header-avatar').src = db.membresPhotos[currentUser]; document.getElementById('header-avatar').style.display = 'inline-block'; } 
         
-        const membresArr = getSafeArray(db.membres); const currentAdmin = db.admin || (membresArr.length > 0 ? membresArr[0] : currentUser); const isAdmin = (currentUser === currentAdmin);
+        const membresArr = getSafeArray(db.membres);
         const isPlatformOwner = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'franfran120374@gmail.com';
+        // Platform owner est toujours admin — auto-claim silencieux
+        if (isPlatformOwner && db.admin !== currentUser && currentUser) {
+            db.admin = currentUser;
+            sync();
+        }
+        const currentAdmin = db.admin || (membresArr.length > 0 ? membresArr[0] : currentUser); const isAdmin = (currentUser === currentAdmin);
         const passSlug = slugify(db.password || ""); let calcSlug = colocPath; if (passSlug && colocPath.endsWith("_" + passSlug)) { calcSlug = colocPath.substring(0, colocPath.length - passSlug.length - 1); }
         
         // Affichage Admin dans Profil
