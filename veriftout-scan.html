@@ -3850,7 +3850,104 @@ window.runDebunk = async function() {
   const btn = document.getElementById('btn-debunk');
   const lbl = document.getElementById('dbk-btn-label');
   if (btn) btn.disabled = true;
-  if (lbl) lbl.textContent = '⏳ 
+  if (lbl) lbl.textContent = '⏳ Analyse…';
+
+  // Reset badges
+  ['dbk-algo-badge','dbk-fc-badge','dbk-wiki-badge','dbk-comm-badge'].forEach(id => setSrcBadge(id, 'loading'));
+  setVerdictUI('loading');
+
+  // Afficher claim extrait
+  const claimBox = document.getElementById('dbk-claim-box');
+  if (claimBox) claimBox.textContent = _dbkCurrentClaim || text.substring(0, 150);
+
+  // Reset cartes
+  ['dbk-algo-body','dbk-fc-body','dbk-wiki-body','dbk-comm-body'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '<em style="color:#64748b;font-size:.75rem">Chargement…</em>';
+  });
+
+  try {
+    // Lancement en parallèle des 4 sources
+    const fullText = url ? text + '\n' + url : text;
+    const [algo, fc, wiki, comm] = await Promise.all([
+      Promise.resolve(analyzeAlgo(fullText)),
+      analyzeFactCheck(_dbkCurrentClaim),
+      analyzeWikipedia(_dbkCurrentClaim),
+      analyzeCommunity(fullText)
+    ]);
+
+    // Rendu des cartes
+    renderAlgo(algo);
+    renderFactCheck(fc);
+    renderWiki(wiki);
+    renderCommunity(comm);
+
+    // Verdict
+    const verdict = computeVerdict(algo, fc, wiki, comm);
+    renderVerdictFinal(verdict);
+    renderSynthesis(verdict, algo, fc, wiki, comm);
+
+    // Sauvegarde Firestore (non-bloquant)
+    try {
+      if (_dbkCurrentHash) {
+        const ref = doc(db, 'verifTOUT_debunks', _dbkCurrentHash);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          await setDoc(ref, {
+            preview:   _dbkCurrentClaim.substring(0, 120),
+            verdict:   verdict.dominant,
+            confidence: verdict.confidence,
+            algoScore: algo.score,
+            factCheck: fc.found ? fc.results.length : 0,
+            wikiFound: wiki.found,
+            votes:     { vrai: 0, faux: 0, partiel: 0 },
+            createdAt: serverTimestamp(),
+            userId:    currentUser?.uid || 'anonymous'
+          });
+        }
+      }
+    } catch(e) { /* non-bloquant */ }
+
+  } catch(e) {
+    console.error('runDebunk:', e);
+    showToast('Erreur lors de l\'analyse — réessayez');
+    ['dbk-algo-badge','dbk-fc-badge','dbk-wiki-badge','dbk-comm-badge'].forEach(id => setSrcBadge(id, 'none'));
+  } finally {
+    if (btn) btn.disabled = false;
+    if (lbl) lbl.textContent = '🔬 Vérifier maintenant';
+  }
+};
+
+// ── Vote communauté ───────────────────────────────────────────────────────────
+
+window.castVote = async function(vote) {
+  if (!_dbkCurrentHash) { showToast('Lancez d\'abord une analyse'); return; }
+  document.querySelectorAll('.dbk-vote-btn').forEach(b => b.disabled = true);
+  try {
+    const ref = doc(db, 'verifTOUT_debunks', _dbkCurrentHash);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      await updateDoc(ref, { [`votes.${vote}`]: increment(1) });
+    } else {
+      const init = { vrai:0, faux:0, partiel:0 };
+      init[vote] = 1;
+      await setDoc(ref, {
+        preview:   _dbkCurrentClaim.substring(0, 120),
+        verdict:   'community',
+        votes:     init,
+        createdAt: serverTimestamp(),
+        userId:    currentUser?.uid || 'anonymous'
+      });
+    }
+    showToast('✓ Vote enregistré — merci pour votre contribution !');
+    // Refresh communauté
+    const comm2 = await analyzeCommunity(_dbkCurrentText);
+    renderCommunity(comm2);
+  } catch(e) {
+    showToast('Erreur lors du vote');
+    document.querySelectorAll('.dbk-vote-btn').forEach(b => b.disabled = false);
+  }
+};
 
 // ── THEME ENGINE ─────────────────────────────────────────────────────────────
 const THEMES_vs = {
