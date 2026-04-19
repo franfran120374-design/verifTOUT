@@ -1,0 +1,87 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── ADMIN ────────────────────────────────────────────────────────────────
+    // Seul franfran120374@gmail.com peut modifier les subscriptions et acces_gratuit
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'franfran120374@gmail.com';
+    }
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── ACCÈS GRATUIT HÉRITAGE ───────────────────────────────────────────────
+    // Lecture : tout utilisateur connecté
+    // Écriture : admin seulement
+    match /acces_gratuit/{doc} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // ── PROFILS UTILISATEURS ─────────────────────────────────────────────────
+    // Lecture : tout le monde (hub-coloc n'utilise pas Firebase Auth, besoin de lire les subscriptions)
+    // Écriture : soi-même SAUF le champ subscriptions (réservé à l'admin)
+    match /users/{uid} {
+      allow read: if true;
+
+      // Admin peut tout écrire
+      allow write: if isAdmin();
+
+      // Utilisateur peut écrire son propre doc SAUF modifier subscriptions
+      allow create: if isOwner(uid) &&
+        !request.resource.data.keys().hasAny(['subscriptions']);
+
+      allow update: if isOwner(uid) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['subscriptions']);
+    }
+
+    // ── SOUVENIRS HÉRITAGE ───────────────────────────────────────────────────
+    // Chaque utilisateur peut lire/écrire/supprimer SES souvenirs
+    match /souvenirs/{memId} {
+      allow read: if request.auth != null && (
+        resource.data.auteurId == request.auth.uid ||
+        resource.data.partageAvec.hasAny([request.auth.uid])
+      );
+      allow create: if request.auth != null &&
+        request.resource.data.auteurId == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.auteurId == request.auth.uid;
+    }
+
+    // ── FAMILLE HÉRITAGE ─────────────────────────────────────────────────────
+    match /famille/{famId} {
+      allow read, write: if request.auth != null &&
+        (resource == null || resource.data.membres.hasAny([request.auth.uid]));
+    }
+
+    // ── INVITATIONS EN ATTENTE ───────────────────────────────────────────────
+    match /pending_invites/{emailKey} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ── HISTORIQUE VÉRIF'TOUT ────────────────────────────────────────────────
+    match /verifTOUT/{doc} {
+      allow read: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+    }
+
+    // ── DÉBUNKER ─────────────────────────────────────────────────────────────
+    match /verifTOUT_debunks/{doc} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null; // votes communauté
+      allow delete: if isAdmin();
+    }
+
+    // ── SIGNALEMENTS APPELS ──────────────────────────────────────────────────
+    match /verifTOUT_appels/{doc} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
