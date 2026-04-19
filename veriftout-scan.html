@@ -1933,7 +1933,7 @@ onAuthStateChanged(auth, async (user) => {
     try {
       const snap = await getDoc(doc(db, 'users', user.uid));
       isPremium = snap.exists() && (
-        snap.data()?.subscriptions?.veriftout?.premium === true ||
+        (snap.data()?.subscriptions?.veriftout?.premium === true || snap.data()?.subscriptions?.veriftout?.active === true) ||
         snap.data()?.veriftout?.premium === true
       );
       if (isPremium) {
@@ -2027,6 +2027,7 @@ window.checkPremiumStatus = async function() {
     const snap = await getDoc(doc(db, 'users', currentUser.uid));
     isPremium = snap.exists() && (
       snap.data()?.subscriptions?.veriftout?.premium === true ||
+      snap.data()?.subscriptions?.veriftout?.active === true ||
       snap.data()?.veriftout?.premium === true
     );
     updateAccessUI();

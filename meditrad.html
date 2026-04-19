@@ -809,7 +809,7 @@ onAuthStateChanged(auth, async (user) => {
     // Vérifier premium
     try {
       const snap = await getDoc(doc(db, 'users', user.uid));
-      isPremium = snap.exists() && snap.data()?.subscriptions?.meditrad?.premium === true;
+      isPremium = snap.exists() && (snap.data()?.subscriptions?.meditrad?.premium === true || snap.data()?.subscriptions?.meditrad?.active === true);
       if (isPremium) document.getElementById('premium-indicator').style.display = 'flex';
       // Thème Premium
       if (isPremium) {

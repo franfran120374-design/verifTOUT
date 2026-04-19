@@ -599,7 +599,7 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById('sidebar-email').textContent = user.email;
     try {
       const snap = await getDoc(doc(db, 'users', user.uid));
-      isPremium = snap.exists() && snap.data()?.subscriptions?.heritage?.premium === true;
+      isPremium = snap.exists() && (snap.data()?.subscriptions?.heritage?.premium === true || snap.data()?.subscriptions?.heritage?.active === true);
       if (isPremium) {
         const savedTheme = snap.data()?.preferences?.heritage?.theme;
         if (savedTheme && THEMES_heritage[savedTheme]) applyTheme_heritage(savedTheme);
@@ -1336,7 +1336,7 @@ window.checkPremiumStatus = async function() {
   closePaywall();
   try {
     const snap = await getDoc(doc(db, 'users', currentUser.uid));
-    isPremium = snap.exists() && snap.data()?.subscriptions?.heritage?.premium === true;
+    isPremium = snap.exists() && (snap.data()?.subscriptions?.heritage?.premium === true || snap.data()?.subscriptions?.heritage?.active === true);
       if (isPremium) {
         const savedTheme = snap.data()?.preferences?.heritage?.theme;
         if (savedTheme && THEMES_heritage[savedTheme]) applyTheme_heritage(savedTheme);

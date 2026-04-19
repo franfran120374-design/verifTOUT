@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>VérifTOUT — Activer Premium</title>
+  <style>
+    body { font-family: sans-serif; background:#0b0f1a; color:#eeeae0; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; }
+    .box { background:#131929; border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:2.5rem; width:100%; max-width:420px; }
+    h1 { font-size:1.4rem; margin-bottom:0.5rem; color:#d4a853; }
+    p  { font-size:0.875rem; color:#8a9ab5; margin-bottom:1.5rem; }
+    input { width:100%; padding:0.7rem 1rem; background:#0b0f1a; border:1px solid rgba(255,255,255,0.18); border-radius:8px; color:#eeeae0; font-size:0.9rem; outline:none; margin-bottom:0.75rem; box-sizing:border-box; }
+    button { width:100%; padding:0.85rem; background:#d4a853; border:none; color:#1a0e00; border-radius:8px; font-size:0.9rem; font-weight:600; cursor:pointer; }
+    button:disabled { opacity:0.5; cursor:default; }
+    #status { margin-top:1rem; font-size:0.875rem; text-align:center; min-height:1.2em; }
+    .ok  { color:#2cb67d; }
+    .err { color:#e05252; }
+  </style>
+</head>
+<body>
+<div class="box">
+  <h1>✦ Activer Premium — tous les apps</h1>
+  <p>Connectez-vous avec votre compte VérifTOUT pour activer l'accès Premium sur les 4 applications.</p>
+  <input type="email"    id="em"  placeholder="franfran120374@gmail.com" />
+  <input type="password" id="pw"  placeholder="Mot de passe" />
+  <button id="btn" onclick="run()">Activer Premium maintenant</button>
+  <div id="status"></div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+  const app = initializeApp({
+    apiKey: "AIzaSyB1TwbZSkqkAKEPhNJXuwn9zMEz2BqBk48",
+    authDomain: "hub-coloc.firebaseapp.com",
+    projectId: "hub-coloc",
+    storageBucket: "hub-coloc.firebasestorage.app",
+    messagingSenderId: "1090628612964",
+    appId: "1:1090628612964:web:0ab8977765daf3c8304071"
+  });
+
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  const APPS = ['hub-coloc', 'meditrad', 'heritage', 'veriftout', 'lancetonapp'];
+
+  window.run = async function() {
+    const email = document.getElementById('em').value.trim();
+    const pwd   = document.getElementById('pw').value;
+    const btn   = document.getElementById('btn');
+    const st    = document.getElementById('status');
+
+    if (!email || !pwd) { st.innerHTML = '<span class="err">Remplir e-mail et mot de passe.</span>'; return; }
+
+    btn.disabled = true;
+    st.innerHTML = '⏳ Connexion…';
+
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, pwd);
+      const uid  = cred.user.uid;
+      st.innerHTML = '⏳ Mise à jour Firestore…';
+
+      // Build subscriptions object
+      const now  = new Date().toISOString();
+      const subs = {};
+      APPS.forEach(id => {
+        subs[id] = { active: true, premium: true, plan: 'premium', activatedAt: now };
+      });
+
+      // Merge into existing user doc
+      const ref  = doc(db, 'users', uid);
+      const snap = await getDoc(ref);
+      const existing = snap.exists() ? snap.data() : {};
+
+      await setDoc(ref, {
+        ...existing,
+        email,
+        subscriptions: { ...(existing.subscriptions || {}), ...subs }
+      });
+
+      st.innerHTML = `<span class="ok">✓ Premium activé sur les 4 apps ! Retournez sur <a href="index.html" style="color:#d4a853;">la page d'accueil</a>.</span>`;
+    } catch (e) {
+      const msgs = {
+        'auth/user-not-found':     'Aucun compte trouvé.',
+        'auth/wrong-password':     'Mot de passe incorrect.',
+        'auth/invalid-credential': 'Identifiants invalides.',
+        'auth/invalid-email':      'E-mail invalide.',
+      };
+      st.innerHTML = `<span class="err">${msgs[e.code] || e.message}</span>`;
+      btn.disabled = false;
+    }
+  };
+
+  // Enter key
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') window.run(); });
+</script>
+</body>
+</html>

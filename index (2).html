@@ -22,6 +22,11 @@
             --header-bg: var(--primary-dark);
             --tab-active-bg: var(--primary);
             --tab-active-text: #ffffff;
+            --pref-surface:#ffffff;--pref-text:#111;--pref-muted:#6b7280;--pref-bg:#f9fafb;--pref-border:#e5e7eb;--pref-accent:var(--primary-dark);
+            --tab-active-color: var(--primary-dark);
+            --header-bg: var(--primary-dark);
+            --tab-active-bg: var(--primary);
+            --tab-active-text: #ffffff;
             --pref-surface:#ffffff;--pref-text:#111;--pref-muted:#6b7280;--pref-bg:#f9fafb;--pref-border:#e5e7eb;--pref-accent:var(--primary-dark); --bg-app: #efeae2;
             --card-bg: #ffffff; --text-main: #111b21; --text-muted: #667781;
             --danger: #ea4335; --accent: #34b7f1; --msg-sent: #d9fdd3; --msg-received: #ffffff;
@@ -186,6 +191,32 @@
     .btn-close-pref{width:100%;padding:.6rem;background:none;color:var(--pref-muted,#6b7280);border:1px solid var(--pref-border,#e5e7eb);border-radius:10px;font-size:.82rem;cursor:pointer;transition:all .2s;}
     .btn-close-pref:hover{border-color:#9ca3af;}
         body.theme-night-hub_coloc { background:#0f172a; --bg-app:#0f172a; --card-bg:#1e293b; --text-main:#f1f5f9; --text-muted:#94a3b8; }
+
+    /* ── PANEL PRÉFÉRENCES PREMIUM ── */
+    .pref-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:none;align-items:flex-end;justify-content:center;}
+    .pref-overlay.open{display:flex;}
+    .pref-card{background:var(--pref-surface,#fff);border-radius:16px 16px 0 0;padding:1.5rem;width:100%;max-width:480px;box-shadow:0 -4px 32px rgba(0,0,0,0.18);animation:prefUp .28s ease;}
+    @keyframes prefUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .pref-handle{width:36px;height:4px;background:#d1d5db;border-radius:100px;margin:0 auto 1.2rem;}
+    .pref-title{font-size:1rem;font-weight:700;color:var(--pref-text,#111);margin-bottom:.3rem;}
+    .pref-sub{font-size:.78rem;color:var(--pref-muted,#6b7280);margin-bottom:1.2rem;}
+    .pref-section-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--pref-muted,#6b7280);margin-bottom:.65rem;}
+    .theme-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin-bottom:1.4rem;}
+    .theme-swatch{display:flex;flex-direction:column;align-items:center;gap:.35rem;cursor:pointer;padding:.55rem .3rem;border-radius:10px;border:2px solid transparent;transition:all .18s;background:var(--pref-bg,#f9fafb);}
+    .theme-swatch:hover{border-color:var(--pref-accent,#2563eb);}
+    .theme-swatch.selected{border-color:var(--pref-accent,#2563eb);box-shadow:0 0 0 2px rgba(37,99,235,.18);}
+    .swatch-dot{width:28px;height:28px;border-radius:50%;border:2px solid rgba(0,0,0,.08);}
+    .swatch-label{font-size:.62rem;font-weight:500;color:var(--pref-muted,#6b7280);text-align:center;line-height:1.2;}
+    .pref-preview{background:var(--pref-bg,#f9fafb);border:1px solid var(--pref-border,#e5e7eb);border-radius:10px;padding:.7rem 1rem;margin-bottom:1.2rem;}
+    .pref-preview-label{font-size:.7rem;color:var(--pref-muted,#6b7280);margin-bottom:.5rem;}
+    .preview-tab-bar{display:flex;gap:.3rem;background:white;border:1px solid #e5e7eb;border-radius:100px;padding:.25rem;width:fit-content;}
+    .preview-tab{padding:.3rem .9rem;border-radius:100px;font-size:.75rem;font-weight:500;border:none;cursor:default;color:#6b7280;background:none;}
+    .preview-tab.active-preview{background:var(--tab-active-bg,#1e3a5f);color:var(--tab-active-text,#fff);}
+    .btn-apply-theme{width:100%;padding:.8rem;background:var(--tab-active-bg,#1e3a5f);color:var(--tab-active-text,#fff);border:none;border-radius:10px;font-size:.88rem;font-weight:600;cursor:pointer;opacity:1;transition:opacity .2s;margin-bottom:.5rem;}
+    .btn-apply-theme:hover{opacity:.88;}
+    .btn-close-pref{width:100%;padding:.6rem;background:none;color:var(--pref-muted,#6b7280);border:1px solid var(--pref-border,#e5e7eb);border-radius:10px;font-size:.82rem;cursor:pointer;transition:all .2s;}
+    .btn-close-pref:hover{border-color:#9ca3af;}
+        body.theme-night-hub_coloc { background:#0f172a; --bg-app:#0f172a; --card-bg:#1e293b; --text-main:#f1f5f9; --text-muted:#94a3b8; }
     </style>
 </head>
 <body>
@@ -250,7 +281,7 @@
             <span id="user-badge" style="font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; display:flex; align-items:center; gap:5px;">
                 <img id="header-avatar" src="" style="width:24px; height:24px; border-radius:50%; display:none; object-fit:cover;">
                 <span id="header-name"></span>
-                <span id="premium-badge" class="premium-badge" style="display:none;">⭐ PREMIUM</span> <button id="btn-prefs-hub" style="display:none;background:rgba(255,255,255,.15);border:none;cursor:pointer;font-size:1rem;padding:.2rem .5rem;border-radius:6px;color:white;" onclick="openPrefs_hub_coloc()" aria-label="Thème">⚙️</button>
+                <span id="premium-badge" class="premium-badge" style="display:none;">⭐ PREMIUM</span> <button id="btn-prefs-hub" style="display:none;background:rgba(255,255,255,.15);border:none;cursor:pointer;font-size:1rem;padding:.2rem .5rem;border-radius:6px;color:white;" onclick="openPrefs_hub_coloc()" aria-label="Thème">⚙️</button> <button id="btn-prefs-hub" style="display:none;background:rgba(255,255,255,.15);border:none;cursor:pointer;font-size:1rem;padding:.2rem .5rem;border-radius:6px;color:white;" onclick="openPrefs_hub_coloc()" aria-label="Thème">⚙️</button>
             </span>
         </header>
 
@@ -1556,6 +1587,7 @@ Raphaël`;
             sync();
             alert("⭐ Premium activé ! Colocataires illimités débloqués.");
         const pb=document.getElementById('btn-prefs-hub'); if(pb) pb.style.display='inline-block';
+        const pb=document.getElementById('btn-prefs-hub'); if(pb) pb.style.display='inline-block';
         } else {
             alert("❌ Aucun abonnement Premium trouvé pour cet e-mail.\n\nAbonnez-vous d'abord sur VérifTOUT.");
         }
@@ -2004,7 +2036,119 @@ loadTheme_hub_coloc();
   }, 300);
 })();
 
+
+// ── THEME ENGINE ──
+const THEMES_hub_coloc = {
+  vert: { id:'vert', label:'💚 Vert', dot:'#075E54', vars:{'--primary':'#25D366', '--primary-dark':'#075E54', '--tab-active-color':'#075E54', '--tab-active-bg':'#25D366', '--header-bg':'#075E54', '--tab-active-text':'#ffffff'}, night:false },
+  night: { id:'night', label:'🌙 Nuit', dot:'#0f172a', vars:{'--primary':'#3b82f6', '--primary-dark':'#0f172a', '--tab-active-color':'#60a5fa', '--tab-active-bg':'#1e293b', '--header-bg':'#0f172a', '--tab-active-text':'#ffffff'}, night:true },
+  ocean: { id:'ocean', label:'🌊 Océan', dot:'#1e3a5f', vars:{'--primary':'#3b82f6', '--primary-dark':'#1e3a5f', '--tab-active-color':'#1e3a5f', '--tab-active-bg':'#dbeafe', '--header-bg':'#1e3a5f', '--tab-active-text':'#ffffff'}, night:false },
+  bordeaux: { id:'bordeaux', label:'🔴 Bordeaux', dot:'#7f1d1d', vars:{'--primary':'#ef4444', '--primary-dark':'#7f1d1d', '--tab-active-color':'#7f1d1d', '--tab-active-bg':'#fee2e2', '--header-bg':'#7f1d1d', '--tab-active-text':'#ffffff'}, night:false },
+  violet: { id:'violet', label:'⚡ Violet', dot:'#4c1d95', vars:{'--primary':'#7c3aed', '--primary-dark':'#4c1d95', '--tab-active-color':'#4c1d95', '--tab-active-bg':'#f3e8ff', '--header-bg':'#4c1d95', '--tab-active-text':'#ffffff'}, night:false },
+};
+
+let currentThemeId_hub_coloc = 'vert';
+let pendingThemeId_hub_coloc = 'vert';
+
+function applyTheme_hub_coloc(themeId) {
+  const theme = THEMES_hub_coloc[themeId] || THEMES_hub_coloc['vert'];
+  const root = document.documentElement;
+  Object.entries(theme.vars).forEach(([k,v]) => root.style.setProperty(k,v));
+  document.body.classList.toggle('theme-night-hub_coloc', theme.night);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = theme.vars['--header-bg'] || theme.vars['--tab-active-color'] || '';
+  currentThemeId_hub_coloc = themeId;
+  document.querySelectorAll('#theme-grid-hub-coloc .theme-swatch').forEach(s => {
+    s.classList.toggle('selected', s.dataset.theme === themeId);
+  });
+}
+
+async function applyAndSaveTheme_hub_coloc() {
+  applyTheme_hub_coloc(pendingThemeId_hub_coloc);
+  currentThemeId_hub_coloc = pendingThemeId_hub_coloc;
+  try { localStorage.setItem('hubcoloc_theme', pendingThemeId_hub_coloc); } catch {}
+  
+  closePrefs_hub_coloc();
+  if (typeof showToast === 'function') showToast('✓ Thème appliqué !');
+  else { const t=document.createElement('div'); t.textContent='✓ Thème appliqué !'; t.style='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e3a5f;color:#fff;padding:.6rem 1.25rem;border-radius:100px;font-size:.82rem;z-index:9999;'; document.body.appendChild(t); setTimeout(()=>t.remove(),2500); }
+}
+
+function loadTheme_hub_coloc() {
+  let id = 'vert';
+  try { const ls = localStorage.getItem('hubcoloc_theme'); if (ls && THEMES_hub_coloc[ls]) id = ls; } catch {}
+  applyTheme_hub_coloc(id);
+}
+
+window.openPrefs_hub_coloc = function() {
+  pendingThemeId_hub_coloc = currentThemeId_hub_coloc;
+  const grid = document.getElementById('theme-grid-hub-coloc');
+  if (!grid) return;
+  grid.innerHTML = Object.values(THEMES_hub_coloc).map(t => `
+    <div class="theme-swatch ${t.id === pendingThemeId_hub_coloc ? 'selected' : ''}"
+         data-theme="${t.id}" role="radio" aria-checked="${t.id === pendingThemeId_hub_coloc}"
+         tabindex="0"
+         onclick="selectTheme_hub_coloc('${t.id}')"
+         onkeydown="if(event.key==='Enter'||event.key===' ')selectTheme_hub_coloc('${t.id}')">
+      <div class="swatch-dot" style="background:${t.dot}"></div>
+      <div class="swatch-label">${t.label}</div>
+    </div>`).join('');
+  document.getElementById('pref-modal').classList.add('open');
+};
+
+window.closePrefs_hub_coloc = function() {
+  applyTheme_hub_coloc(currentThemeId_hub_coloc);
+  document.getElementById('pref-modal').classList.remove('open');
+};
+
+window.selectTheme_hub_coloc = function(id) {
+  pendingThemeId_hub_coloc = id;
+  applyTheme_hub_coloc(id);
+  document.querySelectorAll('#theme-grid-hub-coloc .theme-swatch').forEach(s => {
+    s.classList.toggle('selected', s.dataset.theme === id);
+    s.setAttribute('aria-checked', s.dataset.theme === id);
+  });
+};
+
+// Init theme on page load
+loadTheme_hub_coloc();
+
+// Show ⚙️ btn when premium is already set from localStorage db
+(function() {
+  const id = 'btn-prefs-hub';
+  function checkAndShow() {
+    if (typeof db !== 'undefined' && db.isPremium) {
+      const btn = document.getElementById(id);
+      if (btn) btn.style.display = 'inline-block';
+    }
+  }
+  // Poll until db is ready
+  let attempts = 0;
+  const interval = setInterval(() => {
+    checkAndShow();
+    if (++attempts > 20) clearInterval(interval);
+  }, 300);
+})();
+
 </script>
+
+<!-- ── PREFERENCES PANEL ── -->
+<div class="pref-overlay" id="pref-modal" role="dialog" aria-modal="true" aria-label="Préférences d'apparence">
+  <div class="pref-card">
+    <div class="pref-handle"></div>
+    <div class="pref-title">⚙️ Apparence — Exclusif Premium</div>
+    <p class="pref-sub">Choisissez un thème pour personnaliser votre interface.</p>
+    <div class="pref-section-label">Thème de couleur</div>
+    <div class="theme-grid" id="theme-grid-hub-coloc"></div>
+    <div class="pref-preview">
+      <div class="pref-preview-label">Aperçu</div>
+      <div class="preview-tab-bar">
+        <div class="preview-tab active-preview" id="preview-tab-active-hub-coloc">Actif</div>
+        <div class="preview-tab">Inactif</div>
+      </div>
+    </div>
+    <button class="btn-apply-theme" onclick="applyAndSaveTheme_hub-coloc()">✓ Appliquer ce thème</button>
+    <button class="btn-close-pref" onclick="closePrefs_hub-coloc()">Annuler</button>
+  </div>
+</div>
 
 <!-- ── PREFERENCES PANEL ── -->
 <div class="pref-overlay" id="pref-modal" role="dialog" aria-modal="true" aria-label="Préférences d'apparence">

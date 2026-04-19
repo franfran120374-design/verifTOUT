@@ -1166,7 +1166,7 @@ onAuthStateChanged(auth, async (user) => {
     try {
       const snap = await getDoc(doc(db, 'users', user.uid));
       const data = snap.exists() ? snap.data() : {};
-      isPremium = data?.subscriptions?.veriftout?.premium === true;
+      isPremium = data?.subscriptions?.veriftout?.premium === true || data?.subscriptions?.veriftout?.active === true;
       // Charger thème si Premium
       if (isPremium) {
         const savedTheme = data?.preferences?.veriftout?.theme;
@@ -1243,7 +1243,7 @@ window.goPremium = () => {
   if (!currentUser) { closePaywall(); openAuthModal(); return; }
   const link = STRIPE_LINK.includes('VOTRE_LIEN')
     ? null
-STRIPE_LINK + '?prefilled_email=' + encodeURIComponent(currentUser.email) + '&client_reference_id=' + currentUser.uid;
+    : STRIPE_LINK + '?prefilled_email=' + encodeURIComponent(currentUser.email) + '&client_reference_id=' + currentUser.uid;
   if (link) {
     window.open(link, '_blank');
     showToast('Après paiement, cliquez "Vérifier mon accès"');
@@ -1258,7 +1258,7 @@ window.checkPremiumStatus = async function() {
   closePaywall();
   try {
     const snap = await getDoc(doc(db, 'users', currentUser.uid));
-    isPremium = snap.exists() && snap.data()?.subscriptions?.veriftout?.premium === true;
+    isPremium = snap.exists() && (snap.data()?.subscriptions?.veriftout?.premium === true || snap.data()?.subscriptions?.veriftout?.active === true);
     updateAccessUI();
     showToast(isPremium ? '✓ Accès Premium activé !' : 'Paiement non confirmé — réessayez dans quelques instants');
   } catch { showToast('Erreur de vérification'); }
