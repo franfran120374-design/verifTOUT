@@ -1726,6 +1726,7 @@ Raphaël`;
         if(db.membresPhotos && db.membresPhotos[currentUser]) { document.getElementById('my-profile-preview').src = db.membresPhotos[currentUser]; document.getElementById('my-profile-preview').style.display = 'block'; document.getElementById('header-avatar').src = db.membresPhotos[currentUser]; document.getElementById('header-avatar').style.display = 'inline-block'; } 
         
         const membresArr = getSafeArray(db.membres); const currentAdmin = db.admin || (membresArr.length > 0 ? membresArr[0] : currentUser); const isAdmin = (currentUser === currentAdmin);
+        const isPlatformOwner = !!(db.isPremium && db.premiumEmail === 'franfran120374@gmail.com');
         const passSlug = slugify(db.password || ""); let calcSlug = colocPath; if (passSlug && colocPath.endsWith("_" + passSlug)) { calcSlug = colocPath.substring(0, colocPath.length - passSlug.length - 1); }
         
         // Affichage Admin dans Profil
@@ -1825,7 +1826,7 @@ Raphaël`;
                         </div>
                         <div class="meta-info"><i>${t('createdBy')} ${a.creator} ${a.createdAt ? t('on') + ' ' + a.createdAt : ''}</i></div>
                     </div>
-                    ${a.creator === currentUser || isAdmin ? `<button class="btn-danger" style="margin:0;" onclick="del('agenda', ${a.id})">✖</button>` : ''}
+                    ${a.creator === currentUser || isAdmin || isPlatformOwner ? `<button class="btn-danger" style="margin:0;" onclick="del('agenda', ${a.id})">✖</button>` : ''}
                 </div>
                 ${a.type === 'tache' ? `
                     <div style="margin-top: 10px; display:flex; justify-content:space-between; align-items:center;">
@@ -1852,7 +1853,7 @@ Raphaël`;
                     ${c.checked ? '✅' : '☐'} <b>${c.n}</b> <span style="font-size:0.8rem; color:var(--text-muted);">(${c.q} ${t(c.u) || c.u})</span>
                     <div style="font-size:0.6rem; color:#aaa; margin-top:2px;">${t('addedBy')} ${c.creator}</div>
                 </span>
-                ${c.creator === currentUser || isAdmin || c.checked ? `<span style="cursor:pointer; color:var(--danger); font-weight:bold; padding:0 10px;" onclick="del('courses', ${c.id})">✖</span>` : ''}
+                ${c.creator === currentUser || isAdmin || isPlatformOwner || c.checked ? `<span style="cursor:pointer; color:var(--danger); font-weight:bold; padding:0 10px;" onclick="del('courses', ${c.id})">✖</span>` : ''}
             </div>
         `).join('');
         
@@ -1872,8 +1873,8 @@ Raphaël`;
                         ${f.img ? `<div style="margin-top:5px;"><span class="btn-outline" style="font-size:0.7rem; padding:2px 6px; cursor:pointer;" onclick="window.open('${f.img}')">📎 ${t('invoicePhoto')}</span></div>` : ''}
                     </div>
                     <div style="display:flex;gap:4px;">
-                      ${f.p === currentUser || isAdmin ? `<button class="btn-outline" style="margin:0;font-size:0.65rem;padding:3px 7px;width:auto;" onclick="editerDepense(${f.id})">✏ Éditer</button>` : ''}
-                      ${f.p === currentUser || isAdmin ? `<button class="btn-danger" style="margin:0;" onclick="del('finances', ${f.id})">✖</button>` : ''}
+                      ${f.p === currentUser || isAdmin || isPlatformOwner ? `<button class="btn-outline" style="margin:0;font-size:0.65rem;padding:3px 7px;width:auto;" onclick="editerDepense(${f.id})">✏ Éditer</button>` : ''}
+                      ${f.p === currentUser || isAdmin || isPlatformOwner ? `<button class="btn-danger" style="margin:0;" onclick="del('finances', ${f.id})">✖</button>` : ''}
                     </div>
                 </div>
                 <div style="margin-top: 10px; font-size: 0.85rem; background: #f9f9f9; padding: 8px; border-radius: 6px;">
@@ -1890,7 +1891,7 @@ Raphaël`;
                         </div>
                     `).join('')}
                 </div>
-                ${isAdmin ? `<div style="text-align:right; margin-top:5px;"><span style="font-size:0.6rem; color:var(--text-muted); cursor:pointer;" onclick="exporterItem('finances', ${f.id})">💾 Exporter TXT</span></div>` : ''}
+                ${isAdmin || isPlatformOwner ? `<div style="text-align:right; margin-top:5px;"><span style="font-size:0.6rem; color:var(--text-muted); cursor:pointer;" onclick="exporterItem('finances', ${f.id})">💾 Exporter TXT</span></div>` : ''}
             </div>
             `;
         }).join('');
@@ -1916,7 +1917,7 @@ Raphaël`;
                         <span class="badge-fluide ${badgeClass}">${t(f.type) || f.type}</span>
                         <strong style="margin-left: 8px;">${getMonthName(f.mois)}</strong>
                     </div>
-                    ${f.creator === currentUser || isAdmin ? `<span style="color:var(--danger); cursor:pointer; font-weight:bold;" onclick="del('fluides', ${f.id})">✖</span>` : ''}
+                    ${f.creator === currentUser || isAdmin || isPlatformOwner ? `<span style="color:var(--danger); cursor:pointer; font-weight:bold;" onclick="del('fluides', ${f.id})">✖</span>` : ''}
                 </div>
                 <div style="margin-top: 8px; font-size: 0.9rem;">
                     ${isElec ? `
