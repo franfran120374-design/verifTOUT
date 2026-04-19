@@ -237,13 +237,13 @@
 
                 <label for="coloc-token" class="visually-hidden">Nom de la Colocation</label>
                 <div style="position:relative;">
-                    <input type="text" id="coloc-token" data-i18n="phColoc" placeholder="Nom de la Colocation" oninput="detecterColoc()" style="padding-right:36px;">
+                    <input type="text" id="coloc-token" data-i18n="phColoc" placeholder="Nom de la Colocation" oninput="detecterColoc()" style="padding-right:36px;" autocorrect="off" autocapitalize="off" spellcheck="false">
                     <span id="coloc-status" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:1rem;"></span>
                 </div>
 
                 <div style="position: relative; width: 100%; margin-bottom: 8px;">
                     <label for="coloc-password" class="visually-hidden">Mot de passe de la coloc</label>
-                    <input type="password" id="coloc-password" data-i18n="phPassword" placeholder="Mot de passe de la coloc" style="margin-bottom: 0; padding-right: 40px;">
+                    <input type="password" id="coloc-password" data-i18n="phPassword" placeholder="Mot de passe de la coloc" style="margin-bottom: 0; padding-right: 40px;" autocorrect="off" autocapitalize="off" spellcheck="false">
                     <span id="toggle-pwd-icon" onclick="togglePassword()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.2rem; user-select: none;">👁️</span>
                 </div>
 
