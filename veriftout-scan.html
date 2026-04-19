@@ -3970,7 +3970,7 @@ function applyTheme_vs(id) {
   currentThemeId_vs = id;
   document.querySelectorAll('.theme-swatch-vs').forEach(s => s.classList.toggle('selected', s.dataset.theme === id));
 }
-async function applyAndSaveTheme_vs() {
+window.applyAndSaveTheme_vs = async function() {
   applyTheme_vs(pendingThemeId_vs);
   currentThemeId_vs = pendingThemeId_vs;
   try { localStorage.setItem('vt_scan_theme', pendingThemeId_vs); } catch {}

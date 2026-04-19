@@ -1033,7 +1033,7 @@ function applyTheme(themeId, save = false) {
 }
 
 // Sauvegarde dans Firestore + applique
-async function applyAndSaveTheme() {
+window.applyAndSaveTheme = async function() {
   applyTheme(pendingThemeId);
   currentThemeId = pendingThemeId;
   // Sauvegarde localStorage immédiate (fallback offline)
