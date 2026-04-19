@@ -282,6 +282,7 @@
                 <img id="header-avatar" src="" style="width:24px; height:24px; border-radius:50%; display:none; object-fit:cover;">
                 <span id="header-name"></span>
                 <span id="premium-badge" class="premium-badge" style="display:none;">⭐ PREMIUM</span> <button id="btn-prefs-hub" style="display:none;background:rgba(255,255,255,.15);border:none;cursor:pointer;font-size:1rem;padding:.2rem .5rem;border-radius:6px;color:white;" onclick="openPrefs_hub_coloc()" aria-label="Thème">⚙️</button>
+                <button onclick="deconnecterColoc()" style="background:rgba(255,255,255,.15);border:none;cursor:pointer;font-size:0.75rem;padding:.2rem .5rem;border-radius:6px;color:white;" title="Changer de colocation">🚪</button>
             </span>
         </header>
 
@@ -1637,6 +1638,16 @@ Raphaël`;
     }
     
     function supprimerMembre(nom) { db.membres = getSafeArray(db.membres).filter(m => m !== nom); sync(); }
+
+    function deconnecterColoc() {
+        if (!confirm('Se déconnecter et changer de colocation ?')) return;
+        localStorage.removeItem('hub_signed');
+        localStorage.removeItem('hub_path');
+        localStorage.removeItem('hub_user');
+        window.location.reload();
+    }
+    window.deconnecterColoc = deconnecterColoc;
+    window.ajouterMembreBtn = ajouterMembreBtn;
 
     // ✅ ANNIVERSAIRES
     function sauvegarderAnnif() {
