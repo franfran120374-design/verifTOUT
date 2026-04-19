@@ -1390,6 +1390,27 @@
         document.getElementById('fin-desc').value = ""; document.getElementById('fin-montant').value = ""; document.getElementById('fin-photo').value = ""; document.getElementById('fin-photo-name').innerText = ""; sync(); 
     }
     
+    function editerDepense(fid) {
+        const f = getSafeArray(db.finances).find(x => String(x.id) === String(fid));
+        if (!f) return;
+        const nouvelleDesc = prompt('Description :', f.d);
+        if (nouvelleDesc === null) return;
+        const nouveauMontant = prompt('Montant (€) :', f.m);
+        if (nouveauMontant === null) return;
+        const montantNum = parseFloat(nouveauMontant);
+        if (isNaN(montantNum) || montantNum <= 0) return alert('Montant invalide.');
+        f.d = nouvelleDesc.trim() || f.d;
+        f.m = montantNum;
+        // Recalculer les parts si le montant change
+        const nbOwers = (f.owers || []).length;
+        if (nbOwers > 0) {
+            const newPart = (montantNum / (nbOwers + 1)).toFixed(2);
+            f.owers.forEach(o => { o.amount = newPart; });
+        }
+        sync();
+        alert('✅ Dépense modifiée.');
+    }
+
     function settleDebt(fid, oName) { const f = getSafeArray(db.finances).find(x => String(x.id) === String(fid)); if(f) { const debts = f.owers || f.parts || []; const o = debts.find(x => x.name === oName); if(o) { o.settled = !o.settled; sync(); } } }
 
     function toggleFluideInputs() {
@@ -1850,7 +1871,10 @@ Raphaël`;
                         </div>
                         ${f.img ? `<div style="margin-top:5px;"><span class="btn-outline" style="font-size:0.7rem; padding:2px 6px; cursor:pointer;" onclick="window.open('${f.img}')">📎 ${t('invoicePhoto')}</span></div>` : ''}
                     </div>
-                    ${f.p === currentUser || isAdmin ? `<button class="btn-danger" style="margin:0;" onclick="del('finances', ${f.id})">✖</button>` : ''}
+                    <div style="display:flex;gap:4px;">
+                      ${f.p === currentUser || isAdmin ? `<button class="btn-outline" style="margin:0;font-size:0.65rem;padding:3px 7px;width:auto;" onclick="editerDepense(${f.id})">✏ Éditer</button>` : ''}
+                      ${f.p === currentUser || isAdmin ? `<button class="btn-danger" style="margin:0;" onclick="del('finances', ${f.id})">✖</button>` : ''}
+                    </div>
                 </div>
                 <div style="margin-top: 10px; font-size: 0.85rem; background: #f9f9f9; padding: 8px; border-radius: 6px;">
                     ${(f.owers || f.parts || []).map(o => `
