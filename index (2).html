@@ -1611,6 +1611,7 @@ Raphaël`;
             db.isPremium = true;
             db.premiumEmail = email;
             sync();
+            if (email === 'franfran120374@gmail.com') localStorage.setItem('hub_platform_owner', '1');
             alert("⭐ Premium activé ! Colocataires illimités débloqués.");
         const pb=document.getElementById('btn-prefs-hub'); if(pb) pb.style.display='inline-block';
         } else {
@@ -1695,14 +1696,11 @@ Raphaël`;
     }
 
     function revoquerAdmin(nom) {
-        const pwd = prompt(`🔑 Entrez le mot de passe de la colocation pour révoquer les droits admin de ${nom} :`);
-        if (pwd === null) return;
-        if (pwd !== (db.password || "")) { alert("❌ Mot de passe incorrect."); return; }
-        if (!confirm(`Révoquer l'admin ${nom} et devenir administrateur à sa place ?`)) return;
+        if (!confirm(`Révoquer les droits admin de ${nom} ?`)) return;
         db.admin = currentUser;
-        if (db.demandesAdmin) db.demandesAdmin = db.demandesAdmin.filter(d => d !== currentUser);
+        if (db.demandesAdmin) db.demandesAdmin = db.demandesAdmin.filter(d => d !== nom);
         sync();
-        alert(`✅ Vous êtes maintenant administrateur. ${nom} a perdu ses droits.`);
+        alert(`✅ ${nom} n'est plus administrateur. Vous êtes maintenant administrateur.`);
     }
 
     function reclamerAdmin() {
@@ -1731,7 +1729,7 @@ Raphaël`;
         if(db.membresPhotos && db.membresPhotos[currentUser]) { document.getElementById('my-profile-preview').src = db.membresPhotos[currentUser]; document.getElementById('my-profile-preview').style.display = 'block'; document.getElementById('header-avatar').src = db.membresPhotos[currentUser]; document.getElementById('header-avatar').style.display = 'inline-block'; } 
         
         const membresArr = getSafeArray(db.membres); const currentAdmin = db.admin || (membresArr.length > 0 ? membresArr[0] : currentUser); const isAdmin = (currentUser === currentAdmin);
-        const isPlatformOwner = (db.premiumEmail === 'franfran120374@gmail.com');
+        const isPlatformOwner = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'franfran120374@gmail.com';
         const passSlug = slugify(db.password || ""); let calcSlug = colocPath; if (passSlug && colocPath.endsWith("_" + passSlug)) { calcSlug = colocPath.substring(0, colocPath.length - passSlug.length - 1); }
         
         // Affichage Admin dans Profil
@@ -1766,7 +1764,7 @@ Raphaël`;
                     ${m === currentUser ? '<span style="font-size:0.75rem; color:var(--text-muted);">(Moi)</span>' : ''}
                     ${isAdmin && m !== currentUser && m !== currentAdmin ? `<button class="btn-outline" onclick="promouvoirAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#fbc02d; color:#fbc02d;">👑 Promouvoir</button>` : ''}
                     ${isAdmin && hasDemande && m !== currentAdmin ? `<button class="btn-outline" onclick="promouvoirAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#25D366; color:#25D366;">✅ Accepter</button><button class="btn-outline" onclick="refuserDemandeAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#e53935; color:#e53935;">❌ Refuser</button>` : ''}
-                    ${!isAdmin && isThisAdmin && m === currentAdmin ? `<button class="btn-outline" onclick="revoquerAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#e53935; color:#e53935;">🔄 Révoquer</button>` : ''}
+                    ${isPlatformOwner && isThisAdmin && m !== currentUser ? `<button class="btn-outline" onclick="revoquerAdmin('${m}')" style="font-size:0.65rem; padding:3px 8px; width:auto; border-color:#e53935; color:#e53935;">🔑 Révoquer Admin</button>` : ''}
                     ${isAdmin && m !== currentUser ? `<button class="btn-danger" onclick="supprimerMembre('${m}')" style="font-size:0.65rem; padding:3px 8px;">✖ Retrait</button>` : ''}
                 </div>
             </div>`;
