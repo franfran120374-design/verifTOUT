@@ -14,6 +14,17 @@
       --bg: #f9f5ef; --white: #fffef9; --surface: #f2ebe0; --border: #e0d5c4;
       --text: #2c1f0e; --muted: #8a7660; --accent: #8b4513; --accent-light: #a0522d;
       --accent-bg: #f5ebe0; --gold: #c8922a; --gold-bg: #fdf5e4;
+      /* Thème Premium */
+      --tab-active-color: var(--accent);
+      --tab-active-bg:    var(--accent-bg);
+      --header-bg:        var(--white);
+      --pref-surface:     #ffffff;
+      --pref-text:        var(--text);
+      --pref-muted:       var(--muted);
+      --pref-bg:          var(--bg);
+      --pref-border:      var(--border);
+      --pref-accent:      var(--accent);
+      --tab-active-text:  #ffffff;
       --green: #3a6b3a; --green-bg: #edf5ed; --radius: 16px; --radius-sm: 10px;
     }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -32,8 +43,8 @@
     .sidebar-tagline { font-size: 0.78rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.5; }
     .sidebar-nav { display: flex; flex-direction: column; gap: 0.35rem; }
     .snav { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.88rem; cursor: pointer; border: none; background: none; color: var(--text); text-align: left; transition: all 0.18s; }
-    .snav:hover { background: var(--accent-bg); color: var(--accent); }
-    .snav.active { background: var(--accent-bg); color: var(--accent); font-weight: 500; }
+    .snav:hover { background: var(--tab-active-bg); color: var(--tab-active-color); }
+    .snav.active { background: var(--tab-active-bg); color: var(--tab-active-color); font-weight: 500; }
     .snav-icon { font-size: 1.1rem; }
     .sidebar-footer { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border); }
     .btn-premium-sidebar { width: 100%; padding: 0.85rem; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
@@ -170,7 +181,7 @@
     .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 520px; background: var(--white); border-top: 1px solid var(--border); display: flex; padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom)); }
     .bnav { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.15rem; font-size: 0.62rem; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0.4rem; border-radius: var(--radius-sm); transition: all 0.2s; }
     .bnav .bi { font-size: 1.25rem; }
-    .bnav.active { color: var(--accent); background: var(--accent-bg); }
+    .bnav.active { color: var(--tab-active-color); background: var(--tab-active-bg); }
     .modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(44,31,14,0.6); backdrop-filter: blur(4px); display: none; align-items: flex-end; justify-content: center; }
     .modal-overlay.open { display: flex; }
     .paywall-modal { background: var(--white); border-radius: 24px 24px 0 0; padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom)); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
@@ -194,6 +205,32 @@
     .loading-overlay.hidden { display: none; }
     .loading-spinner { text-align: center; }
     .loading-spinner p { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+
+    /* ── PANEL PRÉFÉRENCES PREMIUM ── */
+    .pref-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:none;align-items:flex-end;justify-content:center;}
+    .pref-overlay.open{display:flex;}
+    .pref-card{background:var(--pref-surface,#fff);border-radius:16px 16px 0 0;padding:1.5rem;width:100%;max-width:480px;box-shadow:0 -4px 32px rgba(0,0,0,0.18);animation:prefUp .28s ease;}
+    @keyframes prefUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .pref-handle{width:36px;height:4px;background:#d1d5db;border-radius:100px;margin:0 auto 1.2rem;}
+    .pref-title{font-size:1rem;font-weight:700;color:var(--pref-text,#111);margin-bottom:.3rem;}
+    .pref-sub{font-size:.78rem;color:var(--pref-muted,#6b7280);margin-bottom:1.2rem;}
+    .pref-section-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--pref-muted,#6b7280);margin-bottom:.65rem;}
+    .theme-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin-bottom:1.4rem;}
+    .theme-swatch{display:flex;flex-direction:column;align-items:center;gap:.35rem;cursor:pointer;padding:.55rem .3rem;border-radius:10px;border:2px solid transparent;transition:all .18s;background:var(--pref-bg,#f9fafb);}
+    .theme-swatch:hover{border-color:var(--pref-accent,#2563eb);}
+    .theme-swatch.selected{border-color:var(--pref-accent,#2563eb);box-shadow:0 0 0 2px rgba(37,99,235,.18);}
+    .swatch-dot{width:28px;height:28px;border-radius:50%;border:2px solid rgba(0,0,0,.08);}
+    .swatch-label{font-size:.62rem;font-weight:500;color:var(--pref-muted,#6b7280);text-align:center;line-height:1.2;}
+    .pref-preview{background:var(--pref-bg,#f9fafb);border:1px solid var(--pref-border,#e5e7eb);border-radius:10px;padding:.7rem 1rem;margin-bottom:1.2rem;}
+    .pref-preview-label{font-size:.7rem;color:var(--pref-muted,#6b7280);margin-bottom:.5rem;}
+    .preview-tab-bar{display:flex;gap:.3rem;background:white;border:1px solid #e5e7eb;border-radius:100px;padding:.25rem;width:fit-content;}
+    .preview-tab{padding:.3rem .9rem;border-radius:100px;font-size:.75rem;font-weight:500;border:none;cursor:default;color:#6b7280;background:none;}
+    .preview-tab.active-preview{background:var(--tab-active-bg,#1e3a5f);color:var(--tab-active-text,#fff);}
+    .btn-apply-theme{width:100%;padding:.8rem;background:var(--tab-active-bg,#1e3a5f);color:var(--tab-active-text,#fff);border:none;border-radius:10px;font-size:.88rem;font-weight:600;cursor:pointer;opacity:1;transition:opacity .2s;margin-bottom:.5rem;}
+    .btn-apply-theme:hover{opacity:.88;}
+    .btn-close-pref{width:100%;padding:.6rem;background:none;color:var(--pref-muted,#6b7280);border:1px solid var(--pref-border,#e5e7eb);border-radius:10px;font-size:.82rem;cursor:pointer;transition:all .2s;}
+    .btn-close-pref:hover{border-color:#9ca3af;}
+    body.theme-night-heritage { --bg:#1c1007; --white:#2a1a0e; --surface:#2a1a0e; --border:#4a3728; --text:#f5ebe0; --muted:#a89080; }
   </style>
 </head>
 <body>
@@ -230,6 +267,7 @@
       <div class="mobile-logo">Héritage<em>Mémoire</em></div>
       <div style="display:flex;align-items:center;gap:0.5rem;">
         <span id="hm-premium-ind" style="display:none;font-size:0.65rem;font-weight:500;color:var(--green);background:var(--green-bg);border-radius:100px;padding:0.2rem 0.5rem;">✓ Premium</span>
+        <button id="btn-prefs-heritage" style="display:none;background:none;border:none;cursor:pointer;font-size:1rem;padding:.2rem .4rem;border-radius:6px;" onclick="openPrefs_heritage()" aria-label="Personnaliser l'apparence">⚙️</button>
         <span id="hm-gratuit-ind" style="display:none;font-size:0.65rem;font-weight:500;color:var(--green);background:var(--green-bg);border-radius:100px;padding:0.2rem 0.5rem;">✓ Accès gratuit</span>
         <div id="hm-auth-bar" style="display:flex;">
           <button class="btn-prem-sm" onclick="openHmModal()">Connexion</button>
@@ -562,6 +600,12 @@ onAuthStateChanged(auth, async (user) => {
     try {
       const snap = await getDoc(doc(db, 'users', user.uid));
       isPremium = snap.exists() && snap.data()?.subscriptions?.heritage?.premium === true;
+      if (isPremium) {
+        const savedTheme = snap.data()?.preferences?.heritage?.theme;
+        if (savedTheme && THEMES_heritage[savedTheme]) applyTheme_heritage(savedTheme);
+        const btn = document.getElementById('btn-prefs-heritage');
+        if (btn) btn.style.display = 'inline-block';
+      }
     } catch {}
     isAccesGratuit = await checkAccesGratuit(user.email);
     updateAccessBadges();
@@ -583,6 +627,7 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById('hm-user-bar').style.display = 'none';
     document.getElementById('sidebar-user-info').style.display = 'none';
     ['hm-premium-ind','hm-gratuit-ind'].forEach(id => document.getElementById(id).style.display = 'none');
+    const pb=document.getElementById('btn-prefs-heritage'); if(pb) pb.style.display='none';
     document.getElementById('btn-paywall-mobile').style.display = 'inline-block';
     document.getElementById('btn-paywall-sidebar').style.display = 'block';
   }
@@ -1085,7 +1130,27 @@ window.generatePDF = async function() {
     });
     html += '</div>';
   }
-  html += `<div class="footer">HéritageMémoire — ${dateGen}</div></body></html>`;
+  html += `<div class="footer">HéritageMémoire — ${dateGen}</div>
+<!-- ── PREFERENCES PANEL ── -->
+<div class="pref-overlay" id="pref-modal" role="dialog" aria-modal="true" aria-label="Préférences d'apparence">
+  <div class="pref-card">
+    <div class="pref-handle"></div>
+    <div class="pref-title">⚙️ Apparence — Exclusif Premium</div>
+    <p class="pref-sub">Choisissez un thème pour personnaliser votre interface.</p>
+    <div class="pref-section-label">Thème de couleur</div>
+    <div class="theme-grid" id="theme-grid-heritage"></div>
+    <div class="pref-preview">
+      <div class="pref-preview-label">Aperçu</div>
+      <div class="preview-tab-bar">
+        <div class="preview-tab active-preview" id="preview-tab-active-heritage">Actif</div>
+        <div class="preview-tab">Inactif</div>
+      </div>
+    </div>
+    <button class="btn-apply-theme" onclick="applyAndSaveTheme_heritage()">✓ Appliquer ce thème</button>
+    <button class="btn-close-pref" onclick="closePrefs_heritage()">Annuler</button>
+  </div>
+</div>
+</body></html>`;
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const win = window.open(url, '_blank');
@@ -1272,6 +1337,12 @@ window.checkPremiumStatus = async function() {
   try {
     const snap = await getDoc(doc(db, 'users', currentUser.uid));
     isPremium = snap.exists() && snap.data()?.subscriptions?.heritage?.premium === true;
+      if (isPremium) {
+        const savedTheme = snap.data()?.preferences?.heritage?.theme;
+        if (savedTheme && THEMES_heritage[savedTheme]) applyTheme_heritage(savedTheme);
+        const btn = document.getElementById('btn-prefs-heritage');
+        if (btn) btn.style.display = 'inline-block';
+      }
     isAccesGratuit = await checkAccesGratuit(currentUser.email);
     updateAccessBadges();
     renderChapters();
@@ -1302,6 +1373,110 @@ document.getElementById('loading-overlay').classList.add('hidden');
 });
 window._deferredCalls = null;
 
+
+// ── THEME ENGINE ──
+const THEMES_heritage = {
+  sepia: { id:'sepia', label:'🍂 Sépia', dot:'#8b4513', vars:{'--tab-active-color':'#8b4513', '--tab-active-bg':'#f5ebe0', '--tab-active-text':'#8b4513', '--accent':'#8b4513', '--accent-light':'#a0522d', '--accent-bg':'#f5ebe0', '--header-bg':'#ffffff'}, night:false },
+  night: { id:'night', label:'🌙 Nuit', dot:'#1c1007', vars:{'--tab-active-color':'#f5ebe0', '--tab-active-bg':'#3b2512', '--tab-active-text':'#f5ebe0', '--accent':'#f5ebe0', '--accent-light':'#e8d5c4', '--accent-bg':'#3b2512', '--header-bg':'#1c1007'}, night:true },
+  ocean: { id:'ocean', label:'🌊 Océan', dot:'#1e3a5f', vars:{'--tab-active-color':'#2563eb', '--tab-active-bg':'#dbeafe', '--tab-active-text':'#ffffff', '--accent':'#2563eb', '--accent-light':'#3b82f6', '--accent-bg':'#dbeafe', '--header-bg':'#1e3a5f'}, night:false },
+  forest: { id:'forest', label:'🌿 Forêt', dot:'#14532d', vars:{'--tab-active-color':'#16a34a', '--tab-active-bg':'#dcfce7', '--tab-active-text':'#14532d', '--accent':'#16a34a', '--accent-light':'#22c55e', '--accent-bg':'#dcfce7', '--header-bg':'#14532d'}, night:false },
+  violet: { id:'violet', label:'⚡ Violet', dot:'#4c1d95', vars:{'--tab-active-color':'#7c3aed', '--tab-active-bg':'#f3e8ff', '--tab-active-text':'#4c1d95', '--accent':'#7c3aed', '--accent-light':'#8b5cf6', '--accent-bg':'#f3e8ff', '--header-bg':'#4c1d95'}, night:false },
+};
+
+let currentThemeId_heritage = 'sepia';
+let pendingThemeId_heritage = 'sepia';
+
+function applyTheme_heritage(themeId) {
+  const theme = THEMES_heritage[themeId] || THEMES_heritage['sepia'];
+  const root = document.documentElement;
+  Object.entries(theme.vars).forEach(([k,v]) => root.style.setProperty(k,v));
+  document.body.classList.toggle('theme-night-heritage', theme.night);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = theme.vars['--header-bg'] || theme.vars['--tab-active-color'] || '';
+  currentThemeId_heritage = themeId;
+  document.querySelectorAll('#theme-grid-heritage .theme-swatch').forEach(s => {
+    s.classList.toggle('selected', s.dataset.theme === themeId);
+  });
+}
+
+async function applyAndSaveTheme_heritage() {
+  applyTheme_heritage(pendingThemeId_heritage);
+  currentThemeId_heritage = pendingThemeId_heritage;
+  try { localStorage.setItem('heritage_theme', pendingThemeId_heritage); } catch {}
+  
+  if (currentUser) {
+    try {
+      const ref = doc(db, 'users', currentUser.uid);
+      const snap2 = await getDoc(ref);
+      const ex = snap2.exists() ? snap2.data() : {};
+      await setDoc(ref, { ...ex, preferences: { ...(ex.preferences||{}), 'heritage': { theme: pendingThemeId_heritage, updatedAt: new Date().toISOString() } } });
+    } catch(e) { console.warn('Theme save:', e); }
+  }
+  closePrefs_heritage();
+  if (typeof showToast === 'function') showToast('✓ Thème appliqué !');
+  else { const t=document.createElement('div'); t.textContent='✓ Thème appliqué !'; t.style='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e3a5f;color:#fff;padding:.6rem 1.25rem;border-radius:100px;font-size:.82rem;z-index:9999;'; document.body.appendChild(t); setTimeout(()=>t.remove(),2500); }
+}
+
+function loadTheme_heritage() {
+  let id = 'sepia';
+  try { const ls = localStorage.getItem('heritage_theme'); if (ls && THEMES_heritage[ls]) id = ls; } catch {}
+  applyTheme_heritage(id);
+}
+
+window.openPrefs_heritage = function() {
+  pendingThemeId_heritage = currentThemeId_heritage;
+  const grid = document.getElementById('theme-grid-heritage');
+  if (!grid) return;
+  grid.innerHTML = Object.values(THEMES_heritage).map(t => `
+    <div class="theme-swatch ${t.id === pendingThemeId_heritage ? 'selected' : ''}"
+         data-theme="${t.id}" role="radio" aria-checked="${t.id === pendingThemeId_heritage}"
+         tabindex="0"
+         onclick="selectTheme_heritage('${t.id}')"
+         onkeydown="if(event.key==='Enter'||event.key===' ')selectTheme_heritage('${t.id}')">
+      <div class="swatch-dot" style="background:${t.dot}"></div>
+      <div class="swatch-label">${t.label}</div>
+    </div>`).join('');
+  document.getElementById('pref-modal').classList.add('open');
+};
+
+window.closePrefs_heritage = function() {
+  applyTheme_heritage(currentThemeId_heritage);
+  document.getElementById('pref-modal').classList.remove('open');
+};
+
+window.selectTheme_heritage = function(id) {
+  pendingThemeId_heritage = id;
+  applyTheme_heritage(id);
+  document.querySelectorAll('#theme-grid-heritage .theme-swatch').forEach(s => {
+    s.classList.toggle('selected', s.dataset.theme === id);
+    s.setAttribute('aria-checked', s.dataset.theme === id);
+  });
+};
+
+// Init theme on page load
+loadTheme_heritage();
+
 </script>
+
+<!-- ── PREFERENCES PANEL ── -->
+<div class="pref-overlay" id="pref-modal" role="dialog" aria-modal="true" aria-label="Préférences d'apparence">
+  <div class="pref-card">
+    <div class="pref-handle"></div>
+    <div class="pref-title">⚙️ Apparence — Exclusif Premium</div>
+    <p class="pref-sub">Choisissez un thème pour personnaliser votre interface.</p>
+    <div class="pref-section-label">Thème de couleur</div>
+    <div class="theme-grid" id="theme-grid-heritage"></div>
+    <div class="pref-preview">
+      <div class="pref-preview-label">Aperçu</div>
+      <div class="preview-tab-bar">
+        <div class="preview-tab active-preview" id="preview-tab-active-heritage">Actif</div>
+        <div class="preview-tab">Inactif</div>
+      </div>
+    </div>
+    <button class="btn-apply-theme" onclick="applyAndSaveTheme_heritage()">✓ Appliquer ce thème</button>
+    <button class="btn-close-pref" onclick="closePrefs_heritage()">Annuler</button>
+  </div>
+</div>
 </body>
 </html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           

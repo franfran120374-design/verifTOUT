@@ -30,6 +30,9 @@
       --radius:     14px;
       --radius-sm:  8px;
       --shadow:     0 4px 20px rgba(30,58,95,0.10);
+      --tab-active-bg:   var(--navy);
+      --tab-active-text: #ffffff;
+      --header-bg:       var(--navy);
     }
 
     body {
@@ -51,7 +54,7 @@
 
     /* ── HEADER ── */
     .app-header {
-      background: var(--navy);
+      background: var(--header-bg);
       color: #fff;
       padding: 1rem 1.5rem;
       display: flex;
@@ -135,8 +138,8 @@
       transition: all 0.2s;
     }
     .tab-btn.active {
-      background: var(--navy);
-      color: #fff;
+      background: var(--tab-active-bg);
+      color: var(--tab-active-text);
     }
 
     /* ── VIEW ── */
@@ -1328,6 +1331,31 @@
       .tab-bar { width: 100%; }
       .tab-btn { flex: 1; text-align: center; }
     }
+
+    /* ── PANEL PRÉFÉRENCES PREMIUM ── */
+    .pref-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:none;align-items:flex-end;justify-content:center;}
+    .pref-overlay.open{display:flex;}
+    .pref-card{background:#fff;border-radius:16px 16px 0 0;padding:1.5rem;width:100%;max-width:480px;box-shadow:0 -4px 32px rgba(0,0,0,0.18);animation:prefUp .28s ease;}
+    @keyframes prefUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .pref-handle{width:36px;height:4px;background:#d1d5db;border-radius:100px;margin:0 auto 1.2rem;}
+    .pref-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.3rem;}
+    .pref-sub{font-size:.78rem;color:var(--muted);margin-bottom:1.2rem;}
+    .pref-section-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.65rem;}
+    .theme-grid-vs{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin-bottom:1.4rem;}
+    .theme-swatch-vs{display:flex;flex-direction:column;align-items:center;gap:.35rem;cursor:pointer;padding:.55rem .3rem;border-radius:10px;border:2px solid transparent;transition:all .18s;background:var(--bg);}
+    .theme-swatch-vs:hover{border-color:var(--blue);}
+    .theme-swatch-vs.selected{border-color:var(--tab-active-bg);box-shadow:0 0 0 2px rgba(37,99,235,.18);}
+    .swatch-dot-vs{width:28px;height:28px;border-radius:50%;border:2px solid rgba(0,0,0,.08);}
+    .swatch-label-vs{font-size:.62rem;font-weight:500;color:var(--muted);text-align:center;line-height:1.2;}
+    .pref-preview-vs{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:.7rem 1rem;margin-bottom:1.2rem;}
+    .pref-preview-label-vs{font-size:.7rem;color:var(--muted);margin-bottom:.5rem;}
+    .preview-tab-bar-vs{display:flex;gap:.3rem;background:white;border:1px solid var(--border);border-radius:100px;padding:.25rem;width:fit-content;}
+    .preview-tab-vs{padding:.3rem .9rem;border-radius:100px;font-size:.75rem;font-weight:500;border:none;cursor:default;color:var(--muted);background:none;}
+    .preview-tab-vs.active-preview{background:var(--tab-active-bg);color:var(--tab-active-text);}
+    .btn-apply-theme-vs{width:100%;padding:.8rem;background:var(--tab-active-bg);color:var(--tab-active-text);border:none;border-radius:10px;font-size:.88rem;font-weight:600;cursor:pointer;transition:opacity .2s;margin-bottom:.5rem;}
+    .btn-apply-theme-vs:hover{opacity:.88;}
+    .btn-close-pref-vs{width:100%;padding:.6rem;background:none;color:var(--muted);border:1px solid var(--border);border-radius:10px;font-size:.82rem;cursor:pointer;}
+    body.theme-night-vs{--bg:#0f172a;--surface:#1e293b;--border:#334155;--text:#f1f5f9;--muted:#94a3b8;}
   </style>
 </head>
 <body>
@@ -1346,6 +1374,7 @@
         <button class="hbtn" onclick="openAuthModal()">Connexion</button>
       </div>
       <div id="user-bar" style="display:none;">
+        <button class="hbtn" id="btn-prefs-vs" style="display:none;" onclick="openPrefs_vs()" aria-label="Personnaliser l'apparence">⚙️</button>
         <button class="hbtn" onclick="handleSignOut()">↪ Déco</button>
       </div>
       <button class="hbtn premium" id="btn-premium-hdr" onclick="openPaywall()">✦ 3,99€</button>
@@ -1355,11 +1384,11 @@
   <!-- ── MAIN ── -->
   <main class="main-content">
     <!-- TAB BAR -->
-    <div class="tab-bar">
-      <button class="tab-btn active" id="tab-analyze"  onclick="showTab('analyze')">🔍 Analyser</button>
-      <button class="tab-btn"        id="tab-search"   onclick="showTab('search')">🕵️ Rechercher</button>
-      <button class="tab-btn"        id="tab-debunk"   onclick="showTab('debunk')">🔬 Débunker</button>
-      <button class="tab-btn"        id="tab-history"  onclick="showTab('history')">📋 Historique</button>
+    <div class="tab-bar" role="tablist" aria-label="Navigation principale">
+      <button class="tab-btn active" id="tab-analyze"  role="tab" aria-selected="true"  aria-controls="view-analyze" onclick="showTab('analyze')">🔍 Analyser</button>
+      <button class="tab-btn"        id="tab-search"   role="tab" aria-selected="false" aria-controls="view-search"  onclick="showTab('search')">🕵️ Rechercher</button>
+      <button class="tab-btn"        id="tab-debunk"   role="tab" aria-selected="false" aria-controls="view-debunk"  onclick="showTab('debunk')">🔬 Débunker</button>
+      <button class="tab-btn"        id="tab-history"  role="tab" aria-selected="false" aria-controls="view-history" onclick="showTab('history')">📋 Historique</button>
     </div>
 
     <!-- ── VIEW : ANALYZE ── -->
@@ -1907,6 +1936,10 @@ onAuthStateChanged(auth, async (user) => {
         snap.data()?.subscriptions?.veriftout?.premium === true ||
         snap.data()?.veriftout?.premium === true
       );
+      if (isPremium) {
+        const savedTheme = snap.data()?.preferences?.veriftout?.theme;
+        if (savedTheme && THEMES_vs[savedTheme]) applyTheme_vs(savedTheme);
+      }
     } catch(e) { console.error('Firestore error:', e); }
     updateAccessUI();
     loadHistory();
@@ -1923,6 +1956,8 @@ function updateAccessUI() {
   const full = isPremium;
   document.getElementById('premium-badge-hdr').style.display = full ? 'inline-block' : 'none';
   document.getElementById('btn-premium-hdr').style.display   = full ? 'none' : 'inline-block';
+  const prefBtn = document.getElementById('btn-prefs-vs');
+  if (prefBtn) prefBtn.style.display = full ? 'inline-block' : 'none';
   updateQuotaBar();
   // Re-render result if already shown
   if (lastResult) renderResult(lastResult);
@@ -2002,8 +2037,11 @@ window.checkPremiumStatus = async function() {
 // ── UI HELPERS ───────────────────────────────────────────────────────────────
 window.showTab = function(tab) {
   ['analyze', 'search', 'debunk', 'history'].forEach(t => {
-    document.getElementById('view-' + t).classList.toggle('active', t === tab);
-    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+    const isActive = t === tab;
+    document.getElementById('view-' + t).classList.toggle('active', isActive);
+    const btn = document.getElementById('tab-' + t);
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-selected', isActive);
   });
   if (tab === 'history') loadHistory();
 };
@@ -3811,108 +3849,92 @@ window.runDebunk = async function() {
   const btn = document.getElementById('btn-debunk');
   const lbl = document.getElementById('dbk-btn-label');
   if (btn) btn.disabled = true;
-  if (lbl) lbl.textContent = '⏳ Analyse…';
+  if (lbl) lbl.textContent = '⏳ 
 
-  // Reset badges
-  ['dbk-algo-badge','dbk-fc-badge','dbk-wiki-badge','dbk-comm-badge'].forEach(id => setSrcBadge(id, 'loading'));
-  setVerdictUI('loading');
+// ── THEME ENGINE ─────────────────────────────────────────────────────────────
+const THEMES_vs = {
+  ocean:    { id:'ocean',    label:'🌊 Océan',    dot:'#1e3a5f', vars:{'--tab-active-bg':'#1e3a5f','--tab-active-text':'#ffffff','--header-bg':'#1e3a5f','--navy':'#1e3a5f','--navy-light':'#2a4f80','--blue':'#2563eb'}, night:false },
+  night:    { id:'night',    label:'🌙 Nuit',     dot:'#0f172a', vars:{'--tab-active-bg':'#60a5fa','--tab-active-text':'#0f172a','--header-bg':'#0f172a','--navy':'#0f172a','--navy-light':'#1e293b','--blue':'#3b82f6'}, night:true  },
+  forest:   { id:'forest',   label:'🌿 Forêt',   dot:'#14532d', vars:{'--tab-active-bg':'#14532d','--tab-active-text':'#ffffff','--header-bg':'#14532d','--navy':'#14532d','--navy-light':'#166534','--blue':'#16a34a'}, night:false },
+  bordeaux: { id:'bordeaux', label:'🔴 Bordeaux', dot:'#7f1d1d', vars:{'--tab-active-bg':'#7f1d1d','--tab-active-text':'#ffffff','--header-bg':'#7f1d1d','--navy':'#7f1d1d','--navy-light':'#991b1b','--blue':'#dc2626'}, night:false },
+  violet:   { id:'violet',   label:'⚡ Violet',   dot:'#4c1d95', vars:{'--tab-active-bg':'#4c1d95','--tab-active-text':'#ffffff','--header-bg':'#4c1d95','--navy':'#4c1d95','--navy-light':'#5b21b6','--blue':'#7c3aed'}, night:false },
+};
+let currentThemeId_vs = 'ocean';
+let pendingThemeId_vs  = 'ocean';
 
-  // Afficher claim extrait
-  const claimBox = document.getElementById('dbk-claim-box');
-  if (claimBox) claimBox.textContent = _dbkCurrentClaim || text.substring(0, 150);
-
-  // Reset cartes
-  ['dbk-algo-body','dbk-fc-body','dbk-wiki-body','dbk-comm-body'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = '<em style="color:#64748b;font-size:.75rem">Chargement…</em>';
-  });
-
-  try {
-    // Lancement en parallèle des 4 sources
-    const fullText = url ? text + '\n' + url : text;
-    const [algo, fc, wiki, comm] = await Promise.all([
-      Promise.resolve(analyzeAlgo(fullText)),
-      analyzeFactCheck(_dbkCurrentClaim),
-      analyzeWikipedia(_dbkCurrentClaim),
-      analyzeCommunity(fullText)
-    ]);
-
-    // Rendu des cartes
-    renderAlgo(algo);
-    renderFactCheck(fc);
-    renderWiki(wiki);
-    renderCommunity(comm);
-
-    // Verdict
-    const verdict = computeVerdict(algo, fc, wiki, comm);
-    renderVerdictFinal(verdict);
-    renderSynthesis(verdict, algo, fc, wiki, comm);
-
-    // Sauvegarde Firestore (non-bloquant)
+function applyTheme_vs(id) {
+  const t = THEMES_vs[id] || THEMES_vs.ocean;
+  const root = document.documentElement;
+  Object.entries(t.vars).forEach(([k,v]) => root.style.setProperty(k,v));
+  document.body.classList.toggle('theme-night-vs', t.night);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = t.vars['--header-bg'];
+  currentThemeId_vs = id;
+  document.querySelectorAll('.theme-swatch-vs').forEach(s => s.classList.toggle('selected', s.dataset.theme === id));
+}
+async function applyAndSaveTheme_vs() {
+  applyTheme_vs(pendingThemeId_vs);
+  currentThemeId_vs = pendingThemeId_vs;
+  try { localStorage.setItem('vt_scan_theme', pendingThemeId_vs); } catch {}
+  if (currentUser) {
     try {
-      if (_dbkCurrentHash) {
-        const ref = doc(db, 'verifTOUT_debunks', _dbkCurrentHash);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) {
-          await setDoc(ref, {
-            preview:   _dbkCurrentClaim.substring(0, 120),
-            verdict:   verdict.dominant,
-            confidence: verdict.confidence,
-            algoScore: algo.score,
-            factCheck: fc.found ? fc.results.length : 0,
-            wikiFound: wiki.found,
-            votes:     { vrai: 0, faux: 0, partiel: 0 },
-            createdAt: serverTimestamp(),
-            userId:    currentUser?.uid || 'anonymous'
-          });
-        }
-      }
-    } catch(e) { /* non-bloquant */ }
-
-  } catch(e) {
-    console.error('runDebunk:', e);
-    showToast('Erreur lors de l\'analyse — réessayez');
-    ['dbk-algo-badge','dbk-fc-badge','dbk-wiki-badge','dbk-comm-badge'].forEach(id => setSrcBadge(id, 'none'));
-  } finally {
-    if (btn) btn.disabled = false;
-    if (lbl) lbl.textContent = '🔬 Vérifier maintenant';
+      const ref = doc(db, 'users', currentUser.uid);
+      const snap = await getDoc(ref);
+      const ex = snap.exists() ? snap.data() : {};
+      await setDoc(ref, { ...ex, preferences: { ...(ex.preferences||{}), veriftout: { theme: pendingThemeId_vs, updatedAt: new Date().toISOString() } } });
+    } catch(e) { console.warn('Theme save:', e); }
   }
+  closePrefs_vs();
+  showToast('✓ Thème appliqué !');
+}
+window.openPrefs_vs = function() {
+  pendingThemeId_vs = currentThemeId_vs;
+  const grid = document.getElementById('theme-grid-vs');
+  if (!grid) return;
+  grid.innerHTML = Object.values(THEMES_vs).map(t => `
+    <div class="theme-swatch-vs ${t.id === pendingThemeId_vs ? 'selected' : ''}"
+         data-theme="${t.id}" role="radio" aria-checked="${t.id === pendingThemeId_vs}"
+         tabindex="0" onclick="selectTheme_vs('${t.id}')"
+         onkeydown="if(event.key==='Enter'||event.key===' ')selectTheme_vs('${t.id}')">
+      <div class="swatch-dot-vs" style="background:${t.dot}"></div>
+      <div class="swatch-label-vs">${t.label}</div>
+    </div>`).join('');
+  document.getElementById('pref-modal-vs').classList.add('open');
 };
-
-// ── Vote communauté ───────────────────────────────────────────────────────────
-
-window.castVote = async function(vote) {
-  if (!_dbkCurrentHash) { showToast('Lancez d\'abord une analyse'); return; }
-  document.querySelectorAll('.dbk-vote-btn').forEach(b => b.disabled = true);
-  try {
-    const ref = doc(db, 'verifTOUT_debunks', _dbkCurrentHash);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      await updateDoc(ref, { [`votes.${vote}`]: increment(1) });
-    } else {
-      const init = { vrai:0, faux:0, partiel:0 };
-      init[vote] = 1;
-      await setDoc(ref, {
-        preview:   _dbkCurrentClaim.substring(0, 120),
-        verdict:   'community',
-        votes:     init,
-        createdAt: serverTimestamp(),
-        userId:    currentUser?.uid || 'anonymous'
-      });
-    }
-    showToast('✓ Vote enregistré — merci pour votre contribution !');
-    // Refresh communauté
-    const comm2 = await analyzeCommunity(_dbkCurrentText);
-    renderCommunity(comm2);
-  } catch(e) {
-    showToast('Erreur lors du vote');
-    document.querySelectorAll('.dbk-vote-btn').forEach(b => b.disabled = false);
-  }
+window.closePrefs_vs = function() {
+  applyTheme_vs(currentThemeId_vs);
+  document.getElementById('pref-modal-vs').classList.remove('open');
 };
-
-// ── INIT ─────────────────────────────────────────────────────────────────────
-updateQuotaBar();
-
+window.selectTheme_vs = function(id) {
+  pendingThemeId_vs = id;
+  applyTheme_vs(id);
+  document.querySelectorAll('.theme-swatch-vs').forEach(s => {
+    s.classList.toggle('selected', s.dataset.theme === id);
+    s.setAttribute('aria-checked', s.dataset.theme === id);
+  });
+};
+// Init
+(function() { try { const ls = localStorage.getItem('vt_scan_theme'); if (ls && THEMES_vs[ls]) applyTheme_vs(ls); } catch {} })();
 </script>
+
+<!-- ── PREFERENCES PANEL ── -->
+<div class="pref-overlay" id="pref-modal-vs" role="dialog" aria-modal="true">
+  <div class="pref-card">
+    <div class="pref-handle"></div>
+    <div class="pref-title">⚙️ Apparence — Exclusif Premium</div>
+    <p class="pref-sub">Choisissez un thème pour personnaliser vos onglets.</p>
+    <div class="pref-section-label">Thème de couleur</div>
+    <div class="theme-grid-vs" id="theme-grid-vs"></div>
+    <div class="pref-preview-vs">
+      <div class="pref-preview-label-vs">Aperçu</div>
+      <div class="preview-tab-bar-vs">
+        <div class="preview-tab-vs active-preview">🔍 Analyser</div>
+        <div class="preview-tab-vs">📋 Historique</div>
+      </div>
+    </div>
+    <button class="btn-apply-theme-vs" onclick="applyAndSaveTheme_vs()">✓ Appliquer ce thème</button>
+    <button class="btn-close-pref-vs" onclick="closePrefs_vs()">Annuler</button>
+  </div>
+</div>
 </body>
 </html>
