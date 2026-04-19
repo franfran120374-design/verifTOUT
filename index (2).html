@@ -1412,6 +1412,8 @@
     }
 
     function settleDebt(fid, oName) { const f = getSafeArray(db.finances).find(x => String(x.id) === String(fid)); if(f) { const debts = f.owers || f.parts || []; const o = debts.find(x => x.name === oName); if(o) { o.settled = !o.settled; sync(); } } }
+    window.editerDepense = editerDepense;
+    window.settleDebt = settleDebt;
 
     function toggleFluideInputs() {
         const type = document.getElementById('fluide-type').value;
@@ -1729,7 +1731,7 @@ Raphaël`;
         if(db.membresPhotos && db.membresPhotos[currentUser]) { document.getElementById('my-profile-preview').src = db.membresPhotos[currentUser]; document.getElementById('my-profile-preview').style.display = 'block'; document.getElementById('header-avatar').src = db.membresPhotos[currentUser]; document.getElementById('header-avatar').style.display = 'inline-block'; } 
         
         const membresArr = getSafeArray(db.membres); const currentAdmin = db.admin || (membresArr.length > 0 ? membresArr[0] : currentUser); const isAdmin = (currentUser === currentAdmin);
-        const isPlatformOwner = !!(db.isPremium && db.premiumEmail === 'franfran120374@gmail.com');
+        const isPlatformOwner = (db.premiumEmail === 'franfran120374@gmail.com');
         const passSlug = slugify(db.password || ""); let calcSlug = colocPath; if (passSlug && colocPath.endsWith("_" + passSlug)) { calcSlug = colocPath.substring(0, colocPath.length - passSlug.length - 1); }
         
         // Affichage Admin dans Profil
