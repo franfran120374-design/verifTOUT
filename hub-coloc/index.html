@@ -234,17 +234,25 @@
             <div id="login-fields">
                 <label for="login-name" class="visually-hidden">Votre Prénom</label>
                 <input type="text" id="login-name" data-i18n="phName" placeholder="Votre Prénom">
-                
+
                 <label for="coloc-token" class="visually-hidden">Nom de la Colocation</label>
-                <input type="text" id="coloc-token" data-i18n="phColoc" placeholder="Nom de la Colocation">
-                
-                <div style="position: relative; width: 100%; margin-bottom: 15px;">
+                <div style="position:relative;">
+                    <input type="text" id="coloc-token" data-i18n="phColoc" placeholder="Nom de la Colocation" oninput="detecterColoc()" style="padding-right:36px;">
+                    <span id="coloc-status" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:1rem;"></span>
+                </div>
+
+                <div style="position: relative; width: 100%; margin-bottom: 8px;">
                     <label for="coloc-password" class="visually-hidden">Mot de passe de la coloc</label>
                     <input type="password" id="coloc-password" data-i18n="phPassword" placeholder="Mot de passe de la coloc" style="margin-bottom: 0; padding-right: 40px;">
                     <span id="toggle-pwd-icon" onclick="togglePassword()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.2rem; user-select: none;">👁️</span>
                 </div>
 
-                <button onclick="validerLogin()" data-i18n="btnContinue">Continuer</button>
+                <label style="font-size:0.8rem;color:#888;display:flex;align-items:center;gap:6px;margin-bottom:12px;cursor:pointer;">
+                    <input type="checkbox" id="remember-me" style="width:auto;margin:0;">
+                    Se souvenir de moi sur cet appareil
+                </label>
+
+                <button id="btn-login" onclick="validerLogin()">🔑 Se connecter / Créer</button>
             </div>
             <div id="charte-fields" style="display:none;">
                 <h2 data-i18n="titleCharte">📜 Acceptation de la Charte</h2>
@@ -1097,12 +1105,43 @@
     let tempPassword = "";
     let tempName = "";
 
+    let detectTimer = null;
+    function detecterColoc() {
+        clearTimeout(detectTimer);
+        const c = document.getElementById('coloc-token').value.trim();
+        const st = document.getElementById('coloc-status');
+        const btn = document.getElementById('btn-login');
+        if (!c) { st.innerText = ''; btn.textContent = '🔑 Se connecter / Créer'; return; }
+        st.innerText = '⏳';
+        detectTimer = setTimeout(() => {
+            database.ref('noms_reserves/' + slugify(c)).once('value').then(snap => {
+                if (snap.exists()) {
+                    st.innerText = '✅';
+                    btn.textContent = '🔑 Se connecter';
+                } else {
+                    st.innerText = '🆕';
+                    btn.textContent = '🆕 Créer cette colocation';
+                }
+            }).catch(() => { st.innerText = ''; });
+        }, 600);
+    }
+
     function validerLogin() {
         const u = document.getElementById('login-name').value.trim();
         const c = document.getElementById('coloc-token').value.trim();
         const p = document.getElementById('coloc-password').value.trim();
 
         if(!u || !c || !p) return alert(t('alertNameColoc'));
+        const remember = document.getElementById('remember-me').checked;
+        if (remember) {
+            localStorage.setItem('hub_saved_user', u);
+            localStorage.setItem('hub_saved_coloc', c);
+            localStorage.setItem('hub_saved_pass', p);
+        } else {
+            localStorage.removeItem('hub_saved_user');
+            localStorage.removeItem('hub_saved_coloc');
+            localStorage.removeItem('hub_saved_pass');
+        }
 
         const slugName = slugify(c);
         const secretPath = slugName + "_" + slugify(p);
@@ -2019,9 +2058,20 @@ Raphaël`;
             document.getElementById('auth-modal').style.display = 'flex'; 
             applyTranslations(); 
         } 
-    } else { 
-        applyTranslations(); 
-        document.getElementById('auth-modal').style.display = 'flex'; 
+    } else {
+        applyTranslations();
+        document.getElementById('auth-modal').style.display = 'flex';
+        // Pré-remplir si credentials sauvegardés
+        const su = localStorage.getItem('hub_saved_user');
+        const sc = localStorage.getItem('hub_saved_coloc');
+        const sp = localStorage.getItem('hub_saved_pass');
+        if (su && sc && sp) {
+            document.getElementById('login-name').value = su;
+            document.getElementById('coloc-token').value = sc;
+            document.getElementById('coloc-password').value = sp;
+            document.getElementById('remember-me').checked = true;
+            detecterColoc();
+        }
     }
 
 // ── THEME ENGINE ──
