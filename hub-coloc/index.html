@@ -871,6 +871,7 @@
                     <input type="file" id="config-cover" accept="image/*" style="display:none" onchange="updatePhoto(event)">
 
                     <button class="btn-outline" onclick="activerNotifications()" style="margin-top:10px;" data-i18n="btnPushAuth">🔔 Activer les Notifications Push</button>
+                    <button class="btn-outline" onclick="testNotification()" style="margin-top:10px;">🧪 Tester une Notification</button>
                 </div>
 
                 <div class="card" style="border-left: 5px solid var(--accent);">
@@ -1342,18 +1343,60 @@
 
     // --- LOGIQUE NOTIFICATION CORRIGÉE ET FIABLE ---
     async function activerNotifications() {
+        console.log('🔔 Bouton activerNotifications cliqué');
+        console.log('Notification in window:', 'Notification' in window);
+        console.log('Permission actuelle:', Notification.permission);
+        
         if (!('Notification' in window)) {
             alert("⚠️ Votre navigateur bloque cette option. \n\nASTUCE : Si vous êtes sur iPhone, vous DEVEZ appuyer sur le bouton 'Partager' (carré avec flèche) puis 'Sur l'écran d'accueil'. Ouvrez ensuite l'appli depuis votre écran d'accueil, et ce bouton fonctionnera !");
             return;
         }
         try {
             const permission = await Notification.requestPermission();
+            console.log('✅ Permission demandée, résultat:', permission);
+            
             if (permission === 'granted') {
-                alert(t('alertPushSuccess'));
-            } else { 
-                alert(t('alertPushDenied')); 
+                alert('✅ Notifications activées ! Tu recevras les notifications des messages.');
+                console.log('✅ Notification permission GRANTED');
+            } else if (permission === 'denied') {
+                alert('❌ Permission refusée. Va dans les paramètres de ton navigateur pour activer les notifications.');
+                console.log('❌ Notification permission DENIED');
+            } else {
+                alert('⏭️ Permission en attente.');
+                console.log('⏭️ Notification permission PROMPT');
             }
-        } catch (err) { console.error("Erreur Notification:", err); }
+        } catch (err) { 
+            console.error("Erreur Notification:", err);
+            alert('❌ Erreur : ' + err.message);
+        }
+    }
+
+    // 🧪 TEST NOTIFICATION
+    function testNotification() {
+        if (!('Notification' in window)) {
+            alert("❌ Notifications non supportées");
+            return;
+        }
+        
+        if (Notification.permission !== 'granted') {
+            alert("❌ Permission refusée. Active d'abord les notifications ! 🔔");
+            return;
+        }
+
+        try {
+            new Notification('🧪 TEST Hub Coloc', {
+                body: 'Ceci est une notification de test ! Si tu la vois, tout fonctionne ! 🎉',
+                icon: './favicon.ico',
+                badge: './favicon.ico',
+                tag: 'hub-coloc-test',
+                requireInteraction: false,
+                vibrate: [200, 100, 200]
+            });
+            console.log('✅ Notification de test envoyée !');
+        } catch(err) {
+            alert('❌ Erreur : ' + err.message);
+            console.error('Erreur notif test:', err);
+        }
     }
 
     // --- COMPTAGE INDIVIDUEL ET POP-UP NOUVEAUTÉS ---
@@ -2183,6 +2226,7 @@
     window.nextMonth = nextMonth;
     window.toggleTutorial = toggleTutorial;
     window.showEventDetails = showEventDetails;
+    window.testNotification = testNotification;
     window.votePoll = votePoll;
     window.proposePollOption = proposePollOption;
     window.closePoll = closePoll;
