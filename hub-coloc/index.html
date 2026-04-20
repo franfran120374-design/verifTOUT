@@ -1313,6 +1313,7 @@
             // 🎉 Si c'est une nouvelle coloc, afficher l'écran d'invitation
             if (tempIsNew) {
                 showInvitationModal();
+                tempIsNew = false; // ← RÉINITIALISER
             }
         }).catch(() => { init(); });
     }
