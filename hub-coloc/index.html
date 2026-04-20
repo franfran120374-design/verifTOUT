@@ -9,6 +9,7 @@
     <link rel="manifest" href="manifest.json">
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -138,6 +139,192 @@
         
         .recording-pulse { animation: pulse 1.5s infinite; color: red !important; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+        /* ─── FIREBASE AUTH MODAL ─── */
+        #firebase-auth-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        #firebase-auth-modal.show {
+            display: flex;
+        }
+
+        .firebase-auth-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .firebase-auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .firebase-auth-header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .firebase-auth-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .firebase-auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .firebase-auth-tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .firebase-auth-tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .firebase-auth-tab-content {
+            display: none;
+        }
+
+        .firebase-auth-tab-content.active {
+            display: block;
+        }
+
+        .firebase-auth-form-group {
+            margin-bottom: 20px;
+        }
+
+        .firebase-auth-form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .firebase-auth-form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .firebase-auth-form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .firebase-auth-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .firebase-auth-error {
+            color: #ff6b6b;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .firebase-auth-success {
+            color: #51cf66;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .firebase-auth-status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .firebase-auth-status.show {
+            display: block;
+        }
+
+        .firebase-auth-status.error {
+            background: #ffe0e0;
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+
+        .firebase-auth-status.success {
+            background: #e0ffe0;
+            color: #51cf66;
+            border: 1px solid #51cf66;
+        }
+
+        .firebase-auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-top: 20px;
+        }
+
+        .firebase-auth-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .firebase-auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .firebase-auth-loader {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: firebase-auth-spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes firebase-auth-spin {
+            to { transform: rotate(360deg); }
+        }
 
         /* ─── PREMIUM ─── */
         .premium-badge { background: linear-gradient(135deg, #d4a853, #f0c97a); color: #1a0e00; font-size: 0.65rem; font-weight: bold; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.05em; }
@@ -2145,7 +2332,155 @@ window.selectTheme_hub_coloc = function(id) {
   });
 };
 
-// Init theme on page load
+// ── FIREBASE AUTH FUNCTIONS ──
+let firebaseAuthUser = null;
+
+// Attendre que Firebase soit prêt
+function initFirebaseAuth() {
+    if (typeof firebase === 'undefined') {
+        setTimeout(initFirebaseAuth, 100);
+        return;
+    }
+
+    // Initialiser Firebase Auth
+    firebase.auth().onAuthStateChanged(user => {
+        firebaseAuthUser = user;
+        if (user) {
+            document.getElementById('firebase-auth-modal').classList.remove('show');
+        } else {
+            document.getElementById('firebase-auth-modal').classList.add('show');
+        }
+    });
+}
+
+// Lancer l'initialisation
+initFirebaseAuth();
+
+function firebaseAuthSwitchTab(tabName) {
+    document.querySelectorAll('.firebase-auth-tab-content').forEach(el => {
+        el.classList.remove('active');
+    });
+    document.querySelectorAll('.firebase-auth-tab-btn').forEach(el => {
+        el.classList.remove('active');
+    });
+    
+    document.getElementById(`firebase-${tabName}`).classList.add('active');
+    event.target.classList.add('active');
+}
+
+function firebaseShowAlert(elementId, message, type) {
+    const alert = document.getElementById(elementId);
+    alert.textContent = message;
+    alert.className = `firebase-auth-status show ${type}`;
+}
+
+async function firebaseHandleLogin(event) {
+    event.preventDefault();
+    
+    if (typeof firebase === 'undefined') {
+        alert('Firebase n\'est pas encore chargé');
+        return;
+    }
+
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const loginBtn = document.getElementById('loginBtn');
+    const loginAlert = document.getElementById('loginAlert');
+
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '<span class="firebase-auth-loader"></span>Connexion...';
+    loginAlert.classList.remove('show');
+
+    try {
+        await firebase.auth().signInWithEmailAndPassword(email, password);
+        firebaseShowAlert('loginAlert', '✓ Connexion réussie !', 'success');
+        setTimeout(() => {
+            document.getElementById('firebase-auth-modal').classList.remove('show');
+        }, 1000);
+    } catch (error) {
+        const errorMsg = getFirebaseErrorMessage(error.code);
+        firebaseShowAlert('loginAlert', '✗ ' + errorMsg, 'error');
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = 'Se connecter';
+    }
+}
+
+async function firebaseHandleCreate(event) {
+    event.preventDefault();
+    
+    if (typeof firebase === 'undefined') {
+        alert('Firebase n\'est pas encore chargé');
+        return;
+    }
+
+    const colocName = document.getElementById('colocName').value;
+    const email = document.getElementById('createEmail').value;
+    const password = document.getElementById('createPassword').value;
+    const createBtn = document.getElementById('createBtn');
+    const createAlert = document.getElementById('createAlert');
+
+    createBtn.disabled = true;
+    createBtn.innerHTML = '<span class="firebase-auth-loader"></span>Création...';
+    createAlert.classList.remove('show');
+
+    try {
+        // Vérifier si le nom est disponible
+        const snapshot = await firebase.database().ref('noms_reserves').orderByChild('nom').equalTo(colocName).once('value');
+        
+        if (snapshot.exists()) {
+            throw new Error('Ce nom de colocation est déjà pris !');
+        }
+
+        // Créer le compte
+        const userResult = await firebase.auth().createUserWithEmailAndPassword(email, password);
+        const uid = userResult.user.uid;
+
+        // Créer la structure dans Realtime Database
+        await firebase.database().ref(`colocs/${colocName}`).set({
+            name: colocName,
+            createdAt: new Date().toISOString(),
+            adminUid: uid,
+            members: [uid],
+            finances: {},
+            messages: {},
+            membresPhotos: {}
+        });
+
+        // Réserver le nom
+        await firebase.database().ref(`noms_reserves/${colocName.toLowerCase()}`).set({
+            nom: colocName,
+            reserveePar: uid,
+            dateReserve: new Date().toISOString()
+        });
+
+        firebaseShowAlert('createAlert', '✓ Colocation créée !', 'success');
+        setTimeout(() => {
+            document.getElementById('firebase-auth-modal').classList.remove('show');
+        }, 1000);
+
+    } catch (error) {
+        const errorMsg = error.message || getFirebaseErrorMessage(error.code);
+        firebaseShowAlert('createAlert', '✗ ' + errorMsg, 'error');
+        createBtn.disabled = false;
+        createBtn.innerHTML = 'Créer la colocation';
+    }
+}
+
+function getFirebaseErrorMessage(code) {
+    const errors = {
+        'auth/email-already-in-use': 'Cet email est déjà utilisé',
+        'auth/invalid-email': 'Email invalide',
+        'auth/weak-password': 'Mot de passe trop faible (min 6 caractères)',
+        'auth/user-not-found': 'Utilisateur non trouvé',
+        'auth/wrong-password': 'Mot de passe incorrect',
+        'auth/too-many-requests': 'Trop de tentatives, réessayez plus tard'
+    };
+    return errors[code] || 'Une erreur est survenue';
+}
+
+// ── END FIREBASE AUTH FUNCTIONS ──
+
+
 loadTheme_hub_coloc();
 
 // Show ⚙️ btn when premium is already set from localStorage db
@@ -2168,6 +2503,101 @@ loadTheme_hub_coloc();
 
 
 </script>
+
+<!-- ── FIREBASE AUTH MODAL ── -->
+<div id="firebase-auth-modal" class="show">
+    <div class="firebase-auth-container">
+        <div class="firebase-auth-header">
+            <h1>🏠 Hub Coloc</h1>
+            <p>Gérez votre colocation facilement</p>
+        </div>
+
+        <div class="firebase-auth-tabs">
+            <button class="firebase-auth-tab-btn active" onclick="firebaseAuthSwitchTab('login')">
+                S'identifier
+            </button>
+            <button class="firebase-auth-tab-btn" onclick="firebaseAuthSwitchTab('create')">
+                Créer une coloc
+            </button>
+        </div>
+
+        <!-- LOGIN TAB -->
+        <div id="firebase-login" class="firebase-auth-tab-content active">
+            <div id="loginAlert" class="firebase-auth-status"></div>
+            
+            <form onsubmit="firebaseHandleLogin(event)">
+                <div class="firebase-auth-form-group">
+                    <label for="loginEmail">Email</label>
+                    <input 
+                        type="email" 
+                        id="loginEmail" 
+                        placeholder="votre@email.com"
+                        required
+                    >
+                </div>
+
+                <div class="firebase-auth-form-group">
+                    <label for="loginPassword">Mot de passe</label>
+                    <input 
+                        type="password" 
+                        id="loginPassword" 
+                        placeholder="••••••••"
+                        required
+                    >
+                    <div class="firebase-auth-hint">Au moins 6 caractères</div>
+                </div>
+
+                <button type="submit" class="firebase-auth-btn" id="loginBtn">
+                    Se connecter
+                </button>
+            </form>
+        </div>
+
+        <!-- CREATE TAB -->
+        <div id="firebase-create" class="firebase-auth-tab-content">
+            <div id="createAlert" class="firebase-auth-status"></div>
+            
+            <form onsubmit="firebaseHandleCreate(event)">
+                <div class="firebase-auth-form-group">
+                    <label for="colocName">Nom de la colocation</label>
+                    <input 
+                        type="text" 
+                        id="colocName" 
+                        placeholder="La coloc du bonheur"
+                        required
+                    >
+                    <div id="colocNameStatus" class="firebase-auth-hint"></div>
+                </div>
+
+                <div class="firebase-auth-form-group">
+                    <label for="createEmail">Email</label>
+                    <input 
+                        type="email" 
+                        id="createEmail" 
+                        placeholder="nouveau@example.com"
+                        required
+                    >
+                    <div class="firebase-auth-hint">Sera utilisé pour vous connecter</div>
+                </div>
+
+                <div class="firebase-auth-form-group">
+                    <label for="createPassword">Mot de passe</label>
+                    <input 
+                        type="password" 
+                        id="createPassword" 
+                        placeholder="••••••••"
+                        required
+                    >
+                    <div class="firebase-auth-hint">Au moins 6 caractères</div>
+                </div>
+
+                <button type="submit" class="firebase-auth-btn" id="createBtn">
+                    Créer la colocation
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- ── PREFERENCES PANEL ── -->
 <div class="pref-overlay" id="pref-modal" role="dialog" aria-modal="true" aria-label="Préférences d'apparence">
