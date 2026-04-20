@@ -127,7 +127,7 @@ self.addEventListener('message', (event) => {
     console.log('💬 Message reçu de l\'app:', event.data);
     self.registration.showNotification(event.data.title, {
       body: event.data.body,
-      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
+      icon: event.data.icon || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
       badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
       tag: 'hub-coloc-chat',
       requireInteraction: false,
