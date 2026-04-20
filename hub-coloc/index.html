@@ -342,6 +342,8 @@
             </div>
 
             <div id="tab-chat" class="tab-content" style="display:none;">
+                <div id="sondages-container"></div>
+                
                 <div class="card" style="padding:10px;">
                     <div id="chat-container"></div>
                     
@@ -1631,6 +1633,9 @@
     window.editerDepense = editerDepense;
     window.saveEditedDepense = saveEditedDepense;
     window.settleDebt = settleDebt;
+    window.votePoll = votePoll;
+    window.proposePollOption = proposePollOption;
+    window.closePoll = closePoll;
 
     function toggleFluideInputs() {
         const type = document.getElementById('fluide-type').value;
@@ -2003,26 +2008,24 @@ Raphaël`;
             alert('Veuillez entrer au moins 2 options');
             return;
         }
-        if (!date) {
-            alert('Veuillez sélectionner une date');
-            return;
-        }
 
         const poll = {
             id: Date.now(),
             question: question,
             author: currentUser,
             createdAt: new Date().toISOString(),
-            deadline: date + (time ? 'T' + time : 'T23:59'),
+            deadline: date && time ? date + 'T' + time : (date ? date + 'T23:59' : null),
             options: options.map(opt => ({ label: opt, votes: {} })),
-            members: pollMembersMode === 'all' ? (db.membres || []) : selectedPollMembers
+            members: pollMembersMode === 'all' ? (db.membres || []) : selectedPollMembers,
+            open: true // Le sondage est ouvert aux nouvelles réponses
         };
 
         if (!db.sondages) db.sondages = [];
         db.sondages.push(poll);
         sync();
 
-        const pollMessage = `📊 Nouveau sondage : ${question}`;
+        const deadlineText = poll.deadline ? ` (fin : ${new Date(poll.deadline).toLocaleString('fr-FR')})` : ' (sans limite)';
+        const pollMessage = `📊 Nouveau sondage : ${question}${deadlineText}`;
         const msgObj = {
             id: Date.now(),
             user: currentUser,
@@ -2039,6 +2042,42 @@ Raphaël`;
         alert('✓ Sondage créé et envoyé !');
         closePollModal();
         showTab('chat');
+    }
+    
+    function votePoll(pollId, option) {
+        const poll = getSafeArray(db.sondages).find(p => p.id === pollId);
+        if (!poll) return;
+        
+        const pollOption = poll.options.find(o => o.label === option);
+        if (!pollOption) return;
+        
+        // Enregistrer le vote
+        if (!pollOption.votes) pollOption.votes = {};
+        pollOption.votes[currentUser] = true;
+        sync();
+    }
+    
+    function proposePollOption(pollId) {
+        const newOption = prompt('Proposer une nouvelle option :').trim();
+        if (!newOption) return;
+        
+        const poll = getSafeArray(db.sondages).find(p => p.id === pollId);
+        if (!poll) return;
+        
+        // Ajouter la nouvelle option
+        poll.options.push({
+            label: newOption,
+            votes: { [currentUser]: true }
+        });
+        sync();
+    }
+    
+    function closePoll(pollId) {
+        const poll = getSafeArray(db.sondages).find(p => p.id === pollId);
+        if (!poll) return;
+        
+        poll.open = false;
+        sync();
     }
     // ── END POLL SYSTEM ──
 
@@ -2190,6 +2229,77 @@ Raphaël`;
                 </div>
             </div>`
         }).join('');
+        
+        // ── AFFICHER LES SONDAGES ──
+        const pollsContainer = document.getElementById('sondages-container');
+        const activePolls = getSafeArray(db.sondages).filter(p => p.open !== false);
+        
+        if (activePolls.length > 0) {
+            pollsContainer.innerHTML = activePolls.map(p => {
+                const totalVotes = {};
+                p.options.forEach(opt => {
+                    Object.keys(opt.votes || {}).forEach(voter => {
+                        totalVotes[opt.label] = (totalVotes[opt.label] || 0) + 1;
+                    });
+                });
+                
+                const maxVotes = Math.max(...Object.values(totalVotes), 1);
+                
+                return `
+                <div class="card" style="border-left: 5px solid #FF9800; margin-bottom: 12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <div style="flex:1;">
+                            <strong style="font-size: 1.1rem; color: #FF9800;">📊 ${p.question}</strong>
+                            <div style="font-size:0.8rem; color:var(--text-muted); margin-top:5px;">
+                                Créé par <b>${p.author}</b> 
+                                ${p.deadline ? `| Fin : ${new Date(p.deadline).toLocaleString('fr-FR')}` : '| Sans limite'}
+                            </div>
+                        </div>
+                        ${p.author === currentUser || isAdmin || isPlatformOwner ? `
+                            <button onclick="closePoll(${p.id})" style="width:auto; padding:6px 10px; font-size:0.8rem; background:#f0f0f0; border:1px solid #ddd; border-radius:6px; cursor:pointer; color:#FF9800;">
+                                🔒 Fermer
+                            </button>
+                        ` : ''}
+                    </div>
+                    
+                    <div style="margin-top: 12px;">
+                        ${p.options.map((opt, idx) => {
+                            const votes = Object.keys(opt.votes || {});
+                            const voteCount = votes.length;
+                            const percentage = maxVotes > 0 ? (voteCount / maxVotes) * 100 : 0;
+                            const userVoted = (opt.votes && opt.votes[currentUser]) ? '✅ ' : '';
+                            
+                            return `
+                            <div style="margin-bottom: 10px;">
+                                <button onclick="votePoll(${p.id}, '${opt.label.replace(/'/g, "\\'")}'); sync();" 
+                                    style="width:100%; text-align:left; padding:10px; background:${userVoted ? '#E8F5E9' : '#f9f9f9'}; border:${userVoted ? '2px solid #4CAF50' : '1px solid #ddd'}; border-radius:6px; cursor:pointer; font-weight:${userVoted ? 'bold' : 'normal'}; color:#000;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <span>${opt.label}</span>
+                                        <span style="font-size:0.85rem; color:#666;">${voteCount} ${voteCount > 1 ? 'votes' : 'vote'}</span>
+                                    </div>
+                                    <div style="background:#ddd; height:4px; border-radius:2px; margin-top:6px; overflow:hidden;">
+                                        <div style="background:#4CAF50; height:100%; width:${percentage}%;" />
+                                    </div>
+                                </button>
+                                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:3px;">
+                                    ${votes.length > 0 ? votes.join(', ') : 'Pas de vote'}
+                                </div>
+                            </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    
+                    <div style="margin-top: 10px; display:flex; gap:8px;">
+                        <button onclick="proposePollOption(${p.id}); sync();" style="flex:1; padding:8px; font-size:0.8rem; background:transparent; border:1px dashed #FF9800; color:#FF9800; border-radius:6px; cursor:pointer;">
+                            ➕ Proposer une option
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        } else {
+            pollsContainer.innerHTML = '';
+        }
         
         document.getElementById('chat-mention').innerHTML = `<option value="">Tous</option>` + membresArr.filter(m => m !== currentUser).map(m => `<option value="${m}">@${m}</option>`).join('');
         document.getElementById('evt-assignee').innerHTML = `<option value="Tous">${t('allColocs')}</option>` + membresArr.map(m => `<option value="${m}">${m}</option>`).join('');
@@ -2550,14 +2660,14 @@ window.addEventListener('load', () => {
             <input type="text" id="poll-question" placeholder="Ex: Qui cuisine demain ?" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
         </div>
 
-        <!-- Date et heure -->
+        <!-- Date et heure (optionnel) -->
         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
             <div style="flex: 1;">
-                <label for="poll-date" style="display: block; margin-bottom: 8px; font-weight: bold;">📅 Date limite</label>
+                <label for="poll-date" style="display: block; margin-bottom: 8px; font-weight: bold;">📅 Date limite <span style="color:#999; font-size:0.85rem;">(optionnel)</span></label>
                 <input type="date" id="poll-date" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
             </div>
             <div style="flex: 1;">
-                <label for="poll-time" style="display: block; margin-bottom: 8px; font-weight: bold;">⏰ Heure</label>
+                <label for="poll-time" style="display: block; margin-bottom: 8px; font-weight: bold;">⏰ Heure <span style="color:#999; font-size:0.85rem;">(optionnel)</span></label>
                 <input type="time" id="poll-time" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
             </div>
         </div>
