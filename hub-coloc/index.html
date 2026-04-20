@@ -1215,10 +1215,17 @@
                                 console.log('📨 Dernier message ID sauvegardé:', lastMessageId, 'Nouveau dernier message ID:', newLastMsg?.id);
                                 console.log('  → newLastMsg existe ?', !!newLastMsg);
                                 console.log('  → IDs différents ?', newLastMsg?.id !== lastMessageId);
-                                console.log('  → Pas du currentUser ?', newLastMsg?.user, '!==', currentUser, '=', newLastMsg?.user !== currentUser);
+                                console.log('  → newLastMsg.user:', newLastMsg?.user);
+                                console.log('  → currentUser:', currentUser);
+                                console.log('  → getDisplayName(newLastMsg.user):', getDisplayName(newLastMsg?.user));
+                                
+                                // Comparer les noms affichés au lieu des emails
+                                const msgUserDisplay = getDisplayName(newLastMsg?.user);
+                                const currentUserDisplay = getDisplayName(currentUser);
+                                console.log('  → msgUserDisplay:', msgUserDisplay, 'vs currentUserDisplay:', currentUserDisplay, '=', msgUserDisplay !== currentUserDisplay);
                                 
                                 // Si le dernier message a changé (nouvel ID) et ce n'est pas l'utilisateur courant
-                                if (newLastMsg && newLastMsg.id !== lastMessageId && newLastMsg.user !== currentUser) {
+                                if (newLastMsg && newLastMsg.id !== lastMessageId && getDisplayName(newLastMsg.user) !== getDisplayName(currentUser)) {
                                     console.log('✅ NOUVEAU MESSAGE DÉTECTÉ de:', newLastMsg.user);
                                     console.log('👁️ currentTab:', currentTab, 'visibility:', document.visibilityState);
                                     
