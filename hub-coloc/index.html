@@ -140,51 +140,6 @@
         .recording-pulse { animation: pulse 1.5s infinite; color: red !important; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
-        .firebase-quick-auth {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .firebase-quick-auth h3 {
-            margin: 0 0 10px 0;
-            font-size: 16px;
-        }
-
-        .firebase-quick-auth p {
-            margin: 0 0 15px 0;
-            font-size: 13px;
-            opacity: 0.9;
-        }
-
-        .firebase-quick-auth input {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .firebase-quick-auth button {
-            width: 100%;
-            padding: 10px;
-            background: white;
-            color: #667eea;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        .firebase-quick-auth button:hover {
-            opacity: 0.9;
-        }
-
         /* ─── PREMIUM ─── */
         .premium-badge { background: linear-gradient(135deg, #d4a853, #f0c97a); color: #1a0e00; font-size: 0.65rem; font-weight: bold; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.05em; }
         .premium-card { border-left: 5px solid #d4a853 !important; }
@@ -276,17 +231,6 @@
                 <option value="en">🇬🇧 English</option>
                 <option value="es">🇪🇸 Español</option>
             </select>
-            
-            <!-- FIREBASE AUTH PANEL -->
-            <div class="firebase-quick-auth" id="firebase-panel" style="display: none;">
-                <h3>🔐 Se connecter avec Firebase</h3>
-                <p>Ou utilisez votre email et mot de passe</p>
-                <input type="email" id="firebase-email" placeholder="Email" autocomplete="email">
-                <input type="password" id="firebase-password" placeholder="Mot de passe" autocomplete="current-password">
-                <button onclick="firebaseQuickLogin()">Se connecter</button>
-                <p style="font-size: 12px; margin-top: 10px;">ou continue en bas ↓</p>
-            </div>
-
             <h2 style="text-align:center;" data-i18n="titleAuth">🏠 Hub Coloc</h2>
             <div id="login-fields">
                 <label for="login-name" class="visually-hidden">Votre Prénom</label>
@@ -326,39 +270,6 @@
             <p id="news-text" style="margin: 15px 0; color: var(--text-main); line-height: 1.5; font-size: 1rem;"></p>
             <button onclick="document.getElementById('news-modal').style.display = 'none';" style="margin-bottom: 10px;">Voir mes nouveautés</button>
             <button class="btn-outline" onclick="forceAppRefresh()" style="border-color:var(--accent); color:var(--accent);">🔄 Mettre à jour l'application</button>
-        </div>
-    </div>
-
-    <!-- INVITATION MODAL -->
-    <div id="invitation-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content" style="text-align: center; max-width: 450px;">
-            <div style="font-size: 3rem; margin-bottom: 15px;">📧</div>
-            <h2>Invitez vos colocataires !</h2>
-            <p style="margin: 15px 0; color: var(--text-muted); line-height: 1.5; font-size: 0.95rem;">
-                Partagez ce lien avec vos amis pour qu'ils rejoignent votre colocation
-            </p>
-            
-            <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0; word-break: break-all;">
-                <small style="color: #666; display: block; margin-bottom: 8px;">🔗 Lien d'invitation :</small>
-                <input type="text" id="invitation-link" readonly style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; font-family: monospace;">
-            </div>
-
-            <div style="display: flex; gap: 10px; margin: 20px 0;">
-                <button onclick="copyInvitationLink()" style="flex: 1; background: var(--primary); color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                    📋 Copier le lien
-                </button>
-                <button onclick="shareInvitationWhatsApp()" style="flex: 1; background: #25D366; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                    💬 WhatsApp
-                </button>
-            </div>
-
-            <button onclick="shareInvitationEmail()" style="width: 100%; background: #4285F4; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px;">
-                ✉️ Email
-            </button>
-
-            <button onclick="closeInvitationModal()" class="btn-outline" style="width: 100%; border-color: var(--primary); color: var(--primary);">
-                ✓ J'ai terminé, continuer
-            </button>
         </div>
     </div>
 
@@ -1308,13 +1219,7 @@
                 return;
             }
             if(!db.membres.includes(currentUser)) { db.membres.push(currentUser); }
-            sync(); init();
-            
-            // 🎉 Si c'est une nouvelle coloc, afficher l'écran d'invitation
-            if (tempIsNew) {
-                showInvitationModal();
-                tempIsNew = false; // ← RÉINITIALISER
-            }
+            sync(); init(); 
         }).catch(() => { init(); });
     }
 
@@ -2241,7 +2146,7 @@ window.selectTheme_hub_coloc = function(id) {
   });
 };
 
-// ── INVITATION FUNCTIONS ──
+// ── INVITATION SYSTEM ──
 function showInvitationModal() {
     const invitationLink = generateInvitationLink();
     document.getElementById('invitation-link').value = invitationLink;
@@ -2249,8 +2154,7 @@ function showInvitationModal() {
 }
 
 function generateInvitationLink() {
-    // Créer un lien avec un code d'invitation
-    const invitationCode = btoa(colocPath + '|' + db.password); // Encoder le nom et mot de passe
+    const invitationCode = btoa(colocPath + '|' + (window.db ? window.db.password : tempPassword));
     const baseUrl = window.location.origin + window.location.pathname;
     return baseUrl + '?invite=' + invitationCode;
 }
@@ -2258,22 +2162,20 @@ function generateInvitationLink() {
 function copyInvitationLink() {
     const link = document.getElementById('invitation-link').value;
     navigator.clipboard.writeText(link).then(() => {
-        alert('✓ Lien copié dans le presse-papiers !');
-    }).catch(() => {
-        alert('Erreur lors de la copie');
+        alert('✓ Lien copié !');
     });
 }
 
 function shareInvitationWhatsApp() {
     const link = document.getElementById('invitation-link').value;
-    const message = encodeURIComponent(`🏠 Rejoins ma colocation "${db.name}" !\n\n📱 Clique sur ce lien : ${link}`);
+    const message = encodeURIComponent(`🏠 Rejoins ma colocation !\n\n${link}`);
     window.open('https://wa.me/?text=' + message, '_blank');
 }
 
 function shareInvitationEmail() {
     const link = document.getElementById('invitation-link').value;
-    const subject = encodeURIComponent(`Invitation à rejoindre la colocation ${db.name}`);
-    const body = encodeURIComponent(`Salut !\n\nJe t'invite à rejoindre ma colocation "${db.name}".\n\nCliquez sur ce lien pour rejoindre :\n${link}\n\nÀ bientôt !`);
+    const subject = encodeURIComponent(`Invitation colocation`);
+    const body = encodeURIComponent(`Clique ici pour rejoindre :\n${link}`);
     window.open('mailto:?subject=' + subject + '&body=' + body, '_blank');
 }
 
@@ -2281,7 +2183,7 @@ function closeInvitationModal() {
     document.getElementById('invitation-modal').style.display = 'none';
 }
 
-// Gérer les invitations via URL (quand quelqu'un clique sur le lien)
+// Gérer les invitations via URL
 function handleInvitationLink() {
     const params = new URLSearchParams(window.location.search);
     const inviteCode = params.get('invite');
@@ -2290,54 +2192,21 @@ function handleInvitationLink() {
         try {
             const decoded = atob(inviteCode);
             const [colocName, password] = decoded.split('|');
-            // Pré-remplir les champs d'authentification
             document.getElementById('coloc-token').value = colocName;
             document.getElementById('coloc-password').value = password;
             document.getElementById('login-name').focus();
-            // Nettoyer l'URL
             window.history.replaceState({}, document.title, window.location.pathname);
         } catch (e) {
-            console.error('Lien d\'invitation invalide');
+            console.error('Lien invalide');
         }
     }
 }
 
-// Appeler au chargement
 window.addEventListener('load', () => {
     setTimeout(handleInvitationLink, 500);
 });
 
-// ── END INVITATION ──
 
-// ── FIREBASE QUICK LOGIN ──
-async function firebaseQuickLogin() {
-    if (typeof firebase === 'undefined') {
-        alert('Firebase en cours de chargement...');
-        return;
-    }
-
-    const email = document.getElementById('firebase-email').value;
-    const password = document.getElementById('firebase-password').value;
-
-    if (!email || !password) {
-        alert('Veuillez remplir email et mot de passe');
-        return;
-    }
-
-    try {
-        await firebase.auth().signInWithEmailAndPassword(email, password);
-        alert('✓ Connecté avec Firebase !');
-        // Le utilisateur Firebase est maintenant connecté
-        // L'app continuera avec son système existant
-    } catch (error) {
-        alert('❌ Erreur: ' + error.message);
-    }
-}
-
-// ── END FIREBASE ──
-
-// Init theme on page load
-loadTheme_hub_coloc();
 
 // Show ⚙️ btn when premium is already set from localStorage db
 (function() {
@@ -2359,6 +2228,39 @@ loadTheme_hub_coloc();
 
 
 </script>
+
+<!-- ── INVITATION MODAL ── -->
+<div id="invitation-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="text-align: center; max-width: 450px;">
+        <div style="font-size: 3rem; margin-bottom: 15px;">📧</div>
+        <h2>Invitez vos colocataires !</h2>
+        <p style="margin: 15px 0; color: var(--text-muted); line-height: 1.5; font-size: 0.95rem;">
+            Partagez ce lien avec vos amis pour qu'ils rejoignent votre colocation
+        </p>
+        
+        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0; word-break: break-all;">
+            <small style="color: #666; display: block; margin-bottom: 8px;">🔗 Lien d'invitation :</small>
+            <input type="text" id="invitation-link" readonly style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; font-family: monospace;">
+        </div>
+
+        <div style="display: flex; gap: 10px; margin: 20px 0;">
+            <button onclick="copyInvitationLink()" style="flex: 1; background: var(--primary); color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                📋 Copier
+            </button>
+            <button onclick="shareInvitationWhatsApp()" style="flex: 1; background: #25D366; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                💬 WhatsApp
+            </button>
+        </div>
+
+        <button onclick="shareInvitationEmail()" style="width: 100%; background: #4285F4; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px;">
+            ✉️ Email
+        </button>
+
+        <button onclick="closeInvitationModal()" class="btn-outline" style="width: 100%; border-color: var(--primary); color: var(--primary);">
+            ✓ Continuer
+        </button>
+    </div>
+</div>
 
 <!-- ── PREFERENCES PANEL ── -->
 <div class="pref-overlay" id="pref-modal" role="dialog" aria-modal="true" aria-label="Préférences d'apparence">
