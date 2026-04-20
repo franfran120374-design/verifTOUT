@@ -15,7 +15,6 @@ self.addEventListener('install', (event) => {
       return cache.addAll(urlsToCache);
     }).catch(err => {
       console.warn('Erreur cache SW:', err);
-      // Continuer même si le cache échoue
     })
   );
   self.skipWaiting();
@@ -56,7 +55,6 @@ self.addEventListener('fetch', (event) => {
         });
         return response;
       }).catch(() => {
-        // Offline - retourner la version en cache
         return caches.match(event.request);
       });
     })
@@ -70,8 +68,8 @@ self.addEventListener('push', (event) => {
   let notificationData = {
     title: '🔔 Hub Coloc',
     body: 'Nouvelle activité dans votre colocation',
-    icon: './favicon.ico',
-    badge: './favicon.ico',
+    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
+    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
     tag: 'hub-coloc',
     requireInteraction: false
   };
@@ -105,14 +103,12 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Si l'app est déjà ouverte, la forcer au premier plan
       for (let i = 0; i < clientList.length; i++) {
         const client = clientList[i];
         if (client.url === '/' || client.url.includes('/hub-coloc/')) {
           return client.focus();
         }
       }
-      // Sinon, ouvrir l'app
       return clients.openWindow('./');
     })
   );
@@ -121,4 +117,21 @@ self.addEventListener('notificationclick', (event) => {
 // Fermeture de la notification
 self.addEventListener('notificationclose', (event) => {
   console.log('✕ Notification fermée');
+});
+
+// ─── MESSAGE DEPUIS L'APP POUR ENVOYER UNE NOTIF ───
+// L'app envoie un message au SW quand elle reçoit un nouveau message
+// Ça permet d'envoyer une notif même si l'app est en arrière-plan
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+    console.log('💬 Message reçu de l\'app:', event.data);
+    self.registration.showNotification(event.data.title, {
+      body: event.data.body,
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
+      badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
+      tag: 'hub-coloc-chat',
+      requireInteraction: false,
+      vibrate: [200, 100, 200]
+    });
+  }
 });
