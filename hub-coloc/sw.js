@@ -1,5 +1,5 @@
 // Service Worker pour Hub Coloc - Notifications Push
-// Ce fichier doit être à la racine du dossier coword
+// Ce fichier doit être dans le dossier hub-coloc/ (même niveau que index.html)
 
 const CACHE_NAME = 'hub-coloc-v1';
 const urlsToCache = [
