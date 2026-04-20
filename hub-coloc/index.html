@@ -1439,26 +1439,87 @@
     function editerDepense(fid) {
         const f = getSafeArray(db.finances).find(x => String(x.id) === String(fid));
         if (!f) return;
-        const nouvelleDesc = prompt('Description :', f.d);
-        if (nouvelleDesc === null) return;
-        const nouveauMontant = prompt('Montant (€) :', f.m);
-        if (nouveauMontant === null) return;
-        const montantNum = parseFloat(nouveauMontant);
-        if (isNaN(montantNum) || montantNum <= 0) return alert('Montant invalide.');
-        f.d = nouvelleDesc.trim() || f.d;
-        f.m = montantNum;
-        // Recalculer les parts si le montant change
-        const nbOwers = (f.owers || []).length;
-        if (nbOwers > 0) {
-            const newPart = (montantNum / (nbOwers + 1)).toFixed(2);
-            f.owers.forEach(o => { o.amount = newPart; });
+        
+        // Créer un modal pour éditer
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:10000;padding:20px;';
+        
+        const debts = (f.owers || f.parts || []);
+        const content = `
+            <div style="background:white;padding:20px;border-radius:12px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;">
+                <h2>✏️ Éditer la dépense</h2>
+                
+                <div style="margin:15px 0;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Description</label>
+                    <input type="text" id="edit-desc" value="${f.d}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;">
+                </div>
+                
+                <div style="margin:15px 0;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Montant (€)</label>
+                    <input type="number" id="edit-amount" value="${f.m}" step="0.01" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;">
+                </div>
+                
+                <div style="margin:15px 0;">
+                    <label style="display:block;margin-bottom:10px;font-weight:bold;">✅ Qui a payé ?</label>
+                    <div style="border:1px solid #ddd;border-radius:6px;padding:10px;max-height:200px;overflow-y:auto;">
+                        ${debts.map((o, idx) => `
+                            <label style="display:flex;align-items:center;gap:8px;padding:8px;cursor:pointer;">
+                                <input type="checkbox" id="paid-${idx}" ${o.settled ? 'checked' : ''}>
+                                ${o.name} : ${o.amount}€
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div style="display:flex;gap:10px;margin-top:20px;">
+                    <button onclick="saveEditedDepense(${fid})" style="flex:1;padding:10px;background:var(--primary);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold;">
+                        ✓ Sauvegarder
+                    </button>
+                    <button onclick="this.closest('div').parentElement.remove()" style="flex:1;padding:10px;background:#f0f0f0;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-weight:bold;">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        modal.innerHTML = content;
+        document.body.appendChild(modal);
+        modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+    }
+
+    function saveEditedDepense(fid) {
+        const f = getSafeArray(db.finances).find(x => String(x.id) === String(fid));
+        if (!f) return;
+        
+        const desc = document.getElementById('edit-desc').value.trim();
+        const amount = parseFloat(document.getElementById('edit-amount').value);
+        
+        if (!desc) {
+            alert('La description ne peut pas être vide');
+            return;
         }
+        if (isNaN(amount) || amount <= 0) {
+            alert('Montant invalide');
+            return;
+        }
+        
+        f.d = desc;
+        f.m = amount;
+        
+        // Mettre à jour les statuts "settled"
+        const debts = (f.owers || f.parts || []);
+        debts.forEach((o, idx) => {
+            o.settled = document.getElementById(`paid-${idx}`)?.checked || false;
+        });
+        
         sync();
-        alert('✅ Dépense modifiée.');
+        alert('✅ Dépense modifiée');
+        document.querySelector('[style*="background:rgba(0,0,0,0.5)"]')?.remove();
     }
 
     function settleDebt(fid, oName) { const f = getSafeArray(db.finances).find(x => String(x.id) === String(fid)); if(f) { const debts = f.owers || f.parts || []; const o = debts.find(x => x.name === oName); if(o) { o.settled = !o.settled; sync(); } } }
     window.editerDepense = editerDepense;
+    window.saveEditedDepense = saveEditedDepense;
     window.settleDebt = settleDebt;
 
     function toggleFluideInputs() {
@@ -1703,7 +1764,9 @@ Raphaël`;
         const date = document.getElementById('mon-annif').value;
         if (!date) return alert("Sélectionnez votre date d'anniversaire.");
         if (!db.annifs) db.annifs = {};
-        db.annifs[currentUser] = date;
+        // Utiliser le prénom au lieu de l'email (sans caractères spéciaux)
+        const userKey = currentUser.split('@')[0] || currentUser;
+        db.annifs[userKey] = date;
         sync();
         alert("🎂 Anniversaire sauvegardé !");
     }
@@ -1713,7 +1776,8 @@ Raphaël`;
         const today = new Date();
         const annifEl = document.getElementById('liste-annifs');
         const monAnnif = document.getElementById('mon-annif');
-        if (monAnnif && annifs[currentUser]) monAnnif.value = annifs[currentUser];
+        const userKey = currentUser.split('@')[0] || currentUser;
+        if (monAnnif && annifs[userKey]) monAnnif.value = annifs[userKey];
 
         const items = getSafeArray(db.membres).map(m => {
             if (!annifs[m]) return null;
@@ -1738,6 +1802,135 @@ Raphaël`;
             </div>`;
         }).join('');
     }
+
+    // ── POLL SYSTEM ──
+    let pollMembersMode = 'all';
+    let selectedPollMembers = [];
+
+    function showPollModal() {
+        document.getElementById('poll-modal').style.display = 'flex';
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('poll-date').value = today;
+    }
+
+    function closePollModal() {
+        document.getElementById('poll-modal').style.display = 'none';
+        resetPollForm();
+    }
+
+    function resetPollForm() {
+        document.getElementById('poll-question').value = '';
+        document.getElementById('poll-date').value = '';
+        document.getElementById('poll-time').value = '';
+        document.getElementById('poll-options-container').innerHTML = `
+            <input type="text" class="poll-option" placeholder="Option 1" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 6px;">
+            <input type="text" class="poll-option" placeholder="Option 2" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 6px;">
+        `;
+        pollMembersMode = 'all';
+        selectedPollMembers = [];
+        setPollMembers('all');
+    }
+
+    function addPollOption() {
+        const container = document.getElementById('poll-options-container');
+        const optionNum = container.querySelectorAll('.poll-option').length + 1;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'poll-option';
+        input.placeholder = `Option ${optionNum}`;
+        input.style.cssText = 'width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 6px;';
+        container.appendChild(input);
+    }
+
+    function setPollMembers(mode) {
+        pollMembersMode = mode;
+        document.getElementById('btn-poll-all').style.background = mode === 'all' ? 'var(--primary)' : '#f0f0f0';
+        document.getElementById('btn-poll-all').style.color = mode === 'all' ? 'white' : 'black';
+        document.getElementById('btn-poll-all').style.border = mode === 'all' ? 'none' : '1px solid #ddd';
+        
+        document.getElementById('btn-poll-custom').style.background = mode === 'custom' ? 'var(--primary)' : '#f0f0f0';
+        document.getElementById('btn-poll-custom').style.color = mode === 'custom' ? 'white' : 'black';
+        document.getElementById('btn-poll-custom').style.border = mode === 'custom' ? 'none' : '1px solid #ddd';
+        
+        const membersSelect = document.getElementById('poll-members-select');
+        if (mode === 'custom') {
+            membersSelect.style.display = 'block';
+            const membres = getSafeArray(db.membres || []);
+            membersSelect.innerHTML = membres.map(m => `
+                <label style="display: flex; align-items: center; gap: 8px; padding: 8px; cursor: pointer;">
+                    <input type="checkbox" value="${m}" onchange="togglePollMember('${m}')" ${selectedPollMembers.includes(m) ? 'checked' : ''}>
+                    ${m}
+                </label>
+            `).join('');
+        } else {
+            membersSelect.style.display = 'none';
+            selectedPollMembers = [];
+        }
+    }
+
+    function togglePollMember(member) {
+        const idx = selectedPollMembers.indexOf(member);
+        if (idx > -1) {
+            selectedPollMembers.splice(idx, 1);
+        } else {
+            selectedPollMembers.push(member);
+        }
+    }
+
+    function createPoll() {
+        const question = document.getElementById('poll-question').value.trim();
+        const date = document.getElementById('poll-date').value;
+        const time = document.getElementById('poll-time').value;
+        const options = Array.from(document.querySelectorAll('.poll-option'))
+            .map(el => el.value.trim())
+            .filter(v => v);
+        
+        if (!question) {
+            alert('Veuillez entrer l\'objet du sondage');
+            return;
+        }
+        if (options.length < 2) {
+            alert('Veuillez entrer au moins 2 options');
+            return;
+        }
+        if (!date) {
+            alert('Veuillez sélectionner une date');
+            return;
+        }
+
+        const poll = {
+            id: Date.now(),
+            question: question,
+            author: currentUser,
+            createdAt: new Date().toISOString(),
+            deadline: date + (time ? 'T' + time : 'T23:59'),
+            options: options.map(opt => ({ label: opt, votes: {} })),
+            members: pollMembersMode === 'all' ? (db.membres || []) : selectedPollMembers
+        };
+
+        if (!db.sondages) db.sondages = [];
+        db.sondages.push(poll);
+        sync();
+
+        const pollMessage = `📊 Nouveau sondage : ${question}`;
+        const msgObj = {
+            id: Date.now(),
+            user: currentUser,
+            text: pollMessage,
+            time: new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}),
+            isPoll: true,
+            pollId: poll.id
+        };
+        
+        db.messages = getSafeArray(db.messages);
+        db.messages.push(msgObj);
+        sync();
+
+        alert('✓ Sondage créé et envoyé !');
+        closePollModal();
+        showTab('chat');
+    }
+    // ── END POLL SYSTEM ──
 
     // ✅ GESTION ADMIN
     function promouvoirAdmin(nom) {
@@ -2233,6 +2426,67 @@ window.addEventListener('load', () => {
 
 
 </script>
+
+<!-- ── POLL MODAL ── -->
+<div id="poll-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 500px;">
+        <h2 style="text-align: center; margin-bottom: 20px;">📊 Créer un sondage</h2>
+        
+        <!-- Objet du sondage -->
+        <div style="margin-bottom: 20px;">
+            <label for="poll-question" style="display: block; margin-bottom: 8px; font-weight: bold;">Objet du sondage</label>
+            <input type="text" id="poll-question" placeholder="Ex: Qui cuisine demain ?" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+        </div>
+
+        <!-- Date et heure -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <div style="flex: 1;">
+                <label for="poll-date" style="display: block; margin-bottom: 8px; font-weight: bold;">📅 Date limite</label>
+                <input type="date" id="poll-date" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div style="flex: 1;">
+                <label for="poll-time" style="display: block; margin-bottom: 8px; font-weight: bold;">⏰ Heure</label>
+                <input type="time" id="poll-time" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+        </div>
+
+        <!-- Options de réponse -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold;">Choix possibles</label>
+            <div id="poll-options-container">
+                <input type="text" class="poll-option" placeholder="Option 1" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                <input type="text" class="poll-option" placeholder="Option 2" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <button onclick="addPollOption()" style="width: 100%; padding: 10px; margin-top: 8px; background: #f0f0f0; border: 1px dashed #ddd; border-radius: 6px; cursor: pointer;">+ Ajouter une option</button>
+        </div>
+
+        <!-- Sélection des membres -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold;">👥 Qui doit répondre ?</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <button onclick="setPollMembers('all')" id="btn-poll-all" style="flex: 1; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                    Tous les membres
+                </button>
+                <button onclick="setPollMembers('custom')" id="btn-poll-custom" style="flex: 1; padding: 10px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                    Sélectionner
+                </button>
+            </div>
+            <div id="poll-members-select" style="display: none; max-height: 150px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; padding: 10px;">
+                <!-- Membres seront ajoutés par JavaScript -->
+            </div>
+        </div>
+
+        <!-- Boutons -->
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button onclick="createPoll()" style="flex: 1; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                ✓ Créer le sondage
+            </button>
+            <button onclick="closePollModal()" style="flex: 1; padding: 12px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                Annuler
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- ── INVITATION MODAL ── -->
 <div id="invitation-modal" class="modal-overlay" style="display: none;">
