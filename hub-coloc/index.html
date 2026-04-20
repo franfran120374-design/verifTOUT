@@ -229,6 +229,139 @@
         .tutorial-step strong { color: #4CAF50; }
         .tutorial-example { background: #fffbea; padding: 10px; border-radius: 6px; margin: 8px 0; font-size: 0.85rem; font-style: italic; }
 
+        /* ─── POP-UP CHAT CSS ─── */
+        #chat-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+        
+        #chat-popup.chat-popup-hidden {
+            display: none !important;
+            visibility: hidden;
+        }
+        
+        #chat-popup.chat-popup-visible {
+            display: flex !important;
+            visibility: visible;
+        }
+        
+        .chat-popup-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            cursor: pointer;
+        }
+        
+        .chat-popup-modal {
+            position: relative;
+            background: white;
+            border-radius: 12px;
+            width: 95%;
+            height: 95%;
+            max-width: 800px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+        
+        .chat-popup-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .chat-popup-header h2 {
+            margin: 0;
+            color: var(--primary-dark);
+            font-size: 1.2rem;
+        }
+        
+        .chat-popup-close {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-popup-close:hover {
+            color: #333;
+            transform: scale(1.1);
+        }
+        
+        .chat-popup-textarea {
+            flex: 1;
+            padding: 20px;
+            border: none;
+            font-size: 16px;
+            font-family: inherit;
+            resize: none;
+            overflow-y: auto;
+            outline: none;
+        }
+        
+        .chat-popup-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-shrink: 0;
+        }
+        
+        .chat-popup-btn-cancel,
+        .chat-popup-btn-submit {
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .chat-popup-btn-cancel {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            color: var(--text-main);
+        }
+        
+        .chat-popup-btn-cancel:hover {
+            background: #e0e0e0;
+        }
+        
+        .chat-popup-btn-submit {
+            background: var(--primary);
+            color: white;
+            flex: 1;
+        }
+        
+        .chat-popup-btn-submit:hover {
+            background: var(--primary-dark);
+        }
+
         /* ─── RESPONSIVE DESIGN INTELLIGENT ─── */
         * { box-sizing: border-box; }
         html, body { 
@@ -450,16 +583,17 @@
 <body>
 
 <!-- 💬 POP-UP CHAT POUR ÉCRIRE DES LONGS MESSAGES -->
-<div id="chat-popup" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:10000; padding:20px;">
-    <div style="background:white; border-radius:12px; height:100%; display:flex; flex-direction:column; max-width:800px; margin:0 auto;">
-        <div style="padding:20px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="margin:0; color:var(--primary-dark);">💬 Écrire un message</h2>
-            <button onclick="closeChatPopup()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#999;">✕</button>
+<div id="chat-popup" class="chat-popup-hidden">
+    <div class="chat-popup-overlay" onclick="closeChatPopup()"></div>
+    <div class="chat-popup-modal">
+        <div class="chat-popup-header">
+            <h2>💬 Écrire un message</h2>
+            <button class="chat-popup-close" onclick="closeChatPopup()">✕</button>
         </div>
-        <textarea id="popup-chat-text" placeholder="Écris ton message ici... Tu peux voir le texte en entier !" style="flex:1; padding:20px; border:none; font-size:16px; font-family:inherit; resize:none;"></textarea>
-        <div style="padding:20px; border-top:1px solid #eee; display:flex; gap:10px; justify-content:flex-end;">
-            <button onclick="closeChatPopup()" style="padding:12px 24px; background:#f0f0f0; border:1px solid #ddd; border-radius:6px; cursor:pointer; font-weight:bold;">Annuler</button>
-            <button onclick="submitChatPopup()" style="padding:12px 24px; background:var(--primary); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Envoyer 🚀</button>
+        <textarea id="popup-chat-text" class="chat-popup-textarea" placeholder="Écris ton message ici... Tu peux voir le texte en entier !"></textarea>
+        <div class="chat-popup-footer">
+            <button class="chat-popup-btn-cancel" onclick="closeChatPopup()">Annuler</button>
+            <button class="chat-popup-btn-submit" onclick="submitChatPopup()">Envoyer 🚀</button>
         </div>
     </div>
 </div>
@@ -1665,13 +1799,17 @@
 
     // ─── POP-UP CHAT SIMPLE ───
     function openChatPopup() {
-        document.getElementById('chat-popup').style.display = 'flex';
+        const popup = document.getElementById('chat-popup');
+        popup.classList.remove('chat-popup-hidden');
+        popup.classList.add('chat-popup-visible');
         document.getElementById('popup-chat-text').value = document.getElementById('chat-input').value;
-        document.getElementById('popup-chat-text').focus();
+        setTimeout(() => document.getElementById('popup-chat-text').focus(), 100);
     }
 
     function closeChatPopup() {
-        document.getElementById('chat-popup').style.display = 'none';
+        const popup = document.getElementById('chat-popup');
+        popup.classList.add('chat-popup-hidden');
+        popup.classList.remove('chat-popup-visible');
     }
 
     function submitChatPopup() {
