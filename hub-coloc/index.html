@@ -1389,8 +1389,8 @@
                 navigator.serviceWorker.ready.then((registration) => {
                     registration.showNotification('🧪 TEST Hub Coloc', {
                         body: 'Ceci est une notification de test ! Si tu la vois, tout fonctionne ! 🎉',
-                        icon: './favicon.ico',
-                        badge: './favicon.ico',
+                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">🏠</text></svg>',
+                        badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">🏠</text></svg>',
                         tag: 'hub-coloc-test',
                         requireInteraction: false,
                         vibrate: [200, 100, 200]
@@ -1401,8 +1401,8 @@
                 // Sur ordinateur, utiliser new Notification
                 new Notification('🧪 TEST Hub Coloc', {
                     body: 'Ceci est une notification de test ! Si tu la vois, tout fonctionne ! 🎉',
-                    icon: './favicon.ico',
-                    badge: './favicon.ico',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">🏠</text></svg>',
+                    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">🏠</text></svg>',
                     tag: 'hub-coloc-test',
                     requireInteraction: false,
                     vibrate: [200, 100, 200]
@@ -1439,8 +1439,8 @@
                         navigator.serviceWorker.ready.then((registration) => {
                             registration.showNotification('💬 ' + getDisplayName(lastUnreadMsg.user), {
                                 body: lastUnreadMsg.text ? lastUnreadMsg.text.substring(0, 100) : 'Nouveau message',
-                                icon: './favicon.ico',
-                                badge: './favicon.ico',
+                                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
+                                badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
                                 tag: 'hub-coloc-chat',
                                 requireInteraction: false,
                                 vibrate: [200, 100, 200]
@@ -1450,8 +1450,8 @@
                         // Sur ordinateur, utiliser new Notification
                         new Notification('💬 ' + getDisplayName(lastUnreadMsg.user), {
                             body: lastUnreadMsg.text ? lastUnreadMsg.text.substring(0, 100) : 'Nouveau message',
-                            icon: './favicon.ico',
-                            badge: './favicon.ico',
+                            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
+                            badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
                             tag: 'hub-coloc-chat',
                             requireInteraction: false,
                             vibrate: [200, 100, 200]
