@@ -2242,12 +2242,12 @@ Raphaël`;
         if(isSigned) { 
             init(); 
         } else { 
-            document.getElementById('auth-modal').style.display = 'flex'; 
+            document.getElementById('firebase-auth-modal').classList.remove('hidden'); 
             applyTranslations(); 
         } 
     } else {
         applyTranslations();
-        document.getElementById('auth-modal').style.display = 'flex';
+        document.getElementById('firebase-auth-modal').classList.remove('hidden');
         // Pré-remplir si credentials sauvegardés
         const su = localStorage.getItem('hub_saved_user');
         const sc = localStorage.getItem('hub_saved_coloc');
