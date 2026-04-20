@@ -1903,6 +1903,78 @@
         container.style.display = this.value !== 'once' ? 'block' : 'none';
     });
     
+    function showEventDetails(eventId) {
+        const event = getSafeArray(db.agenda).find(e => String(e.id) === String(eventId));
+        if (!event) return;
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:10000; padding:20px;';
+        
+        const typeLabel = event.type === 'tache' ? '🧹 Tâche' : '🎉 Événement';
+        const statusBadge = event.done ? '✅ Complétée' : '⏳ En cours';
+        const freqLabel = event.f === 'once' ? 'Ponctuel' : (event.f === 'hebdo' ? `Chaque ${event.day}` : `Chaque mois (${event.day})`);
+        
+        modal.innerHTML = `
+            <div style="background:white; padding:25px; border-radius:12px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto;">
+                <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:20px;">
+                    <div style="flex:1;">
+                        <h2 style="margin:0; color:var(--primary-dark);">${event.t}</h2>
+                        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+                            <span style="background:${event.type === 'tache' ? '#34b7f1' : '#ea4335'}; color:white; padding:5px 10px; border-radius:6px; font-size:0.85rem;">${typeLabel}</span>
+                            <span style="background:${event.done ? '#4CAF50' : '#FFC107'}; color:white; padding:5px 10px; border-radius:6px; font-size:0.85rem;">${statusBadge}</span>
+                        </div>
+                    </div>
+                    <button onclick="this.closest('[style*=fixed]').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:0; color:#999;">✕</button>
+                </div>
+                
+                <div style="background:#f5f5f5; padding:15px; border-radius:8px; margin-bottom:15px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; font-size:0.9rem;">
+                        <div>
+                            <p style="margin:0; color:#888; font-weight:bold;">📅 Date</p>
+                            <p style="margin:5px 0 0 0; font-size:1rem;">${new Date(event.d).toLocaleDateString('fr-FR', {weekday:'long', day:'2-digit', month:'long', year:'numeric'})}</p>
+                        </div>
+                        ${event.time ? `<div>
+                            <p style="margin:0; color:#888; font-weight:bold;">⏰ Heure</p>
+                            <p style="margin:5px 0 0 0; font-size:1rem;">${event.time}</p>
+                        </div>` : ''}
+                        <div>
+                            <p style="margin:0; color:#888; font-weight:bold;">👤 Assigné à</p>
+                            <p style="margin:5px 0 0 0; font-size:1rem;">${event.a || 'Tous les colocs'}</p>
+                        </div>
+                        <div>
+                            <p style="margin:0; color:#888; font-weight:bold;">🔄 Fréquence</p>
+                            <p style="margin:5px 0 0 0; font-size:1rem;">${freqLabel}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom:15px;">
+                    <p style="margin:0 0 8px 0; color:#888; font-weight:bold; font-size:0.9rem;">Créé par</p>
+                    <p style="margin:0; font-size:0.9rem;">${event.creator} ${event.createdAt ? `• ${event.createdAt}` : ''}</p>
+                </div>
+                
+                ${event.done ? `<div style="background:#E8F5E9; padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.9rem;">
+                    <p style="margin:0;"><strong>✅ Complétée par :</strong> ${event.doneBy || 'N/A'} • ${event.doneAt || ''}</p>
+                </div>` : ''}
+                
+                ${event.type === 'evenement' && event.responses ? `<div style="background:#f0f0f0; padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.9rem;">
+                    <p style="margin:0 0 8px 0; font-weight:bold;">Présences :</p>
+                    <p style="margin:0;">✅ ${Object.entries(event.responses).filter(([k,v])=>v==='yes').map(([k,v])=>k).join(', ') || 'Aucun'}</p>
+                    <p style="margin:5px 0 0 0;">❌ ${Object.entries(event.responses).filter(([k,v])=>v==='no').map(([k,v])=>k).join(', ') || 'Aucun'}</p>
+                </div>` : ''}
+                
+                <div style="display:flex; gap:10px;">
+                    <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1; padding:12px; background:#f0f0f0; border:1px solid #ddd; border-radius:6px; cursor:pointer; font-weight:bold;">
+                        ◀ Retour
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+    }
+    
     function toggleDone(id) { 
         // Pour les instances récurrentes, trouver l'élément parent
         let item = getSafeArray(db.agenda).find(x => String(x.id) === String(id));
@@ -2078,6 +2150,7 @@
     window.prevMonth = prevMonth;
     window.nextMonth = nextMonth;
     window.toggleTutorial = toggleTutorial;
+    window.showEventDetails = showEventDetails;
     window.votePoll = votePoll;
     window.proposePollOption = proposePollOption;
     window.closePoll = closePoll;
@@ -2757,7 +2830,7 @@ Raphaël`;
             .map(a => `
             <div class="card" style="border-left: 5px solid ${a.type === 'evenement' ? '#ea4335' : '#34b7f1'}; margin-bottom: 8px;">
                 <div class="item-row" style="padding:0; border:none;">
-                    <div style="flex:1;">
+                    <div style="flex:1; cursor:pointer;" onclick="showEventDetails(${a.id})">
                         <strong style="font-size: 1rem; color: var(--primary-dark);">${a.t}</strong>
                         <div class="meta-info">
                             📅 ${new Date(a.d).toLocaleString([], {weekday:'short', day:'2-digit', month:'short'})} 
