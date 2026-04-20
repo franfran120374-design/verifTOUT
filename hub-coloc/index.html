@@ -1143,7 +1143,7 @@
     }
 
     if ('serviceWorker' in navigator) { 
-        navigator.serviceWorker.register('sw.js').then(registration => {
+        navigator.serviceWorker.register('./service-worker.js').then(registration => {
             registration.update();
             registration.onupdatefound = () => {
                 const installingWorker = registration.installing;
@@ -1368,6 +1368,25 @@
         if (badgeChat) {
             badgeChat.style.display = newChatCount > 0 ? 'block' : 'none';
             badgeChat.innerText = newChatCount;
+        }
+
+        // 📱 Envoyer une notification push si on a des messages non lus
+        if (newChatCount > 0 && 'Notification' in window && Notification.permission === 'granted') {
+            const lastUnreadMsg = unreadChatMsgs[unreadChatMsgs.length - 1];
+            if (lastUnreadMsg) {
+                try {
+                    new Notification('💬 ' + getDisplayName(lastUnreadMsg.user), {
+                        body: lastUnreadMsg.text ? lastUnreadMsg.text.substring(0, 100) : 'Nouveau message',
+                        icon: '/verifTOUT/hub-coloc/favicon.ico',
+                        badge: '/verifTOUT/hub-coloc/favicon.ico',
+                        tag: 'hub-coloc-chat',
+                        requireInteraction: false,
+                        vibrate: [200, 100, 200]
+                    });
+                } catch(err) {
+                    console.warn('Erreur notification:', err);
+                }
+            }
         }
 
         const counts = { 
@@ -3045,6 +3064,18 @@ Raphaël`;
         const photo = localStorage.getItem('hub_photo');
         if(photo) { document.getElementById('coloc-photo-preview').src = photo; document.getElementById('coloc-photo-preview').style.display = 'block'; }
         document.getElementById('header-name').innerText = getDisplayName(currentUser);
+        
+        // 📱 Enregistrer le Service Worker pour les notifications push
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./service-worker.js')
+                .then((registration) => {
+                    console.log('✅ Service Worker enregistré:', registration);
+                })
+                .catch((error) => {
+                    console.warn('⚠️ Erreur Service Worker:', error);
+                    // L'app fonctionne même sans SW, pas de panique
+                });
+        }
     }
 
     if(currentUser && colocPath) { 
