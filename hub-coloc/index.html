@@ -218,6 +218,16 @@
     .btn-close-pref{width:100%;padding:.6rem;background:none;color:var(--pref-muted,#6b7280);border:1px solid var(--pref-border,#e5e7eb);border-radius:10px;font-size:.82rem;cursor:pointer;transition:all .2s;}
     .btn-close-pref:hover{border-color:#9ca3af;}
         body.theme-night-hub_coloc { background:#0f172a; --bg-app:#0f172a; --card-bg:#1e293b; --text-main:#f1f5f9; --text-muted:#94a3b8; }
+        
+        /* ── TUTORIELS ── */
+        .tutorial-section { background: #f0f8ff; border-left: 5px solid #2196F3; margin-top: 20px; padding: 15px; border-radius: 8px; }
+        .tutorial-toggle { background: #2196F3; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+        .tutorial-toggle:hover { background: #1976D2; }
+        .tutorial-content { display: none; margin-top: 12px; font-size: 0.9rem; line-height: 1.6; }
+        .tutorial-content.open { display: block; }
+        .tutorial-step { margin: 12px 0; padding: 10px; background: white; border-radius: 6px; border-left: 3px solid #4CAF50; }
+        .tutorial-step strong { color: #4CAF50; }
+        .tutorial-example { background: #fffbea; padding: 10px; border-radius: 6px; margin: 8px 0; font-size: 0.85rem; font-style: italic; }
     </style>
 </head>
 <body>
@@ -339,6 +349,37 @@
                         <button onclick="ajouterRegleCharte()" style="width:50px;">+</button>
                     </div>
                 </div>
+                
+                <!-- 📚 TUTORIEL ACCUEIL -->
+                <div class="tutorial-section">
+                    <button class="tutorial-toggle" onclick="toggleTutorial(this)">
+                        <span>📚 Comment utiliser Hub Coloc ?</span>
+                        <span class="toggle-icon">▶</span>
+                    </button>
+                    <div class="tutorial-content">
+                        <div class="tutorial-step">
+                            <strong>1️⃣ Accueil - Votre point central</strong>
+                            <p>C'est votre tableau de bord ! Vous voyez ici :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>📍 Infos colocation (photo, membres)</li>
+                                <li>📜 Charte de vie du groupe</li>
+                                <li>🌍 Choix de la langue</li>
+                            </ul>
+                            <div class="tutorial-example">💡 Ajoutez des règles à votre charte en écrivant dans le champ "Ex: Sortir les poubelles le mardi"</div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>2️⃣ Navigation facile</strong>
+                            <p>En bas (mobile) ou à gauche (desktop), vous trouverez :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>💬 <b>Chat</b> - Messages avec les colocs</li>
+                                <li>📅 <b>Agenda</b> - Tâches & événements</li>
+                                <li>🛒 <b>Courses</b> - Liste de courses partagée</li>
+                                <li>💰 <b>Finances</b> - Dépenses & reimbursements</li>
+                                <li>💧 <b>Fluides</b> - Électricité, eau, gaz</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-chat" class="tab-content" style="display:none;">
@@ -366,6 +407,39 @@
                         <input type="text" id="chat-input" data-i18n="phChatMsg" placeholder="Ex: Coucou les colocs !" style="margin:0; flex-grow:1;">
                         <button id="btn-mic" onclick="toggleAudioRecord()" style="width:40px; padding:8px; font-size:1.2rem; background:transparent; color:var(--text-muted);">🎤</button>
                         <button onclick="envoyerMessage()" style="width:50px; padding:8px;">🚀</button>
+                    </div>
+                </div>
+                
+                <!-- 📚 TUTORIEL CHAT -->
+                <div class="tutorial-section">
+                    <button class="tutorial-toggle" onclick="toggleTutorial(this)">
+                        <span>📚 Guide du Chat</span>
+                        <span class="toggle-icon">▶</span>
+                    </button>
+                    <div class="tutorial-content">
+                        <div class="tutorial-step">
+                            <strong>💬 Communiquez en temps réel</strong>
+                            <p>Partagez des messages avec toute la colocation !</p>
+                            <div class="tutorial-example">Tapez votre message dans le champ "Coucou les colocs !" et cliquez 🚀</div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>📊 Créez des sondages</strong>
+                            <p>Cliquez sur 📊 pour créer un sondage sur :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>Qu'est-ce qu'on mange ce soir ?</li>
+                                <li>Où on va en sortie ?</li>
+                                <li>Achat d'un nouvel équipement ?</li>
+                            </ul>
+                            <div class="tutorial-example">Les colocs votent en direct et peuvent proposer des options !</div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>📎 Partagez des photos & fichiers</strong>
+                            <p>Cliquez sur 📎 pour ajouter des images ou documents</p>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>🎤 Messages vocaux</strong>
+                            <p>Cliquez sur 🎤 pour enregistrer et envoyer un message vocal</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -449,6 +523,45 @@
                 </div>
 
                 <div id="liste-agenda" style="display:none;"></div>
+                
+                <!-- 📚 TUTORIEL AGENDA -->
+                <div class="tutorial-section">
+                    <button class="tutorial-toggle" onclick="toggleTutorial(this)">
+                        <span>📚 Guide de l'Agenda</span>
+                        <span class="toggle-icon">▶</span>
+                    </button>
+                    <div class="tutorial-content">
+                        <div class="tutorial-step">
+                            <strong>📋 Mes Tâches - Liste simple</strong>
+                            <p>Consultez toutes vos tâches en un coup d'oeil :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>✏️ <b>Éditer</b> - Modifier titre, date, heure ou récurrence</li>
+                                <li>✖️ <b>Supprimer</b> - Supprimer la tâche et toutes ses récurrences</li>
+                                <li>☐ <b>Marquer comme fait</b> - Cocher une tâche complétée</li>
+                            </ul>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>📆 Calendrier visuel</strong>
+                            <p>Voyez toutes vos tâches et événements dans un vrai calendrier :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>◀▶ Naviguez mois par mois</li>
+                                <li>Tâches en bleu, Événements en rouge</li>
+                                <li>Les récurrences s'affichent automatiquement</li>
+                            </ul>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>⚡ Créer une tâche récurrente</strong>
+                            <p>Exemple : "Nettoyer la cuisine tous les mardis à 19h"</p>
+                            <div class="tutorial-example">
+                                1. Titre : "Nettoyer cuisine"<br>
+                                2. Date : Aujourd'hui<br>
+                                3. Heure : 19:00<br>
+                                4. Fréquence : "Chaque semaine" → "Mardi"<br>
+                                5. La tâche s'affichera automatiquement chaque mardi !
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-courses" class="tab-content" style="display:none;">
@@ -474,6 +587,39 @@
                     <button class="btn-outline" onclick="exportCourses()" style="margin-top:8px;" data-i18n="btnExportMail">📧 Exporter (Outlook/Mail)</button>
                 </div>
                 <div id="liste-courses"></div>
+                
+                <!-- 📚 TUTORIEL COURSES -->
+                <div class="tutorial-section">
+                    <button class="tutorial-toggle" onclick="toggleTutorial(this)">
+                        <span>📚 Guide des Courses</span>
+                        <span class="toggle-icon">▶</span>
+                    </button>
+                    <div class="tutorial-content">
+                        <div class="tutorial-step">
+                            <strong>🛒 Créez une liste de courses partagée</strong>
+                            <p>Tous les colocs peuvent ajouter des articles :</p>
+                            <div class="tutorial-example">
+                                1. Tapez l'article (Ex: "Lait")<br>
+                                2. Quantité : 2<br>
+                                3. Unité : "Litre(s)"<br>
+                                4. Cliquez "Ajouter au panier"
+                            </div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>⚡ Catalogue rapide</strong>
+                            <p>Au-dessus du formulaire, trouvez les articles fréquents (Lait, Pain, Oeufs, etc.). Cliquez un bouton pour l'ajouter instantanément !</p>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>✅ Cochez les articles achetés</strong>
+                            <p>Cliquez sur ☐ pour marquer "Lait acheté". L'article sera <span style="text-decoration: line-through;">barré</span>.</p>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>📧 Exportez vers Outlook/Mail</strong>
+                            <p>Cliquez "📧 Exporter (Outlook/Mail)" pour ouvrir votre messagerie avec la liste formatée !</p>
+                            <div class="tutorial-example">Parfait pour envoyer au coloc qui va faire les courses 🛍️</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-finances" class="tab-content" style="display:none;">
@@ -500,6 +646,48 @@
                     <button class="btn-outline" style="margin-top:10px; border-color: #4285F4; color: #4285F4;" onclick="exporterArchive('finances')">📂 Exporter Archive Globale (Drive)</button>
                 </div>
                 <div id="historique-finances"></div>
+                
+                <!-- 📚 TUTORIEL FINANCES -->
+                <div class="tutorial-section">
+                    <button class="tutorial-toggle" onclick="toggleTutorial(this)">
+                        <span>📚 Guide des Finances</span>
+                        <span class="toggle-icon">▶</span>
+                    </button>
+                    <div class="tutorial-content">
+                        <div class="tutorial-step">
+                            <strong>💰 Enregistrez une dépense</strong>
+                            <p>Quelqu'un a dépensé de l'argent pour toute la coloc ?</p>
+                            <div class="tutorial-example">
+                                1. Description : "Epicerie" ou "Loyer"<br>
+                                2. Montant total : 45.50€<br>
+                                3. Payé par : Sélectionnez qui a payé<br>
+                                4. Cochez qui était concerné<br>
+                                5. Cliquez "Calculer & Diviser"
+                            </div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>✅ Marquez comme réglé</strong>
+                            <p>Quand quelqu'un rembourse, cliquez la case ✅ pour le signaler.</p>
+                            <div class="tutorial-example">Les dépenses complètement réglées deviennent vertes 💚</div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>✏️ Modifiez une facture</strong>
+                            <p>Cliquez "✏️ Éditer" pour :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>Corriger la description ou le montant</li>
+                                <li>Cocher/décocher qui a payé</li>
+                            </ul>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>📊 Voir qui doit quoi</strong>
+                            <p>À chaque dépense, vous voyez :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>Montant à payer par chaque coloc</li>
+                                <li>Statut : ✅ Réglé ou ⏳ En attente</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-fluides" class="tab-content" style="display:none;">
@@ -546,6 +734,49 @@
                     <button onclick="ajouterFluide()" data-i18n="btnSaveRecord">Enregistrer le relevé</button>
                 </div>
                 <div id="archive-fluides"></div>
+                
+                <!-- 📚 TUTORIEL FLUIDES -->
+                <div class="tutorial-section">
+                    <button class="tutorial-toggle" onclick="toggleTutorial(this)">
+                        <span>📚 Guide des Fluides (Électricité, Eau, Gaz)</span>
+                        <span class="toggle-icon">▶</span>
+                    </button>
+                    <div class="tutorial-content">
+                        <div class="tutorial-step">
+                            <strong>📊 Visualisez vos consommations</strong>
+                            <p>Le graphique montre l'évolution annuelle de :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>⚡ Électricité (Heures Pleines & Heures Creuses)</li>
+                                <li>💧 Eau</li>
+                                <li>🔥 Gaz</li>
+                            </ul>
+                            <div class="tutorial-example">Sélectionnez l'année avec le filtre en haut</div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>🔢 Enregistrez un relevé d'index</strong>
+                            <p>Chaque mois (ou à chaque lecture du compteur) :</p>
+                            <div class="tutorial-example">
+                                1. Type : Sélectionnez "Électricité", "Eau", ou "Gaz"<br>
+                                2. Index : Notez le chiffre du compteur<br>
+                                3. Date du relevé<br>
+                                4. (Optionnel) Joignez une photo du compteur<br>
+                                5. Cliquez "Enregistrer le relevé"
+                            </div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>⚡ Pour les 2 tarifs électricité</strong>
+                            <p>Si vous avez Heures Pleines (HP) et Heures Creuses (HC) :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>Enregistrez d'abord l'HP</li>
+                                <li>Puis l'HC dans un 2e relevé</li>
+                            </ul>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>🤓 Analyser les tendances</strong>
+                            <p>Le graphique vous montre si vos consos augmentent ou baissent. Aidez-vous à réduire les dépenses d'énergie en colocation ! ♻️</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-annonces" class="tab-content" style="display:none;">
@@ -1279,6 +1510,12 @@
     function ajouterRegleCharte() { const n = document.getElementById('nouvelle-charte').value.trim(); if(n) { db.charte = getSafeArray(db.charte); db.charte.push(n); document.getElementById('nouvelle-charte').value = ""; sync(); } }
     function supprimerRegleCharte(index) { db.charte = getSafeArray(db.charte); db.charte.splice(index, 1); if (db.charte.length === 0) db.charte = ["Bienveillance avant tout."]; sync(); }
 
+    function toggleTutorial(element) {
+        const content = element.nextElementSibling;
+        content.classList.toggle('open');
+        element.querySelector('.toggle-icon').textContent = content.classList.contains('open') ? '▼' : '▶';
+    }
+
     function showTab(tab) {
         currentTab = tab;
         document.querySelectorAll('.tab-content').forEach(x => x.style.display = 'none');
@@ -1824,6 +2061,7 @@
     window.saveEditTask = saveEditTask;
     window.prevMonth = prevMonth;
     window.nextMonth = nextMonth;
+    window.toggleTutorial = toggleTutorial;
     window.votePoll = votePoll;
     window.proposePollOption = proposePollOption;
     window.closePoll = closePoll;
