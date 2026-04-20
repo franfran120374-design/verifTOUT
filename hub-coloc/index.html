@@ -371,13 +371,9 @@
             </div>
 
             <div id="tab-agenda" class="tab-content" style="display:none;">
-                <div class="agenda-tabs">
-                    <button id="btn-agenda-actif" onclick="setAgendaView('actif')" style="background:var(--primary); color:white;" data-i18n="tabAgendaActive">📅 À venir</button>
-                    <button id="btn-agenda-archive" onclick="setAgendaView('archive')" style="background:white; color:var(--primary);" data-i18n="tabAgendaArchive">🗃️ Archives</button>
-                </div>
-
+                <!-- FORMULAIRE DE CRÉATION -->
                 <div class="card">
-                    <h2 data-i18n="agendaTitle">📅 Tâche ou Événement</h2>
+                    <h2 data-i18n="agendaTitle">📅 Créer une Tâche ou un Événement</h2>
                     <label for="evt-titre" class="visually-hidden">Titre</label>
                     <input type="text" id="evt-titre" data-i18n="phEvtTitle" placeholder="Ex: Sortir les poubelles">
                     
@@ -427,9 +423,32 @@
                     <select id="evt-assignee"></select>
                     
                     <button onclick="ajouterAgenda()" data-i18n="btnCreate">Créer</button>
-                    <button class="btn-outline" style="margin-top:10px; border-color: #4285F4; color: #4285F4;" onclick="exporterArchive('agenda')">📂 Exporter Archive Globale (Drive)</button>
                 </div>
-                <div id="liste-agenda"></div>
+
+                <!-- ONGLETS TÂCHES / CALENDRIER -->
+                <div class="agenda-tabs" style="margin-top: 20px;">
+                    <button id="btn-agenda-taches" onclick="setAgendaView('taches')" style="background:var(--primary); color:white;">📋 Mes Tâches</button>
+                    <button id="btn-agenda-calendrier" onclick="setAgendaView('calendrier')" style="background:white; color:var(--primary);">📆 Calendrier</button>
+                </div>
+
+                <!-- LISTE DES TÂCHES (simples, pas les instances) -->
+                <div id="tab-taches" style="display:none;">
+                    <div id="liste-taches"></div>
+                </div>
+
+                <!-- CALENDRIER VISUEL -->
+                <div id="tab-calendrier" style="display:none;">
+                    <div class="card" style="padding: 0; overflow: hidden;">
+                        <div id="calendar-header" style="background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+                            <button onclick="prevMonth()" style="background: transparent; color: white; border: none; font-size: 1.2rem; cursor: pointer;">◀</button>
+                            <h2 id="calendar-month-year" style="margin: 0; font-size: 1.2rem;"></h2>
+                            <button onclick="nextMonth()" style="background: transparent; color: white; border: none; font-size: 1.2rem; cursor: pointer;">▶</button>
+                        </div>
+                        <div id="calendar-grid" style="padding: 15px;"></div>
+                    </div>
+                </div>
+
+                <div id="liste-agenda" style="display:none;"></div>
             </div>
 
             <div id="tab-courses" class="tab-content" style="display:none;">
@@ -784,7 +803,8 @@
     };
 
     let currentLang = localStorage.getItem('hub_lang') || 'fr';
-    let currentAgendaView = 'actif'; 
+    let currentAgendaView = 'taches';
+    let currentCalendarMonth = new Date(); 
     let currentAnnoncesView = 'gen';
 
     function t(key) { return translations[currentLang] && translations[currentLang][key] ? translations[currentLang][key] : (translations['fr'][key] || key); }
@@ -1276,11 +1296,80 @@
 
     function setAgendaView(view) {
         currentAgendaView = view;
-        document.getElementById('btn-agenda-actif').style.background = view === 'actif' ? 'var(--primary)' : 'white';
-        document.getElementById('btn-agenda-actif').style.color = view === 'actif' ? 'white' : 'var(--primary)';
-        document.getElementById('btn-agenda-archive').style.background = view === 'archive' ? 'var(--primary)' : 'white';
-        document.getElementById('btn-agenda-archive').style.color = view === 'archive' ? 'white' : 'var(--primary)';
+        
+        // Mettre à jour les styles des boutons
+        document.getElementById('btn-agenda-taches').style.background = view === 'taches' ? 'var(--primary)' : 'white';
+        document.getElementById('btn-agenda-taches').style.color = view === 'taches' ? 'white' : 'var(--primary)';
+        document.getElementById('btn-agenda-calendrier').style.background = view === 'calendrier' ? 'var(--primary)' : 'white';
+        document.getElementById('btn-agenda-calendrier').style.color = view === 'calendrier' ? 'white' : 'var(--primary)';
+        
+        // Afficher/cacher les sections
+        document.getElementById('tab-taches').style.display = view === 'taches' ? 'block' : 'none';
+        document.getElementById('tab-calendrier').style.display = view === 'calendrier' ? 'block' : 'none';
+        
+        if (view === 'calendrier') {
+            renderCalendar();
+        }
         renderAll();
+    }
+    
+    function prevMonth() {
+        currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() - 1);
+        renderCalendar();
+    }
+    
+    function nextMonth() {
+        currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + 1);
+        renderCalendar();
+    }
+    
+    function renderCalendar() {
+        const monthYear = currentCalendarMonth.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
+        document.getElementById('calendar-month-year').textContent = monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
+        
+        const firstDay = new Date(currentCalendarMonth.getFullYear(), currentCalendarMonth.getMonth(), 1);
+        const lastDay = new Date(currentCalendarMonth.getFullYear(), currentCalendarMonth.getMonth() + 1, 0);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
+        
+        const days = [];
+        let current = new Date(startDate);
+        while (current <= lastDay || current.getDay() !== 0) {
+            days.push(new Date(current));
+            current.setDate(current.getDate() + 1);
+        }
+        
+        // En-têtes jours
+        const dayHeaders = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+        let grid = '<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;">';
+        
+        // Ajouter les en-têtes
+        dayHeaders.forEach(day => {
+            grid += `<div style="text-align: center; font-weight: bold; padding: 10px 0; border-bottom: 2px solid var(--primary);">${day}</div>`;
+        });
+        
+        // Ajouter les jours
+        days.forEach(day => {
+            const dateStr = day.toISOString().split('T')[0];
+            const events = getSafeArray(db.agenda)
+                .flatMap(a => generateRecurringInstances(a))
+                .filter(e => e.d === dateStr);
+            
+            const isCurrentMonth = day.getMonth() === currentCalendarMonth.getMonth();
+            const isToday = dateStr === new Date().toISOString().split('T')[0];
+            
+            let cellStyle = `padding: 10px; border: 1px solid #ddd; border-radius: 6px; min-height: 80px; background: ${!isCurrentMonth ? '#f5f5f5' : 'white'}; ${isToday ? 'background: #E3F2FD; border: 2px solid var(--primary);' : ''}`;
+            
+            grid += `<div style="${cellStyle}">
+                <div style="font-weight: bold; color: ${isCurrentMonth ? '#000' : '#999'}; margin-bottom: 5px;">${day.getDate()}</div>
+                <div style="font-size: 0.75rem;">
+                    ${events.map(e => `<div style="background: ${e.type === 'tache' ? '#34b7f1' : '#ea4335'}; color: white; padding: 2px 4px; margin: 2px 0; border-radius: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${e.t}">${e.t}</div>`).join('')}
+                </div>
+            </div>`;
+        });
+        
+        grid += '</div>';
+        document.getElementById('calendar-grid').innerHTML = grid;
     }
     
     function setAnnoncesView(view) {
@@ -1405,11 +1494,11 @@
             id: Date.now(), 
             t: t_val, 
             d: d,
-            time: time || null, // heure optionnelle
+            time: time || null,
             type: type, 
             a: a, 
             f: f,
-            day: day || null, // jour pour les récurrences
+            day: day || null,
             done: false, 
             creator: currentUser, 
             createdAt: createdAtStr, 
@@ -1417,11 +1506,6 @@
         };
         
         db.agenda.push(eventObj);
-        
-        // Si c'est récurrent avec un jour spécifique, créer les futures occurrences
-        if (f !== 'once' && day) {
-            createRecurringEvents(eventObj, f, day);
-        }
         
         sync(); 
         document.getElementById('evt-titre').value = "";
@@ -1431,38 +1515,38 @@
         alert('✅ Tâche créée' + (f !== 'once' ? ' (récurrente)' : '') + ' !');
     }
     
-    function createRecurringEvents(baseEvent, freq, day) {
-        // Créer des occurrences futures de l'événement récurrent
-        const today = new Date();
-        const occurrences = [];
+    function generateRecurringInstances(baseEvent) {
+        // Générer les instances futures d'une tâche récurrente (sans créer de nouveaux items)
+        if (baseEvent.f === 'once') return [baseEvent];
         
-        for (let i = 1; i <= 12; i++) { // Créer 12 occurrences futures
+        const instances = [baseEvent];
+        const today = new Date();
+        const baseDate = new Date(baseEvent.d);
+        
+        for (let i = 1; i <= 12; i++) {
             let newDate;
             
-            if (freq === 'hebdo') {
-                // Trouver le prochain [jour] de la semaine
+            if (baseEvent.f === 'hebdo') {
                 const dayMap = { 'lundi': 1, 'mardi': 2, 'mercredi': 3, 'jeudi': 4, 'vendredi': 5, 'samedi': 6, 'dimanche': 0 };
-                const targetDay = dayMap[day];
+                const targetDay = dayMap[baseEvent.day];
                 newDate = new Date(today);
                 newDate.setDate(newDate.getDate() + ((targetDay - newDate.getDay() + 7) % 7) + (i - 1) * 7);
-            } else if (freq === 'mensuel') {
-                // Récurrence mensuelle
-                newDate = new Date(today);
-                if (day === '1') {
+            } else if (baseEvent.f === 'mensuel') {
+                newDate = new Date(today.getFullYear(), today.getMonth() + i, 1);
+                if (baseEvent.day === '1') {
                     newDate.setDate(1);
-                } else if (day === '15') {
+                } else if (baseEvent.day === '15') {
                     newDate.setDate(15);
-                } else if (day === '30') {
+                } else if (baseEvent.day === '30') {
                     newDate.setDate(30);
                 }
-                newDate.setMonth(newDate.getMonth() + i);
             }
             
             if (newDate && newDate > today) {
                 const dateStr = newDate.toISOString().split('T')[0];
-                occurrences.push({
+                instances.push({
                     ...baseEvent,
-                    id: Date.now() + i,
+                    id: baseEvent.id + '_recurring_' + i,
                     d: dateStr,
                     isRecurringInstance: true,
                     recurringParentId: baseEvent.id
@@ -1470,8 +1554,94 @@
             }
         }
         
-        // Ajouter les occurrences à l'agenda
-        db.agenda.push(...occurrences);
+        return instances;
+    }
+    
+    function editTaskModal(taskId) {
+        const task = getSafeArray(db.agenda).find(t => t.id === taskId);
+        if (!task) return;
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:10000; padding:20px;';
+        
+        modal.innerHTML = `
+            <div style="background:white; padding:20px; border-radius:12px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto;">
+                <h2>✏️ Éditer la tâche</h2>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Titre</label>
+                    <input type="text" id="edit-task-titre" value="${task.t}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Date</label>
+                    <input type="date" id="edit-task-date" value="${task.d}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Heure (optionnel)</label>
+                    <input type="time" id="edit-task-time" value="${task.time || ''}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Fréquence</label>
+                    <select id="edit-task-freq" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                        <option value="once" ${task.f === 'once' ? 'selected' : ''}>Ponctuel</option>
+                        <option value="hebdo" ${task.f === 'hebdo' ? 'selected' : ''}>Chaque semaine</option>
+                        <option value="mensuel" ${task.f === 'mensuel' ? 'selected' : ''}>Chaque mois</option>
+                    </select>
+                </div>
+                
+                <div id="edit-task-day-container" style="margin: 15px 0; display: ${task.f !== 'once' ? 'block' : 'none'};">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Jour</label>
+                    <select id="edit-task-day" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                        <option value="">-- Sélectionner --</option>
+                        <option value="lundi" ${task.day === 'lundi' ? 'selected' : ''}>Lundi</option>
+                        <option value="mardi" ${task.day === 'mardi' ? 'selected' : ''}>Mardi</option>
+                        <option value="mercredi" ${task.day === 'mercredi' ? 'selected' : ''}>Mercredi</option>
+                        <option value="jeudi" ${task.day === 'jeudi' ? 'selected' : ''}>Jeudi</option>
+                        <option value="vendredi" ${task.day === 'vendredi' ? 'selected' : ''}>Vendredi</option>
+                        <option value="samedi" ${task.day === 'samedi' ? 'selected' : ''}>Samedi</option>
+                        <option value="dimanche" ${task.day === 'dimanche' ? 'selected' : ''}>Dimanche</option>
+                        <option value="1" ${task.day === '1' ? 'selected' : ''}>1er du mois</option>
+                        <option value="15" ${task.day === '15' ? 'selected' : ''}>15ème du mois</option>
+                        <option value="30" ${task.day === '30' ? 'selected' : ''}>30ème du mois</option>
+                    </select>
+                </div>
+                
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button onclick="saveEditTask(${taskId})" style="flex:1; padding:10px; background:var(--primary); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
+                        ✓ Sauvegarder
+                    </button>
+                    <button onclick="this.closest('div').parentElement.remove()" style="flex:1; padding:10px; background:#f0f0f0; border:1px solid #ddd; border-radius:6px; cursor:pointer; font-weight:bold;">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+        
+        // Afficher/cacher le sélecteur de jour
+        document.getElementById('edit-task-freq').addEventListener('change', function() {
+            document.getElementById('edit-task-day-container').style.display = this.value !== 'once' ? 'block' : 'none';
+        });
+    }
+    
+    function saveEditTask(taskId) {
+        const task = getSafeArray(db.agenda).find(t => t.id === taskId);
+        if (!task) return;
+        
+        task.t = document.getElementById('edit-task-titre').value.trim();
+        task.d = document.getElementById('edit-task-date').value;
+        task.time = document.getElementById('edit-task-time').value || null;
+        task.f = document.getElementById('edit-task-freq').value;
+        task.day = document.getElementById('edit-task-day').value || null;
+        
+        sync();
+        alert('✅ Tâche modifiée !');
+        document.querySelector('[style*="background:rgba(0,0,0,0.5)"]')?.remove();
     }
     
     // Afficher/cacher le sélecteur de jour selon la fréquence
@@ -1480,8 +1650,25 @@
         container.style.display = this.value !== 'once' ? 'block' : 'none';
     });
     
-    function toggleDone(id) { const item = getSafeArray(db.agenda).find(x => String(x.id) === String(id)); if(item) { item.done = !item.done; item.doneBy = item.done ? currentUser : ""; item.doneAt = item.done ? new Date().toLocaleString([], {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : ""; sync(); } }
-    function respondEvt(id, res) { const item = getSafeArray(db.agenda).find(x => String(x.id) === String(id)); if(item) { if(!item.responses) item.responses = {}; item.responses[currentUser] = res; sync(); } }
+    function toggleDone(id) { 
+        // Pour les instances récurrentes, trouver l'élément parent
+        let item = getSafeArray(db.agenda).find(x => String(x.id) === String(id));
+        if(!item) return;
+        
+        item.done = !item.done; 
+        item.doneBy = item.done ? currentUser : ""; 
+        item.doneAt = item.done ? new Date().toLocaleString([], {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : ""; 
+        sync(); 
+    }
+    
+    function respondEvt(id, res) { 
+        let item = getSafeArray(db.agenda).find(x => String(x.id) === String(id));
+        if(!item) return;
+        
+        if(!item.responses) item.responses = {}; 
+        item.responses[currentUser] = res; 
+        sync(); 
+    }
     function getCalLink(item) { const start = new Date(item.d).toISOString().replace(/-|:|\.\d\d\d/g, ""); return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(item.t)}&dates=${start}/${start}`; }
 
     function exporterItem(type, id) {
@@ -1633,6 +1820,10 @@
     window.editerDepense = editerDepense;
     window.saveEditedDepense = saveEditedDepense;
     window.settleDebt = settleDebt;
+    window.editTaskModal = editTaskModal;
+    window.saveEditTask = saveEditTask;
+    window.prevMonth = prevMonth;
+    window.nextMonth = nextMonth;
     window.votePoll = votePoll;
     window.proposePollOption = proposePollOption;
     window.closePoll = closePoll;
@@ -2304,21 +2495,27 @@ Raphaël`;
         document.getElementById('chat-mention').innerHTML = `<option value="">Tous</option>` + membresArr.filter(m => m !== currentUser).map(m => `<option value="${m}">@${m}</option>`).join('');
         document.getElementById('evt-assignee').innerHTML = `<option value="Tous">${t('allColocs')}</option>` + membresArr.map(m => `<option value="${m}">${m}</option>`).join('');
         
-        document.getElementById('liste-agenda').innerHTML = getSafeArray(db.agenda).filter(a => currentAgendaView === 'actif' ? !isEventArchived(a) : isEventArchived(a)).sort((a,b) => new Date(a.d) - new Date(b.d)).map(a => `
+        // ── AFFICHER LES TÂCHES PRINCIPALES (pas les instances) ──
+        document.getElementById('liste-taches').innerHTML = getSafeArray(db.agenda)
+            .filter(a => !a.isRecurringInstance) // Afficher seulement les tâches principales
+            .sort((a,b) => new Date(a.d) - new Date(b.d))
+            .map(a => `
             <div class="card" style="border-left: 5px solid ${a.type === 'evenement' ? '#ea4335' : '#34b7f1'}; margin-bottom: 8px;">
                 <div class="item-row" style="padding:0; border:none;">
-                    <div>
+                    <div style="flex:1;">
                         <strong style="font-size: 1rem; color: var(--primary-dark);">${a.t}</strong>
                         <div class="meta-info">
                             📅 ${new Date(a.d).toLocaleString([], {weekday:'short', day:'2-digit', month:'short'})} 
                             ${a.time ? `⏰ ${a.time}` : ''}
                             | 👤 ${t('assignedTo')} <b>${a.a || t('allColocs')}</b> 
                             ${a.f !== 'once' ? `| 🔄 ${a.f === 'hebdo' ? 'Chaque ' + (a.day || 'semaine') : 'Chaque mois' + (a.day ? ' (' + a.day + ')' : '')}` : ''}
-                            ${a.isRecurringInstance ? '<span style="color:#999; font-size:0.75rem;"> (récurrence)</span>' : ''}
                         </div>
                         <div class="meta-info"><i>${t('createdBy')} ${a.creator} ${a.createdAt ? t('on') + ' ' + a.createdAt : ''}</i></div>
                     </div>
-                    ${a.creator === currentUser || isAdmin || isPlatformOwner ? `<button class="btn-danger" style="margin:0;" onclick="del('agenda', ${a.id})">✖</button>` : ''}
+                    <div style="display:flex; gap:5px;">
+                        ${a.creator === currentUser || isAdmin || isPlatformOwner ? `<button class="btn-outline" style="margin:0; font-size:0.8rem; padding:5px 8px;" onclick="editTaskModal(${a.id})">✏️ Éditer</button>` : ''}
+                        ${a.creator === currentUser || isAdmin || isPlatformOwner ? `<button class="btn-danger" style="margin:0;" onclick="del('agenda', ${a.id}); sync();">✖</button>` : ''}
+                    </div>
                 </div>
                 ${a.type === 'tache' ? `
                     <div style="margin-top: 10px; display:flex; justify-content:space-between; align-items:center;">
@@ -2336,6 +2533,43 @@ Raphaël`;
                 `}
             </div>
         `).join('');
+        
+        document.getElementById('liste-agenda').innerHTML = getSafeArray(db.agenda)
+            .flatMap(a => generateRecurringInstances(a))
+            .sort((a,b) => new Date(a.d) - new Date(b.d))
+            .map(a => `
+            <div class="card" style="border-left: 5px solid ${a.type === 'evenement' ? '#ea4335' : '#34b7f1'}; margin-bottom: 8px;">
+                <div class="item-row" style="padding:0; border:none;">
+                    <div>
+                        <strong style="font-size: 1rem; color: var(--primary-dark);">${a.t}</strong>
+                        <div class="meta-info">
+                            📅 ${new Date(a.d).toLocaleString([], {weekday:'short', day:'2-digit', month:'short'})} 
+                            ${a.time ? `⏰ ${a.time}` : ''}
+                            | 👤 ${t('assignedTo')} <b>${a.a || t('allColocs')}</b> 
+                            ${a.f !== 'once' ? `| 🔄 ${a.f === 'hebdo' ? 'Chaque ' + (a.day || 'semaine') : 'Chaque mois' + (a.day ? ' (' + a.day + ')' : '')}` : ''}
+                            ${a.isRecurringInstance ? '<span style="color:#999; font-size:0.75rem;"> (récurrence)</span>' : ''}
+                        </div>
+                        <div class="meta-info"><i>${t('createdBy')} ${a.creator} ${a.createdAt ? t('on') + ' ' + a.createdAt : ''}</i></div>
+                    </div>
+                    ${a.creator === currentUser || isAdmin || isPlatformOwner ? `<button class="btn-danger" style="margin:0;" onclick="del('agenda', ${a.recurringParentId || a.id}); sync();">✖</button>` : ''}
+                </div>
+                ${a.type === 'tache' ? `
+                    <div style="margin-top: 10px; display:flex; justify-content:space-between; align-items:center;">
+                        <button onclick="toggleDone(${a.id})" style="background:${a.done ? 'var(--text-muted)' : 'var(--primary)'}; width:auto; padding: 6px 12px; font-size:0.8rem;">
+                            ${a.done ? '✅ ' + t('doneBy') + ' ' + (a.doneBy || currentUser) : '☐ ' + t('markDone')}
+                        </button>
+                    </div>
+                ` : `
+                    <div style="margin-top: 10px; display:flex; gap:5px;">
+                        <button onclick="respondEvt(${a.id}, 'yes')" style="background:${a.responses && a.responses[currentUser]==='yes' ? '#25D366' : '#ddd'}; width:auto; padding: 6px 12px; font-size:0.8rem; color:#000;">✅ ${t('present')}</button>
+                        <button onclick="respondEvt(${a.id}, 'no')" style="background:${a.responses && a.responses[currentUser]==='no' ? '#ea4335' : '#ddd'}; width:auto; padding: 6px 12px; font-size:0.8rem; color:#000;">❌ ${t('absent')}</button>
+                        <a href="${getCalLink(a)}" target="_blank" style="margin-left:auto; text-decoration:none; font-size:1.2rem;" title="Ajouter à Google Agenda">📅</a>
+                    </div>
+                    ${a.responses ? `<div style="font-size:0.7rem; margin-top:5px; color:#555;"><b>Présents :</b> ${Object.entries(a.responses).filter(([k,v])=>v==='yes').map(([k,v])=>k).join(', ') || 'Aucun'}</div>` : ''}
+                `}
+            </div>
+        `).join('');
+        
         
         document.getElementById('catalogue-list').innerHTML = getSafeArray(db.catalogue).map(c => `<span class="react-btn" onclick="document.getElementById('course-nom').value='${c}'">${tCat(c)} +</span>`).join('');
         
