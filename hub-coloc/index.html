@@ -148,15 +148,15 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: none;
+            display: flex !important;
             justify-content: center;
             align-items: center;
             z-index: 2000;
             padding: 20px;
         }
 
-        #firebase-auth-modal.show {
-            display: flex;
+        #firebase-auth-modal.hidden {
+            display: none !important;
         }
 
         .firebase-auth-container {
@@ -2345,10 +2345,13 @@ function initFirebaseAuth() {
     // Initialiser Firebase Auth
     firebase.auth().onAuthStateChanged(user => {
         firebaseAuthUser = user;
+        const modal = document.getElementById('firebase-auth-modal');
         if (user) {
-            document.getElementById('firebase-auth-modal').classList.remove('show');
+            // Utilisateur connecté, cacher le modal
+            modal.classList.add('hidden');
         } else {
-            document.getElementById('firebase-auth-modal').classList.add('show');
+            // Pas connecté, afficher le modal
+            modal.classList.remove('hidden');
         }
     });
 }
@@ -2395,7 +2398,7 @@ async function firebaseHandleLogin(event) {
         await firebase.auth().signInWithEmailAndPassword(email, password);
         firebaseShowAlert('loginAlert', '✓ Connexion réussie !', 'success');
         setTimeout(() => {
-            document.getElementById('firebase-auth-modal').classList.remove('show');
+            document.getElementById('firebase-auth-modal').classList.add('hidden');
         }, 1000);
     } catch (error) {
         const errorMsg = getFirebaseErrorMessage(error.code);
@@ -2455,7 +2458,7 @@ async function firebaseHandleCreate(event) {
 
         firebaseShowAlert('createAlert', '✓ Colocation créée !', 'success');
         setTimeout(() => {
-            document.getElementById('firebase-auth-modal').classList.remove('show');
+            document.getElementById('firebase-auth-modal').classList.add('hidden');
         }, 1000);
 
     } catch (error) {
@@ -2532,6 +2535,7 @@ loadTheme_hub_coloc();
                         type="email" 
                         id="loginEmail" 
                         placeholder="votre@email.com"
+                        autocomplete="email"
                         required
                     >
                 </div>
@@ -2542,6 +2546,7 @@ loadTheme_hub_coloc();
                         type="password" 
                         id="loginPassword" 
                         placeholder="••••••••"
+                        autocomplete="current-password"
                         required
                     >
                     <div class="firebase-auth-hint">Au moins 6 caractères</div>
@@ -2575,6 +2580,7 @@ loadTheme_hub_coloc();
                         type="email" 
                         id="createEmail" 
                         placeholder="nouveau@example.com"
+                        autocomplete="email"
                         required
                     >
                     <div class="firebase-auth-hint">Sera utilisé pour vous connecter</div>
@@ -2586,6 +2592,7 @@ loadTheme_hub_coloc();
                         type="password" 
                         id="createPassword" 
                         placeholder="••••••••"
+                        autocomplete="new-password"
                         required
                     >
                     <div class="firebase-auth-hint">Au moins 6 caractères</div>
