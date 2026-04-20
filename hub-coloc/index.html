@@ -379,8 +379,41 @@
                     <label for="evt-titre" class="visually-hidden">Titre</label>
                     <input type="text" id="evt-titre" data-i18n="phEvtTitle" placeholder="Ex: Sortir les poubelles">
                     
-                    <label for="evt-date" class="visually-hidden">Date et heure</label>
-                    <input type="datetime-local" id="evt-date">
+                    <label for="evt-date" class="visually-hidden">Date</label>
+                    <input type="date" id="evt-date">
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <label for="evt-time" style="font-size: 0.85rem; color: #666;">⏰ Heure (optionnel)</label>
+                            <input type="time" id="evt-time" placeholder="HH:MM">
+                        </div>
+                        <div style="flex: 1;">
+                            <label for="evt-freq" class="visually-hidden">Fréquence</label>
+                            <select id="evt-freq">
+                                <option value="once">Ponctuel (1 fois)</option>
+                                <option value="hebdo">Chaque semaine</option>
+                                <option value="mensuel">Chaque mois</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Jour spécifique pour les récurrences -->
+                    <div id="evt-day-container" style="display: none; margin-top: 10px;">
+                        <label style="font-size: 0.85rem; font-weight: bold;">📍 Jour (si récurrent)</label>
+                        <select id="evt-day">
+                            <option value="">-- Sélectionner --</option>
+                            <option value="lundi">Lundi</option>
+                            <option value="mardi">Mardi</option>
+                            <option value="mercredi">Mercredi</option>
+                            <option value="jeudi">Jeudi</option>
+                            <option value="vendredi">Vendredi</option>
+                            <option value="samedi">Samedi</option>
+                            <option value="dimanche">Dimanche</option>
+                            <option value="15">15ème du mois</option>
+                            <option value="1">1er du mois</option>
+                            <option value="30">30ème du mois</option>
+                        </select>
+                    </div>
                     
                     <label for="evt-type" class="visually-hidden">Type</label>
                     <select id="evt-type">
@@ -390,13 +423,6 @@
                     
                     <label for="evt-assignee" class="visually-hidden">Assigné à</label>
                     <select id="evt-assignee"></select>
-                    
-                    <label for="evt-freq" class="visually-hidden">Fréquence</label>
-                    <select id="evt-freq">
-                        <option value="once" data-i18n="once">Ponctuel (1 fois)</option>
-                        <option value="hebdo" data-i18n="weekly">Toutes les semaines</option>
-                        <option value="mensuel" data-i18n="monthly">Tous les mois</option>
-                    </select>
                     
                     <button onclick="ajouterAgenda()" data-i18n="btnCreate">Créer</button>
                     <button class="btn-outline" style="margin-top:10px; border-color: #4285F4; color: #4285F4;" onclick="exporterArchive('agenda')">📂 Exporter Archive Globale (Drive)</button>
@@ -1360,13 +1386,97 @@
     }
 
     function ajouterAgenda() { 
-        const t_val = document.getElementById('evt-titre').value; const d = document.getElementById('evt-date').value; const type = document.getElementById('evt-type').value; const a = document.getElementById('evt-assignee').value; const f = document.getElementById('evt-freq').value; 
-        if(!t_val || !d) return alert(t('alertTitleDate')); 
+        const t_val = document.getElementById('evt-titre').value;
+        const d = document.getElementById('evt-date').value;
+        const time = document.getElementById('evt-time').value;
+        const type = document.getElementById('evt-type').value;
+        const a = document.getElementById('evt-assignee').value;
+        const f = document.getElementById('evt-freq').value;
+        const day = document.getElementById('evt-day').value;
+        
+        if(!t_val || !d) return alert(t('alertTitleDate'));
+        
         const createdAtStr = new Date().toLocaleString([], {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
         db.agenda = getSafeArray(db.agenda);
-        db.agenda.push({ id: Date.now(), t: t_val, d, type, a, f, done: false, creator: currentUser, createdAt: createdAtStr, responses: {} }); 
-        document.getElementById('evt-titre').value = ""; sync(); 
+        
+        const eventObj = { 
+            id: Date.now(), 
+            t: t_val, 
+            d: d,
+            time: time || null, // heure optionnelle
+            type: type, 
+            a: a, 
+            f: f,
+            day: day || null, // jour pour les récurrences
+            done: false, 
+            creator: currentUser, 
+            createdAt: createdAtStr, 
+            responses: {} 
+        };
+        
+        db.agenda.push(eventObj);
+        
+        // Si c'est récurrent avec un jour spécifique, créer les futures occurrences
+        if (f !== 'once' && day) {
+            createRecurringEvents(eventObj, f, day);
+        }
+        
+        sync(); 
+        document.getElementById('evt-titre').value = "";
+        document.getElementById('evt-date').value = "";
+        document.getElementById('evt-time').value = "";
+        document.getElementById('evt-day').value = "";
+        alert('✅ Tâche créée' + (f !== 'once' ? ' (récurrente)' : '') + ' !');
     }
+    
+    function createRecurringEvents(baseEvent, freq, day) {
+        // Créer des occurrences futures de l'événement récurrent
+        const today = new Date();
+        const occurrences = [];
+        
+        for (let i = 1; i <= 12; i++) { // Créer 12 occurrences futures
+            let newDate;
+            
+            if (freq === 'hebdo') {
+                // Trouver le prochain [jour] de la semaine
+                const dayMap = { 'lundi': 1, 'mardi': 2, 'mercredi': 3, 'jeudi': 4, 'vendredi': 5, 'samedi': 6, 'dimanche': 0 };
+                const targetDay = dayMap[day];
+                newDate = new Date(today);
+                newDate.setDate(newDate.getDate() + ((targetDay - newDate.getDay() + 7) % 7) + (i - 1) * 7);
+            } else if (freq === 'mensuel') {
+                // Récurrence mensuelle
+                newDate = new Date(today);
+                if (day === '1') {
+                    newDate.setDate(1);
+                } else if (day === '15') {
+                    newDate.setDate(15);
+                } else if (day === '30') {
+                    newDate.setDate(30);
+                }
+                newDate.setMonth(newDate.getMonth() + i);
+            }
+            
+            if (newDate && newDate > today) {
+                const dateStr = newDate.toISOString().split('T')[0];
+                occurrences.push({
+                    ...baseEvent,
+                    id: Date.now() + i,
+                    d: dateStr,
+                    isRecurringInstance: true,
+                    recurringParentId: baseEvent.id
+                });
+            }
+        }
+        
+        // Ajouter les occurrences à l'agenda
+        db.agenda.push(...occurrences);
+    }
+    
+    // Afficher/cacher le sélecteur de jour selon la fréquence
+    document.getElementById('evt-freq').addEventListener('change', function() {
+        const container = document.getElementById('evt-day-container');
+        container.style.display = this.value !== 'once' ? 'block' : 'none';
+    });
     
     function toggleDone(id) { const item = getSafeArray(db.agenda).find(x => String(x.id) === String(id)); if(item) { item.done = !item.done; item.doneBy = item.done ? currentUser : ""; item.doneAt = item.done ? new Date().toLocaleString([], {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : ""; sync(); } }
     function respondEvt(id, res) { const item = getSafeArray(db.agenda).find(x => String(x.id) === String(id)); if(item) { if(!item.responses) item.responses = {}; item.responses[currentUser] = res; sync(); } }
@@ -2090,9 +2200,11 @@ Raphaël`;
                     <div>
                         <strong style="font-size: 1rem; color: var(--primary-dark);">${a.t}</strong>
                         <div class="meta-info">
-                            📅 ${new Date(a.d).toLocaleString([], {weekday:'short', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})} 
+                            📅 ${new Date(a.d).toLocaleString([], {weekday:'short', day:'2-digit', month:'short'})} 
+                            ${a.time ? `⏰ ${a.time}` : ''}
                             | 👤 ${t('assignedTo')} <b>${a.a || t('allColocs')}</b> 
-                            ${a.f !== 'once' ? `| 🔄 ${t(a.f) || a.f}` : ''}
+                            ${a.f !== 'once' ? `| 🔄 ${a.f === 'hebdo' ? 'Chaque ' + (a.day || 'semaine') : 'Chaque mois' + (a.day ? ' (' + a.day + ')' : '')}` : ''}
+                            ${a.isRecurringInstance ? '<span style="color:#999; font-size:0.75rem;"> (récurrence)</span>' : ''}
                         </div>
                         <div class="meta-info"><i>${t('createdBy')} ${a.creator} ${a.createdAt ? t('on') + ' ' + a.createdAt : ''}</i></div>
                     </div>
