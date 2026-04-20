@@ -1208,37 +1208,30 @@
                     try {
                         if ('Notification' in window && Notification.permission === 'granted') {
                             if (db.messages && data.messages) {
-                                const oldLen = getSafeArray(db.messages).length;
+                                const oldMsgs = getSafeArray(db.messages);
                                 const newMsgs = getSafeArray(data.messages);
-                                console.log('📨 Ancien nb messages:', oldLen, 'Nouveau nb:', newMsgs.length);
-                                if (newMsgs.length > oldLen && oldLen > 0) {
-                                    const lastMsg = newMsgs[newMsgs.length - 1];
-                                    console.log('📬 Dernier message de:', lastMsg.user, 'vs currentUser:', currentUser);
-                                    if (lastMsg.user !== currentUser) {
-                                        console.log('👁️ currentTab:', currentTab, 'visibility:', document.visibilityState);
-                                        if (currentTab !== 'chat' || document.visibilityState === 'hidden') {
-                                            let notifText = lastMsg.text || (lastMsg.audio ? "🎤 Message vocal" : (lastMsg.file ? "📎 Fichier/Photo" : "Nouveau message"));
-                                            notifText = notifText.replace(/<[^>]*>?/gm, '');
-                                            console.log('🔔 Envoi notification pour:', lastMsg.user);
-                                            
-                                            // Sur téléphone, utiliser le Service Worker
-                                            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                                                console.log('📱 Utilisation SW pour notification');
-                                                navigator.serviceWorker.ready.then((registration) => {
-                                                    registration.showNotification('💬 ' + getDisplayName(lastMsg.user), {
-                                                        body: notifText,
-                                                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
-                                                        badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
-                                                        tag: 'hub-coloc-chat',
-                                                        requireInteraction: false,
-                                                        vibrate: [200, 100, 200]
-                                                    });
-                                                    console.log('✅ Notification SW envoyée !');
-                                                });
-                                            } else {
-                                                // Sur ordinateur, utiliser new Notification
-                                                console.log('💻 Utilisation new Notification pour ordi');
-                                                new Notification('💬 ' + getDisplayName(lastMsg.user), {
+                                
+                                // Comparer le dernier message
+                                const oldLastMsg = oldMsgs.length > 0 ? oldMsgs[oldMsgs.length - 1] : null;
+                                const newLastMsg = newMsgs.length > 0 ? newMsgs[newMsgs.length - 1] : null;
+                                
+                                console.log('📨 Ancien dernier message ID:', oldLastMsg?.id, 'Nouveau dernier message ID:', newLastMsg?.id);
+                                
+                                // Si le dernier message a changé (nouvel ID) et ce n'est pas l'utilisateur courant
+                                if (newLastMsg && oldLastMsg && newLastMsg.id !== oldLastMsg.id && newLastMsg.user !== currentUser) {
+                                    console.log('✅ NOUVEAU MESSAGE DÉTECTÉ de:', newLastMsg.user);
+                                    console.log('👁️ currentTab:', currentTab, 'visibility:', document.visibilityState);
+                                    
+                                    if (currentTab !== 'chat' || document.visibilityState === 'hidden') {
+                                        let notifText = newLastMsg.text || (newLastMsg.audio ? "🎤 Message vocal" : (newLastMsg.file ? "📎 Fichier/Photo" : "Nouveau message"));
+                                        notifText = notifText.replace(/<[^>]*>?/gm, '');
+                                        console.log('🔔 Envoi notification pour:', newLastMsg.user);
+                                        
+                                        // Sur téléphone, utiliser le Service Worker
+                                        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                                            console.log('📱 Utilisation SW pour notification');
+                                            navigator.serviceWorker.ready.then((registration) => {
+                                                registration.showNotification('💬 ' + getDisplayName(newLastMsg.user), {
                                                     body: notifText,
                                                     icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
                                                     badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
@@ -1246,9 +1239,23 @@
                                                     requireInteraction: false,
                                                     vibrate: [200, 100, 200]
                                                 });
-                                                console.log('✅ Notification new Notification envoyée !');
-                                            }
+                                                console.log('✅ Notification SW envoyée !');
+                                            });
+                                        } else {
+                                            // Sur ordinateur, utiliser new Notification
+                                            console.log('💻 Utilisation new Notification pour ordi');
+                                            new Notification('💬 ' + getDisplayName(newLastMsg.user), {
+                                                body: notifText,
+                                                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
+                                                badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
+                                                tag: 'hub-coloc-chat',
+                                                requireInteraction: false,
+                                                vibrate: [200, 100, 200]
+                                            });
+                                            console.log('✅ Notification new Notification envoyée !');
                                         }
+                                    } else {
+                                        console.log('⏭️ Pas de notification : tu es sur le chat');
                                     }
                                 }
                             }
