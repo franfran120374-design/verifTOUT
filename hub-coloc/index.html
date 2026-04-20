@@ -151,7 +151,7 @@
             display: flex !important;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
+            z-index: 9999 !important;
             padding: 20px;
         }
 
@@ -2340,6 +2340,12 @@ function initFirebaseAuth() {
     if (typeof firebase === 'undefined') {
         setTimeout(initFirebaseAuth, 100);
         return;
+    }
+
+    // Cacher l'ancien modal d'authentification
+    const oldAuthModal = document.getElementById('auth-modal');
+    if (oldAuthModal) {
+        oldAuthModal.style.display = 'none';
     }
 
     // Initialiser Firebase Auth
