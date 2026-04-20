@@ -230,35 +230,108 @@
         .tutorial-example { background: #fffbea; padding: 10px; border-radius: 6px; margin: 8px 0; font-size: 0.85rem; font-style: italic; }
 
         /* ─── RESPONSIVE DESIGN INTELLIGENT ─── */
-        /* BASE: Mobile (320px - 767px) */
         * { box-sizing: border-box; }
-        html, body { width: 100%; overflow-x: hidden; }
-        
-        body { font-size: 14px; }
-        input, textarea, select { font-size: 16px; } /* Évite zoom iOS */
-        
-        .app-wrapper { padding: 0; }
-        header { padding: 12px; font-size: 0.9rem; }
-        .card { margin: 8px; padding: 12px; }
-        .item-row { flex-direction: column !important; }
-        
-        /* Chat pop-up responsive */
-        #chat-popup { padding: 10px !important; }
-        #chat-popup > div { max-width: 100vw !important; }
-        
-        /* Formulaires mobile */
-        input, textarea, select { 
-            width: 100% !important;
-            display: block !important;
-            padding: 12px !important;
-            margin-bottom: 10px !important;
+        html, body { 
+            width: 100%; 
+            height: 100%;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
         }
         
-        button { padding: 12px 16px; font-size: 14px; }
+        /* BASE: Mobile (tous les appareils) */
+        body { font-size: 14px; line-height: 1.5; }
+        input, textarea, select { font-size: 16px; } /* Évite zoom iOS */
         
-        /* Tabs étroits */
-        .agenda-tabs { flex-direction: column; }
-        .agenda-tabs button { width: 100%; }
+        .app-wrapper { 
+            padding: 0; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        /* Header & Nav */
+        header { 
+            padding: 12px; 
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        
+        nav { 
+            display: flex;
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex-wrap: nowrap;
+            padding: 8px;
+            gap: 5px;
+            flex-shrink: 0;
+            scroll-behavior: smooth;
+        }
+        
+        nav button {
+            white-space: nowrap;
+            flex-shrink: 0;
+            padding: 8px 12px;
+        }
+        
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-bottom: 60px;
+        }
+        
+        .card { 
+            margin: 8px; 
+            padding: 12px;
+        }
+        
+        /* Chat pop-up */
+        #chat-popup {
+            padding: 10px;
+            display: flex !important;
+        }
+        
+        #chat-popup > div {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border-radius: 12px;
+        }
+        
+        /* Formulaires - full width sur mobile */
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        input[type="date"],
+        input[type="time"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            display: block;
+        }
+        
+        button { 
+            padding: 12px 16px; 
+            font-size: 14px; 
+            cursor: pointer;
+        }
+        
+        /* SMALL TABLET (600px - 767px) */
+        @media (min-width: 600px) {
+            body { font-size: 14px; }
+            header { padding: 14px; }
+            .card { margin: 10px; padding: 14px; }
+            
+            nav { padding: 10px; }
+            nav button { padding: 10px 14px; }
+        }
         
         /* TABLET (768px - 1023px) */
         @media (min-width: 768px) {
@@ -266,19 +339,30 @@
             header { padding: 15px 20px; font-size: 1rem; }
             .card { margin: 12px; padding: 15px; }
             
-            .item-row { flex-direction: row !important; }
-            
-            input, textarea, select {
-                width: auto !important;
-                display: inline-block !important;
-                margin-right: 10px !important;
+            nav { 
+                overflow-x: visible;
+                flex-wrap: wrap;
+                justify-content: center;
             }
             
-            /* Chat pop-up plus grand */
-            #chat-popup > div { max-width: 80vw !important; }
+            nav button { padding: 12px 16px; }
             
-            .agenda-tabs { flex-direction: row; }
-            .agenda-tabs button { flex: 1; }
+            input[type="text"],
+            input[type="email"],
+            input[type="number"],
+            input[type="date"],
+            input[type="time"],
+            select {
+                width: auto;
+                display: inline-block;
+                margin-right: 10px;
+                margin-bottom: 8px;
+            }
+            
+            #chat-popup > div { 
+                max-width: 85vw;
+                max-height: 85vh;
+            }
         }
         
         /* DESKTOP (1024px+) */
@@ -287,24 +371,33 @@
             header { padding: 20px 30px; font-size: 1.1rem; }
             .card { margin: 15px; padding: 20px; }
             
-            .app-wrapper { max-width: 1400px; margin: 0 auto; padding: 10px; }
-            
-            input, textarea, select {
-                width: auto !important;
-                display: inline-block !important;
-                padding: 12px !important;
+            .app-wrapper { 
+                max-width: 1400px; 
+                margin: 0 auto; 
+                padding: 10px;
             }
             
-            /* Chat pop-up confortable */
-            #chat-popup > div { max-width: 800px !important; }
-        }
-        
-        /* PAYSAGE SERRÉ (hauteur < 500px) */
-        @media (max-height: 500px) {
-            header { padding: 8px 12px; }
-            .card { margin: 5px; padding: 10px; }
-            input, textarea, select { padding: 8px !important; margin-bottom: 5px !important; }
-            #chat-popup { padding: 5px !important; }
+            nav { 
+                justify-content: center;
+                padding: 15px;
+                overflow-x: visible;
+            }
+            
+            nav button { padding: 12px 20px; }
+            
+            input[type="text"],
+            input[type="email"],
+            input[type="number"],
+            input[type="date"],
+            input[type="time"],
+            select {
+                padding: 12px;
+            }
+            
+            #chat-popup > div { 
+                max-width: 800px;
+                max-height: 90vh;
+            }
         }
         
         /* TRÈS LARGE (1920px+) */
@@ -312,6 +405,45 @@
             body { font-size: 17px; }
             .app-wrapper { max-width: 1600px; }
             .card { padding: 25px; margin: 20px; }
+        }
+        
+        /* PAYSAGE - hauteur 600px à 800px */
+        @media (max-height: 800px) and (min-height: 600px) {
+            header { padding: 10px; }
+            nav { padding: 6px; gap: 4px; }
+            nav button { padding: 8px 12px; font-size: 13px; }
+            .card { margin: 6px; padding: 12px; }
+            input, textarea, select { padding: 10px; margin-bottom: 8px; }
+            .tab-content { padding-bottom: 50px; }
+        }
+        
+        /* PAYSAGE - hauteur < 600px (très serré) */
+        @media (max-height: 600px) {
+            header { padding: 8px 12px; font-size: 0.85rem; }
+            nav { padding: 4px; gap: 3px; }
+            nav button { padding: 6px 10px; font-size: 12px; }
+            .card { margin: 4px; padding: 10px; }
+            input, textarea, select { padding: 8px; margin-bottom: 6px; font-size: 14px; }
+            .tab-content { padding-bottom: 40px; }
+        }
+        
+        /* PAYSAGE - hauteur < 500px (ultra serré) */
+        @media (max-height: 500px) {
+            header { padding: 6px 10px; font-size: 0.75rem; }
+            nav { padding: 3px; gap: 2px; }
+            nav button { padding: 4px 8px; font-size: 11px; }
+            .card { margin: 3px; padding: 8px; }
+            input, textarea, select { padding: 6px; margin-bottom: 4px; font-size: 13px; }
+            button { padding: 8px 12px; font-size: 12px; }
+            #chat-popup { padding: 2px; }
+            .tab-content { padding-bottom: 35px; }
+        }
+        
+        /* Très petit écran (320px - 400px) */
+        @media (max-width: 400px) {
+            body { font-size: 13px; }
+            header { padding: 10px; }
+            nav button { font-size: 12px; padding: 8px; }
         }
     </style>
 </head>
@@ -1264,7 +1396,7 @@
     let fluideChart = null; 
     let currentTab = 'accueil';
     let lastSeenCounts = JSON.parse(localStorage.getItem('hub_last_seen')) || { agenda: 0, courses: 0, finances: 0, fluides: 0, annonces: 0 };
-    let lastMessageId = null;  // Pour détecter les nouveaux messages
+    let lastMessageId = localStorage.getItem('hub_last_notif_id') || null;  // Récupérer du localStorage !
     let hasShownWelcome = false;
     
     // 📛 Fonction pour afficher le prénom au lieu du mail
@@ -1330,7 +1462,8 @@
                                     console.log('✅ NOUVEAU MESSAGE DÉTECTÉ de:', newLastMsg.user);
                                     console.log('👁️ currentTab:', currentTab, 'visibility:', document.visibilityState);
                                     
-                                    lastMessageId = newLastMsg.id;  // Sauvegarder le nouvel ID
+                                    lastMessageId = newLastMsg.id;  // Sauvegarder le nouvel ID en mémoire
+                                    localStorage.setItem('hub_last_notif_id', String(newLastMsg.id));  // ← SAUVEGARDER DANS LOCALSTORAGE !
                                     
                                     if (currentTab !== 'chat' || document.visibilityState === 'hidden') {
                                         let notifText = newLastMsg.text || (newLastMsg.audio ? "🎤 Message vocal" : (newLastMsg.file ? "📎 Fichier/Photo" : "Nouveau message"));
@@ -1755,7 +1888,9 @@
         
         // Si c'est franfran120374, sauvegarder 'sand', sinon sauvegarder l'identifiant original
         const userToSave = (user === 'franfran120374@gmail.com' || user === 'franfran120374') ? 'sand' : user;
-        localStorage.setItem('hub_user', userToSave); localStorage.setItem('hub_path', colocPath);
+        localStorage.setItem('hub_user', userToSave); 
+        localStorage.setItem('hub_path', colocPath);
+        localStorage.removeItem('hub_last_notif_id');  // ← Nettoyer les notifs de l'ancienne colocation !
         document.getElementById('login-fields').style.display = 'none';
         document.getElementById('lang-select').style.display = 'none';
         document.getElementById('charte-fields').style.display = 'block';
@@ -2672,6 +2807,7 @@ Raphaël`;
         localStorage.removeItem('hub_signed');
         localStorage.removeItem('hub_path');
         localStorage.removeItem('hub_user');
+        localStorage.removeItem('hub_last_notif_id');  // ← Nettoyer les notifs aussi !
         window.location.reload();
     }
     window.deconnecterColoc = deconnecterColoc;
