@@ -1384,15 +1384,31 @@
         }
 
         try {
-            new Notification('🧪 TEST Hub Coloc', {
-                body: 'Ceci est une notification de test ! Si tu la vois, tout fonctionne ! 🎉',
-                icon: './favicon.ico',
-                badge: './favicon.ico',
-                tag: 'hub-coloc-test',
-                requireInteraction: false,
-                vibrate: [200, 100, 200]
-            });
-            console.log('✅ Notification de test envoyée !');
+            // Sur téléphone, utiliser le Service Worker
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.ready.then((registration) => {
+                    registration.showNotification('🧪 TEST Hub Coloc', {
+                        body: 'Ceci est une notification de test ! Si tu la vois, tout fonctionne ! 🎉',
+                        icon: './favicon.ico',
+                        badge: './favicon.ico',
+                        tag: 'hub-coloc-test',
+                        requireInteraction: false,
+                        vibrate: [200, 100, 200]
+                    });
+                    console.log('✅ Notification de test envoyée via SW !');
+                });
+            } else {
+                // Sur ordinateur, utiliser new Notification
+                new Notification('🧪 TEST Hub Coloc', {
+                    body: 'Ceci est une notification de test ! Si tu la vois, tout fonctionne ! 🎉',
+                    icon: './favicon.ico',
+                    badge: './favicon.ico',
+                    tag: 'hub-coloc-test',
+                    requireInteraction: false,
+                    vibrate: [200, 100, 200]
+                });
+                console.log('✅ Notification de test envoyée !');
+            }
         } catch(err) {
             alert('❌ Erreur : ' + err.message);
             console.error('Erreur notif test:', err);
@@ -1418,14 +1434,29 @@
             const lastUnreadMsg = unreadChatMsgs[unreadChatMsgs.length - 1];
             if (lastUnreadMsg) {
                 try {
-                    new Notification('💬 ' + getDisplayName(lastUnreadMsg.user), {
-                        body: lastUnreadMsg.text ? lastUnreadMsg.text.substring(0, 100) : 'Nouveau message',
-                        icon: './favicon.ico',
-                        badge: './favicon.ico',
-                        tag: 'hub-coloc-chat',
-                        requireInteraction: false,
-                        vibrate: [200, 100, 200]
-                    });
+                    // Sur téléphone, utiliser le Service Worker
+                    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                        navigator.serviceWorker.ready.then((registration) => {
+                            registration.showNotification('💬 ' + getDisplayName(lastUnreadMsg.user), {
+                                body: lastUnreadMsg.text ? lastUnreadMsg.text.substring(0, 100) : 'Nouveau message',
+                                icon: './favicon.ico',
+                                badge: './favicon.ico',
+                                tag: 'hub-coloc-chat',
+                                requireInteraction: false,
+                                vibrate: [200, 100, 200]
+                            });
+                        });
+                    } else {
+                        // Sur ordinateur, utiliser new Notification
+                        new Notification('💬 ' + getDisplayName(lastUnreadMsg.user), {
+                            body: lastUnreadMsg.text ? lastUnreadMsg.text.substring(0, 100) : 'Nouveau message',
+                            icon: './favicon.ico',
+                            badge: './favicon.ico',
+                            tag: 'hub-coloc-chat',
+                            requireInteraction: false,
+                            vibrate: [200, 100, 200]
+                        });
+                    }
                 } catch(err) {
                     console.warn('Erreur notification:', err);
                 }
