@@ -1163,6 +1163,7 @@
     let fluideChart = null; 
     let currentTab = 'accueil';
     let lastSeenCounts = JSON.parse(localStorage.getItem('hub_last_seen')) || { agenda: 0, courses: 0, finances: 0, fluides: 0, annonces: 0 };
+    let lastMessageId = null;  // Pour détecter les nouveaux messages
     let hasShownWelcome = false;
     
     // 📛 Fonction pour afficher le prénom au lieu du mail
@@ -1207,20 +1208,18 @@
                     // NOTIFICATIONS PUSH NATIVES (SÉCURISÉES)
                     try {
                         if ('Notification' in window && Notification.permission === 'granted') {
-                            if (db.messages && data.messages) {
-                                const oldMsgs = getSafeArray(db.messages);
+                            if (data.messages) {
                                 const newMsgs = getSafeArray(data.messages);
-                                
-                                // Comparer le dernier message
-                                const oldLastMsg = oldMsgs.length > 0 ? oldMsgs[oldMsgs.length - 1] : null;
                                 const newLastMsg = newMsgs.length > 0 ? newMsgs[newMsgs.length - 1] : null;
                                 
-                                console.log('📨 Ancien dernier message ID:', oldLastMsg?.id, 'Nouveau dernier message ID:', newLastMsg?.id);
+                                console.log('📨 Dernier message ID sauvegardé:', lastMessageId, 'Nouveau dernier message ID:', newLastMsg?.id);
                                 
                                 // Si le dernier message a changé (nouvel ID) et ce n'est pas l'utilisateur courant
-                                if (newLastMsg && oldLastMsg && newLastMsg.id !== oldLastMsg.id && newLastMsg.user !== currentUser) {
+                                if (newLastMsg && newLastMsg.id !== lastMessageId && newLastMsg.user !== currentUser) {
                                     console.log('✅ NOUVEAU MESSAGE DÉTECTÉ de:', newLastMsg.user);
                                     console.log('👁️ currentTab:', currentTab, 'visibility:', document.visibilityState);
+                                    
+                                    lastMessageId = newLastMsg.id;  // Sauvegarder le nouvel ID
                                     
                                     if (currentTab !== 'chat' || document.visibilityState === 'hidden') {
                                         let notifText = newLastMsg.text || (newLastMsg.audio ? "🎤 Message vocal" : (newLastMsg.file ? "📎 Fichier/Photo" : "Nouveau message"));
@@ -1257,6 +1256,8 @@
                                     } else {
                                         console.log('⏭️ Pas de notification : tu es sur le chat');
                                     }
+                                } else if (newLastMsg) {
+                                    lastMessageId = newLastMsg.id;  // Mettre à jour même si pas de notif
                                 }
                             }
                         }
