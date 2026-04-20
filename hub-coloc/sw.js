@@ -1,53 +1,124 @@
-const CACHE_NAME = 'hub-coloc-v2.0.1';
+// Service Worker pour Hub Coloc - Notifications Push
+// Ce fichier doit être à la racine du dossier coword
+
+const CACHE_NAME = 'hub-coloc-v1';
 const urlsToCache = [
-  '/verifTOUT/hub-coloc/',
-  '/verifTOUT/hub-coloc/index.html',
-  '/verifTOUT/hub-coloc/manifest.json',
-  '/verifTOUT/hub-coloc/icon-512.png',
-  '/verifTOUT/hub-coloc/icon.png'
+  './',
+  './index.html'
 ];
-self.addEventListener('install', event => {
+
+// Installation du Service Worker
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        return Promise.all(
-          urlsToCache.map(url => {
-            return cache.add(url).catch(err => {
-              console.error(`❌ SW: Échec de mise en cache pour : ${url}`, err);
-            });
-          })
-        );
-      })
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('✅ Service Worker installé');
+      return cache.addAll(urlsToCache);
+    }).catch(err => {
+      console.warn('Erreur cache SW:', err);
+      // Continuer même si le cache échoue
+    })
   );
+  self.skipWaiting();
 });
-self.addEventListener('activate', event => {
+
+// Activation du Service Worker
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map(cache => {
-          if (cache !== CACHE_NAME) return caches.delete(cache);
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
         })
       );
-    }).then(() => clients.claim())
+    })
   );
+  self.clients.claim();
 });
-self.addEventListener('fetch', event => {
+
+// Récupération (Fetch) avec fallback offline
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
+    caches.match(event.request).then((response) => {
+      if (response) {
+        return response;
+      }
+      return fetch(event.request).then((response) => {
+        if (!response || response.status !== 200 || response.type === 'error') {
+          return response;
+        }
+        const responseToCache = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseToCache);
+        });
+        return response;
+      }).catch(() => {
+        // Offline - retourner la version en cache
+        return caches.match(event.request);
+      });
+    })
   );
 });
-self.addEventListener('push', event => {
-  let title = 'Hub Coloc';
-  let body = 'Nouvelle activité dans la colocation !';
+
+// ─── GESTION DES NOTIFICATIONS PUSH ───
+self.addEventListener('push', (event) => {
+  console.log('📢 Notification reçue:', event);
+  
+  let notificationData = {
+    title: '🔔 Hub Coloc',
+    body: 'Nouvelle activité dans votre colocation',
+    icon: './favicon.ico',
+    badge: './favicon.ico',
+    tag: 'hub-coloc',
+    requireInteraction: false
+  };
+
   if (event.data) {
     try {
-      const payload = event.data.json();
-      title = payload.notification?.title || title;
-      body = payload.notification?.body || body;
-    } catch(e) {}
+      const data = event.data.json();
+      notificationData = { ...notificationData, ...data };
+    } catch (err) {
+      notificationData.body = event.data.text();
+    }
   }
+
   event.waitUntil(
-    self.registration.showNotification(title, { body })
+    self.registration.showNotification(notificationData.title, {
+      body: notificationData.body,
+      icon: notificationData.icon,
+      badge: notificationData.badge,
+      tag: notificationData.tag,
+      requireInteraction: notificationData.requireInteraction,
+      vibrate: [200, 100, 200],
+      data: { url: './' }
+    })
   );
+});
+
+// Clic sur la notification
+self.addEventListener('notificationclick', (event) => {
+  console.log('👆 Notification cliquée');
+  event.notification.close();
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Si l'app est déjà ouverte, la forcer au premier plan
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if (client.url === '/' || client.url.includes('/hub-coloc/')) {
+          return client.focus();
+        }
+      }
+      // Sinon, ouvrir l'app
+      return clients.openWindow('./');
+    })
+  );
+});
+
+// Fermeture de la notification
+self.addEventListener('notificationclose', (event) => {
+  console.log('✕ Notification fermée');
 });
