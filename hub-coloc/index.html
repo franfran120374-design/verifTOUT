@@ -869,7 +869,7 @@
                     <button class="btn-outline" onclick="forceAppRefresh()" style="width:100%; border-color:var(--accent); color:var(--accent); margin-bottom:10px;">🔄 Rafraîchir l'application (Mise à jour)</button>
                     
                     <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px;">Un problème technique ? Envoyez-nous un message avec vos captures d'écran.</p>
-                    <button onclick="window.location.href='mailto:franfran120374@gmail.com?subject=support%20hubcoloc%202026'" style="width:100%; background:var(--accent);">✉️ Contacter le support technique</button>
+                    <button onclick="window.location.href='mailto:sand@gmail.com?subject=support%20hubcoloc%202026'" style="width:100%; background:var(--accent);">✉️ Contacter le support technique</button>
                 </div>
                 
                 <div class="card">
@@ -1150,6 +1150,18 @@
     let currentTab = 'accueil';
     let lastSeenCounts = JSON.parse(localStorage.getItem('hub_last_seen')) || { agenda: 0, courses: 0, finances: 0, fluides: 0, annonces: 0 };
     let hasShownWelcome = false;
+    
+    // 📛 Fonction pour afficher le prénom au lieu du mail
+    function getDisplayName(email) {
+        // Si c'est franfran120374, retourner 'sand'
+        if (email === 'franfran120374@gmail.com' || email === 'franfran120374') {
+            return 'sand';
+        }
+        // Pour les autres, extraire la partie avant @ du mail
+        if (!email) return "Coloc";
+        const name = email.split('@')[0];
+        return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    }
     
     let db = { 
         name: "", admin: "", password: "",
@@ -1451,10 +1463,14 @@
     }
 
     function validerAcces(user, path, isNew = false, rawPass = "", rawName = "") {
-        currentUser = user; colocPath = path;
+        // Si c'est franfran120374, utiliser 'sand', sinon garder l'identifiant original
+        currentUser = (user === 'franfran120374@gmail.com' || user === 'franfran120374') ? 'sand' : user;
+        colocPath = path;
         tempIsNew = isNew; tempPassword = rawPass; tempName = rawName;
         
-        localStorage.setItem('hub_user', currentUser); localStorage.setItem('hub_path', colocPath);
+        // Si c'est franfran120374, sauvegarder 'sand', sinon sauvegarder l'identifiant original
+        const userToSave = (user === 'franfran120374@gmail.com' || user === 'franfran120374') ? 'sand' : user;
+        localStorage.setItem('hub_user', userToSave); localStorage.setItem('hub_path', colocPath);
         document.getElementById('login-fields').style.display = 'none';
         document.getElementById('lang-select').style.display = 'none';
         document.getElementById('charte-fields').style.display = 'block';
@@ -2236,7 +2252,7 @@ Raphaël`;
     // ✅ FONCTIONS PREMIUM
     async function checkPremiumStatus(email) {
         // Propriétaire de la plateforme — accès permanent
-        if (email === 'franfran120374@gmail.com') return true;
+        if (email === 'sand@gmail.com') return true;
         try {
             const snapshot = await firestore.collection('users').where('email', '==', email).get();
             if (!snapshot.empty) {
@@ -2262,7 +2278,7 @@ Raphaël`;
             db.isPremium = true;
             db.premiumEmail = email;
             sync();
-            if (email === 'franfran120374@gmail.com') localStorage.setItem('hub_platform_owner', '1');
+            if (email === 'sand@gmail.com') localStorage.setItem('hub_platform_owner', '1');
             alert("⭐ Premium activé ! Colocataires illimités débloqués.");
         const pb=document.getElementById('btn-prefs-hub'); if(pb) pb.style.display='inline-block';
         } else {
@@ -2308,8 +2324,8 @@ Raphaël`;
         const date = document.getElementById('mon-annif').value;
         if (!date) return alert("Sélectionnez votre date d'anniversaire.");
         if (!db.annifs) db.annifs = {};
-        // Utiliser le prénom au lieu de l'email (sans caractères spéciaux)
-        const userKey = currentUser.split('@')[0] || currentUser;
+        // Si c'est franfran120374, utiliser 'sand', sinon utiliser currentUser
+        const userKey = (currentUser === 'sand' || currentUser === 'franfran120374@gmail.com') ? 'sand' : currentUser;
         db.annifs[userKey] = date;
         sync();
         alert("🎂 Anniversaire sauvegardé !");
@@ -2320,7 +2336,8 @@ Raphaël`;
         const today = new Date();
         const annifEl = document.getElementById('liste-annifs');
         const monAnnif = document.getElementById('mon-annif');
-        const userKey = currentUser.split('@')[0] || currentUser;
+        // Si c'est franfran120374, utiliser 'sand', sinon utiliser currentUser
+        const userKey = (currentUser === 'sand' || currentUser === 'franfran120374@gmail.com') ? 'sand' : currentUser;
         if (monAnnif && annifs[userKey]) monAnnif.value = annifs[userKey];
 
         const items = getSafeArray(db.membres).map(m => {
@@ -2512,7 +2529,7 @@ Raphaël`;
 
     // ✅ GESTION ADMIN
     function promouvoirAdmin(nom) {
-        const isPO = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'franfran120374@gmail.com';
+        const isPO = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'sand@gmail.com';
         if (!isPO) { alert('⛔ Seul le propriétaire de la plateforme peut changer l\'administrateur.'); return; }
         if (!confirm(`Voulez-vous vraiment donner le rôle d'administrateur à ${nom} ?`)) return;
         db.admin = nom;
@@ -2529,7 +2546,7 @@ Raphaël`;
     }
 
     function revoquerAdmin(nom) {
-        const isPO = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'franfran120374@gmail.com';
+        const isPO = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'sand@gmail.com';
         if (!isPO) {
             const pwd = prompt(`🔑 Mot de passe de la colocation pour révoquer ${nom} :`);
             if (pwd === null) return;
@@ -2568,7 +2585,7 @@ Raphaël`;
         if(db.membresPhotos && db.membresPhotos[currentUser]) { document.getElementById('my-profile-preview').src = db.membresPhotos[currentUser]; document.getElementById('my-profile-preview').style.display = 'block'; document.getElementById('header-avatar').src = db.membresPhotos[currentUser]; document.getElementById('header-avatar').style.display = 'inline-block'; } 
         
         const membresArr = getSafeArray(db.membres);
-        const isPlatformOwner = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'franfran120374@gmail.com';
+        const isPlatformOwner = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'sand@gmail.com';
         // Platform owner est toujours admin — auto-claim silencieux
         if (isPlatformOwner && db.admin !== currentUser && currentUser) {
             db.admin = currentUser;
@@ -2629,13 +2646,13 @@ Raphaël`;
             const photoUrl = db.membresPhotos && db.membresPhotos[m.user] ? db.membresPhotos[m.user] : null;
             const avatarHtml = photoUrl 
                 ? `<img src="${photoUrl}" class="avatar" style="display:flex;">` 
-                : `<div class="avatar">${m.user.charAt(0).toUpperCase()}</div>`;
+                : `<div class="avatar">${getDisplayName(m.user).charAt(0)}</div>`;
             return `
             <div class="msg-row ${m.user === currentUser ? 'sent' : ''}">
                 ${avatarHtml}
                 <div class="bubble ${m.user === currentUser ? 'sent-bubble' : 'received-bubble'}">
                     <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
-                        <small style="color:${m.user === currentUser ? '#075E54' : 'var(--danger)'}; font-weight:bold; font-size:0.7rem;">${m.user}</small>
+                        <small style="color:${m.user === currentUser ? '#075E54' : 'var(--danger)'}; font-weight:bold; font-size:0.7rem;">${getDisplayName(m.user)}</small>
                         <small style="font-size:0.6rem; color:#888; margin-left:10px;">${m.time || ''}</small>
                     </div>
                     ${m.text ? `<div>${m.text}</div>` : ''}
@@ -2748,7 +2765,7 @@ Raphaël`;
                             | 👤 ${t('assignedTo')} <b>${a.a || t('allColocs')}</b> 
                             ${a.f !== 'once' ? `| 🔄 ${a.f === 'hebdo' ? 'Chaque ' + (a.day || 'semaine') : 'Chaque mois' + (a.day ? ' (' + a.day + ')' : '')}` : ''}
                         </div>
-                        <div class="meta-info"><i>${t('createdBy')} ${a.creator} ${a.createdAt ? t('on') + ' ' + a.createdAt : ''}</i></div>
+                        <div class="meta-info"><i>${t('createdBy')} ${getDisplayName(a.creator)} ${a.createdAt ? t('on') + ' ' + a.createdAt : ''}</i></div>
                     </div>
                     <div style="display:flex; gap:5px;">
                         ${a.creator === currentUser || isAdmin || isPlatformOwner ? `<button class="btn-outline" style="margin:0; font-size:0.8rem; padding:5px 8px;" onclick="editTaskModal(${a.id})">✏️ Éditer</button>` : ''}
@@ -2787,7 +2804,7 @@ Raphaël`;
                             ${a.f !== 'once' ? `| 🔄 ${a.f === 'hebdo' ? 'Chaque ' + (a.day || 'semaine') : 'Chaque mois' + (a.day ? ' (' + a.day + ')' : '')}` : ''}
                             ${a.isRecurringInstance ? '<span style="color:#999; font-size:0.75rem;"> (récurrence)</span>' : ''}
                         </div>
-                        <div class="meta-info"><i>${t('createdBy')} ${a.creator} ${a.createdAt ? t('on') + ' ' + a.createdAt : ''}</i></div>
+                        <div class="meta-info"><i>${t('createdBy')} ${getDisplayName(a.creator)} ${a.createdAt ? t('on') + ' ' + a.createdAt : ''}</i></div>
                     </div>
                     ${a.creator === currentUser || isAdmin || isPlatformOwner ? `<button class="btn-danger" style="margin:0;" onclick="del('agenda', ${a.recurringParentId || a.id}); sync();">✖</button>` : ''}
                 </div>
@@ -2941,7 +2958,7 @@ Raphaël`;
         listen();
         const photo = localStorage.getItem('hub_photo');
         if(photo) { document.getElementById('coloc-photo-preview').src = photo; document.getElementById('coloc-photo-preview').style.display = 'block'; }
-        document.getElementById('header-name').innerText = currentUser;
+        document.getElementById('header-name').innerText = getDisplayName(currentUser);
     }
 
     if(currentUser && colocPath) { 
