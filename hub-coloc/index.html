@@ -9,6 +9,7 @@
     <link rel="manifest" href="manifest.json">
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -45,42 +46,113 @@
 
         .app-wrapper {
             max-width: 1200px; margin: 0 auto; background-color: var(--bg-app); 
-            height: 100%; display: flex; position: relative;
+            height: 100dvh; 
+            display: flex; 
+            position: relative;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            flex-direction: column;
+            overflow: hidden;
         }
 
         @media (max-width: 767px) {
-            .app-wrapper { flex-direction: column; }
+            .app-wrapper { 
+                flex-direction: column;
+                height: 100dvh;
+            }
             nav { 
-                order: 2; width: 100%; flex-direction: row; border-top: 1px solid #d1d7db; 
-                padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
-                background: #f0f2f5; flex-shrink: 0; overflow-x: auto;
+                order: 2; 
+                width: 100%; 
+                flex-direction: row; 
+                border-top: 1px solid #d1d7db; 
+                padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+                background: #f0f2f5; 
+                flex-shrink: 0; 
+                overflow-x: auto;
+                gap: 0;
+            }
+            nav button {
+                padding: 6px 4px;
+                font-size: 0.55rem;
+                min-width: 45px;
             }
             .content-wrapper { 
-                order: 1; width: 100%; flex: 1 1 0; min-height: 0; 
-                display: flex; flex-direction: column; overflow: hidden; 
+                order: 1; 
+                width: 100%; 
+                flex: 1; 
+                min-height: 0;
+                display: flex; 
+                flex-direction: column; 
+                overflow: hidden;
             }
         }
 
         @media (min-width: 768px) {
-            .app-wrapper { flex-direction: row; }
-            nav { order: 1; width: 100px; flex-direction: column; border-right: 1px solid #d1d7db; justify-content: flex-start !important; padding-top: 20px; gap: 20px; flex-shrink: 0; background: #f0f2f5; }
-            .content-wrapper { order: 2; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; overflow: hidden; width: calc(100% - 100px); }
+            .app-wrapper { 
+                flex-direction: row;
+                height: 100dvh;
+            }
+            nav { 
+                order: 1; 
+                width: 100px; 
+                flex-direction: column; 
+                border-right: 1px solid #d1d7db; 
+                justify-content: flex-start !important; 
+                padding-top: 20px; 
+                gap: 20px; 
+                flex-shrink: 0; 
+                background: #f0f2f5;
+            }
+            .content-wrapper { 
+                order: 2; 
+                flex: 1; 
+                min-width: 0; 
+                display: flex; 
+                flex-direction: column; 
+                overflow: hidden; 
+                width: calc(100% - 100px);
+            }
         }
 
         .content-wrapper { background-color: var(--bg-app); }
 
         header { 
-            flex-shrink: 0; background-color: var(--header-bg); color: white; 
-            padding: 15px; padding-top: calc(15px + env(safe-area-inset-top)); 
-            display: flex; justify-content: space-between; align-items: center; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; 
+            flex-shrink: 0; 
+            background-color: var(--header-bg); 
+            color: white; 
+            padding: 12px;
+            padding-top: calc(12px + env(safe-area-inset-top));
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            z-index: 10;
+            min-height: 0;
+        }
+        
+        @media (min-width: 768px) {
+            header {
+                padding: 15px;
+                padding-top: calc(15px + env(safe-area-inset-top));
+                padding-bottom: 15px;
+            }
         }
         
         .container { 
-            flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 15px; 
-            padding-bottom: 100px; scroll-behavior: smooth; 
+            flex: 1; 
+            min-height: 0; 
+            overflow-y: auto; 
+            padding: 12px; 
+            padding-bottom: 80px;
+            scroll-behavior: smooth; 
             -webkit-overflow-scrolling: touch; 
+        }
+        
+        @media (min-width: 768px) {
+            .container {
+                padding: 15px;
+                padding-bottom: 100px;
+            }
         }
         
         nav { display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
@@ -217,9 +289,385 @@
     .btn-close-pref{width:100%;padding:.6rem;background:none;color:var(--pref-muted,#6b7280);border:1px solid var(--pref-border,#e5e7eb);border-radius:10px;font-size:.82rem;cursor:pointer;transition:all .2s;}
     .btn-close-pref:hover{border-color:#9ca3af;}
         body.theme-night-hub_coloc { background:#0f172a; --bg-app:#0f172a; --card-bg:#1e293b; --text-main:#f1f5f9; --text-muted:#94a3b8; }
+        
+        /* ── TUTORIELS ── */
+        .tutorial-section { background: #f0f8ff; border-left: 5px solid #2196F3; margin-top: 20px; padding: 15px; border-radius: 8px; }
+        .tutorial-toggle { background: #2196F3; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+        .tutorial-toggle:hover { background: #1976D2; }
+        .tutorial-content { display: none; margin-top: 12px; font-size: 0.9rem; line-height: 1.6; }
+        .tutorial-content.open { display: block; }
+        .tutorial-step { margin: 12px 0; padding: 10px; background: white; border-radius: 6px; border-left: 3px solid #4CAF50; }
+        .tutorial-step strong { color: #4CAF50; }
+        .tutorial-example { background: #fffbea; padding: 10px; border-radius: 6px; margin: 8px 0; font-size: 0.85rem; font-style: italic; }
+
+        /* ─── POP-UP CHAT CSS ─── */
+        #chat-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+        
+        #chat-popup.chat-popup-hidden {
+            display: none !important;
+            visibility: hidden;
+        }
+        
+        #chat-popup.chat-popup-visible {
+            display: flex !important;
+            visibility: visible;
+        }
+        
+        .chat-popup-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            cursor: pointer;
+        }
+        
+        .chat-popup-modal {
+            position: relative;
+            background: white;
+            border-radius: 12px;
+            width: 95%;
+            height: 95%;
+            max-width: 800px;
+            max-height: 90dvh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+        
+        .chat-popup-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .chat-popup-header h2 {
+            margin: 0;
+            color: var(--primary-dark);
+            font-size: 1.2rem;
+        }
+        
+        .chat-popup-close {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-popup-close:hover {
+            color: #333;
+            transform: scale(1.1);
+        }
+        
+        .chat-popup-textarea {
+            flex: 1;
+            padding: 20px;
+            border: none;
+            font-size: 16px;
+            font-family: inherit;
+            resize: none;
+            overflow-y: auto;
+            outline: none;
+        }
+        
+        .chat-popup-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-shrink: 0;
+        }
+        
+        .chat-popup-btn-cancel,
+        .chat-popup-btn-submit {
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .chat-popup-btn-cancel {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            color: var(--text-main);
+        }
+        
+        .chat-popup-btn-cancel:hover {
+            background: #e0e0e0;
+        }
+        
+        .chat-popup-btn-submit {
+            background: var(--primary);
+            color: white;
+            flex: 1;
+        }
+        
+        .chat-popup-btn-submit:hover {
+            background: var(--primary-dark);
+        }
+
+        /* ─── RESPONSIVE DESIGN INTELLIGENT ─── */
+        * { box-sizing: border-box; }
+        html, body { 
+            width: 100%; 
+            height: 100%;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* BASE: Mobile (tous les appareils) */
+        body { font-size: 14px; line-height: 1.5; }
+        input, textarea, select { font-size: 16px; } /* Évite zoom iOS */
+        
+        .app-wrapper { 
+            padding: 0; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        /* Header & Nav */
+        header { 
+            padding: 12px; 
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        
+        nav { 
+            display: flex;
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex-wrap: nowrap;
+            padding: 8px;
+            gap: 5px;
+            flex-shrink: 0;
+            scroll-behavior: smooth;
+        }
+        
+        nav button {
+            white-space: nowrap;
+            flex-shrink: 0;
+            padding: 8px 12px;
+        }
+        
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-bottom: 60px;
+        }
+        
+        .card { 
+            margin: 8px; 
+            padding: 12px;
+        }
+        
+        /* Chat pop-up */
+        #chat-popup {
+            padding: 10px;
+            display: flex !important;
+        }
+        
+        #chat-popup > div {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border-radius: 12px;
+        }
+        
+        /* Formulaires - full width sur mobile */
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        input[type="date"],
+        input[type="time"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            display: block;
+        }
+        
+        button { 
+            padding: 12px 16px; 
+            font-size: 14px; 
+            cursor: pointer;
+        }
+        
+        /* SMALL TABLET (600px - 767px) */
+        @media (min-width: 600px) {
+            body { font-size: 14px; }
+            header { padding: 14px; }
+            .card { margin: 10px; padding: 14px; }
+            
+            nav { padding: 10px; }
+            nav button { padding: 10px 14px; }
+        }
+        
+        /* TABLET (768px - 1023px) */
+        @media (min-width: 768px) {
+            body { font-size: 15px; }
+            header { padding: 15px 20px; font-size: 1rem; }
+            .card { margin: 12px; padding: 15px; }
+            
+            nav { 
+                overflow-x: visible;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            nav button { padding: 12px 16px; }
+            
+            input[type="text"],
+            input[type="email"],
+            input[type="number"],
+            input[type="date"],
+            input[type="time"],
+            select {
+                width: auto;
+                display: inline-block;
+                margin-right: 10px;
+                margin-bottom: 8px;
+            }
+            
+            #chat-popup > div { 
+                max-width: 85vw;
+                max-height: 85vh;
+            }
+        }
+        
+        /* DESKTOP (1024px+) */
+        @media (min-width: 1024px) {
+            body { font-size: 16px; }
+            header { padding: 20px 30px; font-size: 1.1rem; }
+            .card { margin: 15px; padding: 20px; }
+            
+            .app-wrapper { 
+                max-width: 1400px; 
+                margin: 0 auto; 
+                padding: 10px;
+            }
+            
+            nav { 
+                justify-content: center;
+                padding: 15px;
+                overflow-x: visible;
+            }
+            
+            nav button { padding: 12px 20px; }
+            
+            input[type="text"],
+            input[type="email"],
+            input[type="number"],
+            input[type="date"],
+            input[type="time"],
+            select {
+                padding: 12px;
+            }
+            
+            #chat-popup > div { 
+                max-width: 800px;
+                max-height: 90vh;
+            }
+        }
+        
+        /* TRÈS LARGE (1920px+) */
+        @media (min-width: 1920px) {
+            body { font-size: 17px; }
+            .app-wrapper { max-width: 1600px; }
+            .card { padding: 25px; margin: 20px; }
+        }
+        
+        /* PAYSAGE - hauteur 600px à 800px */
+        @media (max-height: 800px) and (min-height: 600px) {
+            header { padding: 10px; }
+            nav { padding: 6px; gap: 4px; }
+            nav button { padding: 8px 12px; font-size: 13px; }
+            .card { margin: 6px; padding: 12px; }
+            input, textarea, select { padding: 10px; margin-bottom: 8px; }
+            .tab-content { padding-bottom: 50px; }
+        }
+        
+        /* PAYSAGE - hauteur < 600px (très serré) */
+        @media (max-height: 600px) {
+            header { padding: 8px 12px; font-size: 0.85rem; }
+            nav { padding: 4px; gap: 3px; }
+            nav button { padding: 6px 10px; font-size: 12px; }
+            .card { margin: 4px; padding: 10px; }
+            input, textarea, select { padding: 8px; margin-bottom: 6px; font-size: 14px; }
+            .tab-content { padding-bottom: 40px; }
+        }
+        
+        /* PAYSAGE - hauteur < 500px (ultra serré) */
+        @media (max-height: 500px) {
+            header { padding: 6px 10px; font-size: 0.75rem; }
+            nav { padding: 3px; gap: 2px; }
+            nav button { padding: 4px 8px; font-size: 11px; }
+            .card { margin: 3px; padding: 8px; }
+            input, textarea, select { padding: 6px; margin-bottom: 4px; font-size: 13px; }
+            button { padding: 8px 12px; font-size: 12px; }
+            #chat-popup { padding: 2px; }
+            .tab-content { padding-bottom: 35px; }
+        }
+        
+        /* Très petit écran (320px - 400px) */
+        @media (max-width: 400px) {
+            body { font-size: 13px; }
+            header { padding: 10px; }
+            nav button { font-size: 12px; padding: 8px; }
+        }
     </style>
 </head>
 <body>
+
+<!-- 💬 POP-UP CHAT POUR ÉCRIRE DES LONGS MESSAGES -->
+<div id="chat-popup" class="chat-popup-hidden">
+    <div class="chat-popup-overlay" onclick="closeChatPopup()"></div>
+    <div class="chat-popup-modal">
+        <div class="chat-popup-header">
+            <h2>💬 Écrire un message</h2>
+            <button class="chat-popup-close" onclick="closeChatPopup()">✕</button>
+        </div>
+        <textarea id="popup-chat-text" class="chat-popup-textarea" placeholder="Écris ton message ici... Tu peux voir le texte en entier !"></textarea>
+        <div class="chat-popup-footer">
+            <button class="chat-popup-btn-cancel" onclick="closeChatPopup()">Annuler</button>
+            <button class="chat-popup-btn-submit" onclick="submitChatPopup()">Envoyer 🚀</button>
+        </div>
+    </div>
+</div>
 
 <div class="app-wrapper">
     <div id="auth-modal" class="modal-overlay">
@@ -338,9 +786,42 @@
                         <button onclick="ajouterRegleCharte()" style="width:50px;">+</button>
                     </div>
                 </div>
+                
+                <!-- 📚 TUTORIEL ACCUEIL -->
+                <div class="tutorial-section">
+                    <button class="tutorial-toggle" onclick="toggleTutorial(this)">
+                        <span>📚 Comment utiliser Hub Coloc ?</span>
+                        <span class="toggle-icon">▶</span>
+                    </button>
+                    <div class="tutorial-content">
+                        <div class="tutorial-step">
+                            <strong>1️⃣ Accueil - Votre point central</strong>
+                            <p>C'est votre tableau de bord ! Vous voyez ici :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>📍 Infos colocation (photo, membres)</li>
+                                <li>📜 Charte de vie du groupe</li>
+                                <li>🌍 Choix de la langue</li>
+                            </ul>
+                            <div class="tutorial-example">💡 Ajoutez des règles à votre charte en écrivant dans le champ "Ex: Sortir les poubelles le mardi"</div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>2️⃣ Navigation facile</strong>
+                            <p>En bas (mobile) ou à gauche (desktop), vous trouverez :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>💬 <b>Chat</b> - Messages avec les colocs</li>
+                                <li>📅 <b>Agenda</b> - Tâches & événements</li>
+                                <li>🛒 <b>Courses</b> - Liste de courses partagée</li>
+                                <li>💰 <b>Finances</b> - Dépenses & reimbursements</li>
+                                <li>💧 <b>Fluides</b> - Électricité, eau, gaz</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-chat" class="tab-content" style="display:none;">
+                <div id="sondages-container"></div>
+                
                 <div class="card" style="padding:10px;">
                     <div id="chat-container"></div>
                     
@@ -357,27 +838,92 @@
                         <label for="chat-file" style="cursor:pointer; font-size:1.3rem; padding:5px; margin-bottom:0;">📎</label>
                         <input type="file" id="chat-file" accept="image/*,application/pdf" style="display:none" onchange="document.getElementById('chat-file-preview-text').style.display='block'">
                         
+                        <button onclick="showPollModal()" style="width:40px; padding:8px; font-size:1.2rem; background:transparent; color:var(--text-muted); border:none; cursor:pointer; font-size:1.3rem;" title="Créer un sondage">📊</button>
+                        
                         <label for="chat-input" class="visually-hidden">Message</label>
                         <input type="text" id="chat-input" data-i18n="phChatMsg" placeholder="Ex: Coucou les colocs !" style="margin:0; flex-grow:1;">
+                        <button onclick="openChatPopup()" style="width:40px; padding:8px; font-size:1.2rem; background:transparent; color:var(--text-muted); border:none; cursor:pointer;" title="Écrire un long message">📝</button>
                         <button id="btn-mic" onclick="toggleAudioRecord()" style="width:40px; padding:8px; font-size:1.2rem; background:transparent; color:var(--text-muted);">🎤</button>
                         <button onclick="envoyerMessage()" style="width:50px; padding:8px;">🚀</button>
+                    </div>
+                </div>
+                
+                <!-- 📚 TUTORIEL CHAT -->
+                <div class="tutorial-section">
+                    <button class="tutorial-toggle" onclick="toggleTutorial(this)">
+                        <span>📚 Guide du Chat</span>
+                        <span class="toggle-icon">▶</span>
+                    </button>
+                    <div class="tutorial-content">
+                        <div class="tutorial-step">
+                            <strong>💬 Communiquez en temps réel</strong>
+                            <p>Partagez des messages avec toute la colocation !</p>
+                            <div class="tutorial-example">Tapez votre message dans le champ "Coucou les colocs !" et cliquez 🚀</div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>📊 Créez des sondages</strong>
+                            <p>Cliquez sur 📊 pour créer un sondage sur :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>Qu'est-ce qu'on mange ce soir ?</li>
+                                <li>Où on va en sortie ?</li>
+                                <li>Achat d'un nouvel équipement ?</li>
+                            </ul>
+                            <div class="tutorial-example">Les colocs votent en direct et peuvent proposer des options !</div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>📎 Partagez des photos & fichiers</strong>
+                            <p>Cliquez sur 📎 pour ajouter des images ou documents</p>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>🎤 Messages vocaux</strong>
+                            <p>Cliquez sur 🎤 pour enregistrer et envoyer un message vocal</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div id="tab-agenda" class="tab-content" style="display:none;">
-                <div class="agenda-tabs">
-                    <button id="btn-agenda-actif" onclick="setAgendaView('actif')" style="background:var(--primary); color:white;" data-i18n="tabAgendaActive">📅 À venir</button>
-                    <button id="btn-agenda-archive" onclick="setAgendaView('archive')" style="background:white; color:var(--primary);" data-i18n="tabAgendaArchive">🗃️ Archives</button>
-                </div>
-
+                <!-- FORMULAIRE DE CRÉATION -->
                 <div class="card">
-                    <h2 data-i18n="agendaTitle">📅 Tâche ou Événement</h2>
+                    <h2 data-i18n="agendaTitle">📅 Créer une Tâche ou un Événement</h2>
                     <label for="evt-titre" class="visually-hidden">Titre</label>
                     <input type="text" id="evt-titre" data-i18n="phEvtTitle" placeholder="Ex: Sortir les poubelles">
                     
-                    <label for="evt-date" class="visually-hidden">Date et heure</label>
-                    <input type="datetime-local" id="evt-date">
+                    <label for="evt-date" class="visually-hidden">Date</label>
+                    <input type="date" id="evt-date">
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <label for="evt-time" style="font-size: 0.85rem; color: #666;">⏰ Heure (optionnel)</label>
+                            <input type="time" id="evt-time" placeholder="HH:MM">
+                        </div>
+                        <div style="flex: 1;">
+                            <label for="evt-freq" class="visually-hidden">Fréquence</label>
+                            <select id="evt-freq">
+                                <option value="once">Ponctuel (1 fois)</option>
+                                <option value="hebdo">Chaque semaine</option>
+                                <option value="mensuel">Chaque mois</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Jour spécifique pour les récurrences -->
+                    <div id="evt-day-container" style="display: none; margin-top: 10px;">
+                        <label style="font-size: 0.85rem; font-weight: bold;">📍 Jour (si récurrent)</label>
+                        <select id="evt-day">
+                            <option value="">-- Sélectionner --</option>
+                            <option value="lundi">Lundi</option>
+                            <option value="mardi">Mardi</option>
+                            <option value="mercredi">Mercredi</option>
+                            <option value="jeudi">Jeudi</option>
+                            <option value="vendredi">Vendredi</option>
+                            <option value="samedi">Samedi</option>
+                            <option value="dimanche">Dimanche</option>
+                            <option value="15">15ème du mois</option>
+                            <option value="1">1er du mois</option>
+                            <option value="30">30ème du mois</option>
+                        </select>
+                    </div>
                     
                     <label for="evt-type" class="visually-hidden">Type</label>
                     <select id="evt-type">
@@ -388,17 +934,85 @@
                     <label for="evt-assignee" class="visually-hidden">Assigné à</label>
                     <select id="evt-assignee"></select>
                     
-                    <label for="evt-freq" class="visually-hidden">Fréquence</label>
-                    <select id="evt-freq">
-                        <option value="once" data-i18n="once">Ponctuel (1 fois)</option>
-                        <option value="hebdo" data-i18n="weekly">Toutes les semaines</option>
-                        <option value="mensuel" data-i18n="monthly">Tous les mois</option>
-                    </select>
-                    
                     <button onclick="ajouterAgenda()" data-i18n="btnCreate">Créer</button>
-                    <button class="btn-outline" style="margin-top:10px; border-color: #4285F4; color: #4285F4;" onclick="exporterArchive('agenda')">📂 Exporter Archive Globale (Drive)</button>
                 </div>
-                <div id="liste-agenda"></div>
+
+                <!-- ONGLETS TÂCHES / CALENDRIER -->
+                <div class="agenda-tabs" style="margin-top: 20px;">
+                    <button id="btn-agenda-taches" onclick="setAgendaView('taches')" style="background:var(--primary); color:white;">📋 Mes Tâches</button>
+                    <button id="btn-agenda-calendrier" onclick="setAgendaView('calendrier')" style="background:white; color:var(--primary);">📆 Calendrier</button>
+                </div>
+
+                <!-- LISTE DES TÂCHES (simples, pas les instances) -->
+                <div id="tab-taches" style="display:none;">
+                    <div id="liste-taches"></div>
+                </div>
+
+                <!-- CALENDRIER VISUEL -->
+                <div id="tab-calendrier" style="display:none;">
+                    <div class="card" style="padding: 0; overflow: hidden;">
+                        <div id="calendar-header" style="background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+                            <button onclick="prevMonth()" style="background: transparent; color: white; border: none; font-size: 1.2rem; cursor: pointer;">◀</button>
+                            <h2 id="calendar-month-year" style="margin: 0; font-size: 1.2rem;"></h2>
+                            <button onclick="nextMonth()" style="background: transparent; color: white; border: none; font-size: 1.2rem; cursor: pointer;">▶</button>
+                        </div>
+                        <div id="calendar-grid" style="padding: 15px;"></div>
+                    </div>
+                </div>
+
+                <div id="liste-agenda" style="display:none;"></div>
+                
+                <!-- 📚 TUTORIEL AGENDA -->
+                <div class="tutorial-section">
+                    <button class="tutorial-toggle" onclick="toggleTutorial(this)">
+                        <span>📚 Guide de l'Agenda</span>
+                        <span class="toggle-icon">▶</span>
+                    </button>
+                    <div class="tutorial-content">
+                        <div class="tutorial-step">
+                            <strong>📋 Mes Tâches - Liste simple</strong>
+                            <p>Consultez toutes vos tâches en un coup d'oeil :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>🖱️ <b>Cliquer sur le titre</b> - Voir les détails complets (date, heure, créateur, statut)</li>
+                                <li>✏️ <b>Éditer</b> - Modifier titre, date, heure ou récurrence</li>
+                                <li>✖️ <b>Supprimer</b> - Supprimer la tâche et toutes ses récurrences</li>
+                                <li>☐ <b>Marquer comme fait</b> - Cocher une tâche complétée</li>
+                            </ul>
+                            <div class="tutorial-example">💡 Cliquez sur le titre "Nettoyer cuisine" pour voir tous les détails : qui l'a créée, si c'est fait, qui l'a marquée comme faite, etc.</div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>📆 Calendrier visuel</strong>
+                            <p>Voyez toutes vos tâches et événements dans un vrai calendrier :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>◀▶ Naviguez mois par mois</li>
+                                <li>Tâches en bleu, Événements en rouge</li>
+                                <li>Les récurrences s'affichent automatiquement chaque jour concerné</li>
+                                <li>🖱️ Vous pouvez aussi cliquer sur les tâches/événements dans le calendrier</li>
+                            </ul>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>⚡ Créer une tâche récurrente</strong>
+                            <p>Exemple : "Nettoyer la cuisine tous les mardis à 19h"</p>
+                            <div class="tutorial-example">
+                                1. Titre : "Nettoyer cuisine"<br>
+                                2. Date : Aujourd'hui<br>
+                                3. Heure : 19:00<br>
+                                4. Fréquence : "Chaque semaine" → "Mardi"<br>
+                                5. La tâche s'affichera automatiquement chaque mardi !
+                            </div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>👥 Voir les détails d'un événement</strong>
+                            <p>Quand tu crées un événement (Présence), cliquer sur le titre te montre :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>✅ Qui a dit "Présent"</li>
+                                <li>❌ Qui a dit "Absent"</li>
+                                <li>📅 Date et heure exactes</li>
+                                <li>👤 Qui a créé l'événement</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-courses" class="tab-content" style="display:none;">
@@ -424,6 +1038,39 @@
                     <button class="btn-outline" onclick="exportCourses()" style="margin-top:8px;" data-i18n="btnExportMail">📧 Exporter (Outlook/Mail)</button>
                 </div>
                 <div id="liste-courses"></div>
+                
+                <!-- 📚 TUTORIEL COURSES -->
+                <div class="tutorial-section">
+                    <button class="tutorial-toggle" onclick="toggleTutorial(this)">
+                        <span>📚 Guide des Courses</span>
+                        <span class="toggle-icon">▶</span>
+                    </button>
+                    <div class="tutorial-content">
+                        <div class="tutorial-step">
+                            <strong>🛒 Créez une liste de courses partagée</strong>
+                            <p>Tous les colocs peuvent ajouter des articles :</p>
+                            <div class="tutorial-example">
+                                1. Tapez l'article (Ex: "Lait")<br>
+                                2. Quantité : 2<br>
+                                3. Unité : "Litre(s)"<br>
+                                4. Cliquez "Ajouter au panier"
+                            </div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>⚡ Catalogue rapide</strong>
+                            <p>Au-dessus du formulaire, trouvez les articles fréquents (Lait, Pain, Oeufs, etc.). Cliquez un bouton pour l'ajouter instantanément !</p>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>✅ Cochez les articles achetés</strong>
+                            <p>Cliquez sur ☐ pour marquer "Lait acheté". L'article sera <span style="text-decoration: line-through;">barré</span>.</p>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>📧 Exportez vers Outlook/Mail</strong>
+                            <p>Cliquez "📧 Exporter (Outlook/Mail)" pour ouvrir votre messagerie avec la liste formatée !</p>
+                            <div class="tutorial-example">Parfait pour envoyer au coloc qui va faire les courses 🛍️</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-finances" class="tab-content" style="display:none;">
@@ -450,6 +1097,48 @@
                     <button class="btn-outline" style="margin-top:10px; border-color: #4285F4; color: #4285F4;" onclick="exporterArchive('finances')">📂 Exporter Archive Globale (Drive)</button>
                 </div>
                 <div id="historique-finances"></div>
+                
+                <!-- 📚 TUTORIEL FINANCES -->
+                <div class="tutorial-section">
+                    <button class="tutorial-toggle" onclick="toggleTutorial(this)">
+                        <span>📚 Guide des Finances</span>
+                        <span class="toggle-icon">▶</span>
+                    </button>
+                    <div class="tutorial-content">
+                        <div class="tutorial-step">
+                            <strong>💰 Enregistrez une dépense</strong>
+                            <p>Quelqu'un a dépensé de l'argent pour toute la coloc ?</p>
+                            <div class="tutorial-example">
+                                1. Description : "Epicerie" ou "Loyer"<br>
+                                2. Montant total : 45.50€<br>
+                                3. Payé par : Sélectionnez qui a payé<br>
+                                4. Cochez qui était concerné<br>
+                                5. Cliquez "Calculer & Diviser"
+                            </div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>✅ Marquez comme réglé</strong>
+                            <p>Quand quelqu'un rembourse, cliquez la case ✅ pour le signaler.</p>
+                            <div class="tutorial-example">Les dépenses complètement réglées deviennent vertes 💚</div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>✏️ Modifiez une facture</strong>
+                            <p>Cliquez "✏️ Éditer" pour :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>Corriger la description ou le montant</li>
+                                <li>Cocher/décocher qui a payé</li>
+                            </ul>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>📊 Voir qui doit quoi</strong>
+                            <p>À chaque dépense, vous voyez :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>Montant à payer par chaque coloc</li>
+                                <li>Statut : ✅ Réglé ou ⏳ En attente</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-fluides" class="tab-content" style="display:none;">
@@ -496,6 +1185,49 @@
                     <button onclick="ajouterFluide()" data-i18n="btnSaveRecord">Enregistrer le relevé</button>
                 </div>
                 <div id="archive-fluides"></div>
+                
+                <!-- 📚 TUTORIEL FLUIDES -->
+                <div class="tutorial-section">
+                    <button class="tutorial-toggle" onclick="toggleTutorial(this)">
+                        <span>📚 Guide des Fluides (Électricité, Eau, Gaz)</span>
+                        <span class="toggle-icon">▶</span>
+                    </button>
+                    <div class="tutorial-content">
+                        <div class="tutorial-step">
+                            <strong>📊 Visualisez vos consommations</strong>
+                            <p>Le graphique montre l'évolution annuelle de :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>⚡ Électricité (Heures Pleines & Heures Creuses)</li>
+                                <li>💧 Eau</li>
+                                <li>🔥 Gaz</li>
+                            </ul>
+                            <div class="tutorial-example">Sélectionnez l'année avec le filtre en haut</div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>🔢 Enregistrez un relevé d'index</strong>
+                            <p>Chaque mois (ou à chaque lecture du compteur) :</p>
+                            <div class="tutorial-example">
+                                1. Type : Sélectionnez "Électricité", "Eau", ou "Gaz"<br>
+                                2. Index : Notez le chiffre du compteur<br>
+                                3. Date du relevé<br>
+                                4. (Optionnel) Joignez une photo du compteur<br>
+                                5. Cliquez "Enregistrer le relevé"
+                            </div>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>⚡ Pour les 2 tarifs électricité</strong>
+                            <p>Si vous avez Heures Pleines (HP) et Heures Creuses (HC) :</p>
+                            <ul style="margin: 5px 0; padding-left: 15px;">
+                                <li>Enregistrez d'abord l'HP</li>
+                                <li>Puis l'HC dans un 2e relevé</li>
+                            </ul>
+                        </div>
+                        <div class="tutorial-step">
+                            <strong>🤓 Analyser les tendances</strong>
+                            <p>Le graphique vous montre si vos consos augmentent ou baissent. Aidez-vous à réduire les dépenses d'énergie en colocation ! ♻️</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-annonces" class="tab-content" style="display:none;">
@@ -577,6 +1309,7 @@
                     <input type="file" id="config-cover" accept="image/*" style="display:none" onchange="updatePhoto(event)">
 
                     <button class="btn-outline" onclick="activerNotifications()" style="margin-top:10px;" data-i18n="btnPushAuth">🔔 Activer les Notifications Push</button>
+                    <button class="btn-outline" onclick="testNotification()" style="margin-top:10px;">🧪 Tester une Notification</button>
                 </div>
 
                 <div class="card" style="border-left: 5px solid var(--accent);">
@@ -588,7 +1321,7 @@
                     <button class="btn-outline" onclick="forceAppRefresh()" style="width:100%; border-color:var(--accent); color:var(--accent); margin-bottom:10px;">🔄 Rafraîchir l'application (Mise à jour)</button>
                     
                     <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px;">Un problème technique ? Envoyez-nous un message avec vos captures d'écran.</p>
-                    <button onclick="window.location.href='mailto:franfran120374@gmail.com?subject=support%20hubcoloc%202026'" style="width:100%; background:var(--accent);">✉️ Contacter le support technique</button>
+                    <button onclick="window.location.href='mailto:sand@gmail.com?subject=support%20hubcoloc%202026'" style="width:100%; background:var(--accent);">✉️ Contacter le support technique</button>
                 </div>
                 
                 <div class="card">
@@ -663,6 +1396,9 @@
                         <input type="text" id="new-membre" data-i18n="phFirstName" placeholder="Prénom" style="margin:0; flex-grow:1;" onkeypress="if(event.key === 'Enter') ajouterMembreBtn()">
                         <button onclick="ajouterMembreBtn()" style="width:auto; padding: 12px 20px;">Ajouter</button>
                     </div>
+                    <button onclick="showInvitationModal()" style="width: 100%; margin-top: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                        📧 Inviter par mail/WhatsApp
+                    </button>
                     <div id="reclamer-admin-section" style="margin-top:10px; display:none;">
                         <button class="btn-outline" onclick="reclamerAdmin()" style="border-color:#fbc02d; color:#fbc02d;">🙋 Réclamer le rôle d'administrateur</button>
                     </div>
@@ -750,7 +1486,8 @@
     };
 
     let currentLang = localStorage.getItem('hub_lang') || 'fr';
-    let currentAgendaView = 'actif'; 
+    let currentAgendaView = 'taches';
+    let currentCalendarMonth = new Date(); 
     let currentAnnoncesView = 'gen';
 
     function t(key) { return translations[currentLang] && translations[currentLang][key] ? translations[currentLang][key] : (translations['fr'][key] || key); }
@@ -845,7 +1582,7 @@
     }
 
     if ('serviceWorker' in navigator) { 
-        navigator.serviceWorker.register('sw.js').then(registration => {
+        navigator.serviceWorker.register('./service-worker.js').then(registration => {
             registration.update();
             registration.onupdatefound = () => {
                 const installingWorker = registration.installing;
@@ -864,7 +1601,20 @@
     let fluideChart = null; 
     let currentTab = 'accueil';
     let lastSeenCounts = JSON.parse(localStorage.getItem('hub_last_seen')) || { agenda: 0, courses: 0, finances: 0, fluides: 0, annonces: 0 };
+    let lastMessageId = localStorage.getItem('hub_last_notif_id') || null;  // Récupérer du localStorage !
     let hasShownWelcome = false;
+    
+    // 📛 Fonction pour afficher le prénom au lieu du mail
+    function getDisplayName(email) {
+        // Si c'est franfran120374, retourner 'sand'
+        if (email === 'franfran120374@gmail.com' || email === 'franfran120374') {
+            return 'sand';
+        }
+        // Pour les autres, extraire la partie avant @ du mail
+        if (!email) return "Coloc";
+        const name = email.split('@')[0];
+        return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    }
     
     let db = { 
         name: "", admin: "", password: "",
@@ -896,18 +1646,76 @@
                     // NOTIFICATIONS PUSH NATIVES (SÉCURISÉES)
                     try {
                         if ('Notification' in window && Notification.permission === 'granted') {
-                            if (db.messages && data.messages) {
-                                const oldLen = getSafeArray(db.messages).length;
+                            if (data.messages) {
                                 const newMsgs = getSafeArray(data.messages);
-                                if (newMsgs.length > oldLen && oldLen > 0) {
-                                    const lastMsg = newMsgs[newMsgs.length - 1];
-                                    if (lastMsg.user !== currentUser) {
-                                        if (currentTab !== 'chat' || document.visibilityState === 'hidden') {
-                                            let notifText = lastMsg.text || (lastMsg.audio ? "🎤 Message vocal" : (lastMsg.file ? "📎 Fichier/Photo" : "Nouveau message"));
-                                            notifText = notifText.replace(/<[^>]*>?/gm, '');
-                                            new Notification("Coloc - " + lastMsg.user, { body: notifText });
+                                const newLastMsg = newMsgs.length > 0 ? newMsgs[newMsgs.length - 1] : null;
+                                
+                                console.log('📨 Dernier message ID sauvegardé:', lastMessageId, 'Nouveau dernier message ID:', newLastMsg?.id);
+                                console.log('  → newLastMsg existe ?', !!newLastMsg);
+                                console.log('  → IDs différents ?', newLastMsg?.id !== lastMessageId);
+                                console.log('  → newLastMsg.user:', newLastMsg?.user);
+                                console.log('  → currentUser:', currentUser);
+                                console.log('  → getDisplayName(newLastMsg.user):', getDisplayName(newLastMsg?.user));
+                                
+                                // Comparer les noms affichés au lieu des emails
+                                const msgUserDisplay = getDisplayName(newLastMsg?.user);
+                                const currentUserDisplay = getDisplayName(currentUser);
+                                console.log('  → msgUserDisplay:', msgUserDisplay, 'vs currentUserDisplay:', currentUserDisplay, '=', msgUserDisplay !== currentUserDisplay);
+                                
+                                // Si le dernier message a changé (nouvel ID) et ce n'est pas l'utilisateur courant
+                                if (newLastMsg && newLastMsg.id !== lastMessageId && getDisplayName(newLastMsg.user) !== getDisplayName(currentUser)) {
+                                    console.log('✅ NOUVEAU MESSAGE DÉTECTÉ de:', newLastMsg.user);
+                                    console.log('👁️ currentTab:', currentTab, 'visibility:', document.visibilityState);
+                                    
+                                    lastMessageId = newLastMsg.id;  // Sauvegarder le nouvel ID en mémoire
+                                    localStorage.setItem('hub_last_notif_id', String(newLastMsg.id));  // ← SAUVEGARDER DANS LOCALSTORAGE !
+                                    
+                                    if (currentTab !== 'chat' || document.visibilityState === 'hidden') {
+                                        let notifText = newLastMsg.text || (newLastMsg.audio ? "🎤 Message vocal" : (newLastMsg.file ? "📎 Fichier/Photo" : "Nouveau message"));
+                                        notifText = notifText.replace(/<[^>]*>?/gm, '');
+                                        console.log('🔔 Envoi notification pour:', newLastMsg.user);
+                                        
+                                        // Récupérer la photo de profil du coloc s'il en a une
+                                        const userPhoto = data.membresPhotos && data.membresPhotos[newLastMsg.user] 
+                                            ? data.membresPhotos[newLastMsg.user] 
+                                            : 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>';
+                                        
+                                        // Envoyer un message au Service Worker pour qu'il affiche la notif
+                                        // Ça marche même si l'app est fermée !
+                                        if ('serviceWorker' in navigator) {
+                                            navigator.serviceWorker.ready.then((registration) => {
+                                                if (navigator.serviceWorker.controller) {
+                                                    console.log('📱 Envoi message au SW');
+                                                    navigator.serviceWorker.controller.postMessage({
+                                                        type: 'SHOW_NOTIFICATION',
+                                                        title: '💬 ' + getDisplayName(newLastMsg.user),
+                                                        body: notifText,
+                                                        icon: userPhoto
+                                                    });
+                                                    console.log('✅ Message envoyé au SW !');
+                                                }
+                                            });
+                                        } else {
+                                            // Fallback : utiliser new Notification si pas de SW
+                                            console.log('💻 Fallback new Notification');
+                                            try {
+                                                new Notification('💬 ' + getDisplayName(newLastMsg.user), {
+                                                    body: notifText,
+                                                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
+                                                    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
+                                                    tag: 'hub-coloc-chat',
+                                                    requireInteraction: false,
+                                                    vibrate: [200, 100, 200]
+                                                });
+                                            } catch(err) {
+                                                console.warn('Erreur new Notification:', err);
+                                            }
                                         }
+                                    } else {
+                                        console.log('⏭️ Pas de notification : tu es sur le chat');
                                     }
+                                } else if (newLastMsg) {
+                                    lastMessageId = newLastMsg.id;  // Mettre à jour même si pas de notif
                                 }
                             }
                         }
@@ -1032,18 +1840,100 @@
 
     // --- LOGIQUE NOTIFICATION CORRIGÉE ET FIABLE ---
     async function activerNotifications() {
+        console.log('🔔 Bouton activerNotifications cliqué');
+        console.log('Notification in window:', 'Notification' in window);
+        console.log('Permission actuelle:', Notification.permission);
+        
         if (!('Notification' in window)) {
             alert("⚠️ Votre navigateur bloque cette option. \n\nASTUCE : Si vous êtes sur iPhone, vous DEVEZ appuyer sur le bouton 'Partager' (carré avec flèche) puis 'Sur l'écran d'accueil'. Ouvrez ensuite l'appli depuis votre écran d'accueil, et ce bouton fonctionnera !");
             return;
         }
         try {
             const permission = await Notification.requestPermission();
+            console.log('✅ Permission demandée, résultat:', permission);
+            
             if (permission === 'granted') {
-                alert(t('alertPushSuccess'));
-            } else { 
-                alert(t('alertPushDenied')); 
+                alert('✅ Notifications activées ! Tu recevras les notifications des messages.');
+                console.log('✅ Notification permission GRANTED');
+            } else if (permission === 'denied') {
+                alert('❌ Permission refusée. Va dans les paramètres de ton navigateur pour activer les notifications.');
+                console.log('❌ Notification permission DENIED');
+            } else {
+                alert('⏭️ Permission en attente.');
+                console.log('⏭️ Notification permission PROMPT');
             }
-        } catch (err) { console.error("Erreur Notification:", err); }
+        } catch (err) { 
+            console.error("Erreur Notification:", err);
+            alert('❌ Erreur : ' + err.message);
+        }
+    }
+
+    // ─── POP-UP CHAT SIMPLE ───
+    function openChatPopup() {
+        const popup = document.getElementById('chat-popup');
+        popup.classList.remove('chat-popup-hidden');
+        popup.classList.add('chat-popup-visible');
+        document.getElementById('popup-chat-text').value = document.getElementById('chat-input').value;
+        setTimeout(() => document.getElementById('popup-chat-text').focus(), 100);
+    }
+
+    function closeChatPopup() {
+        const popup = document.getElementById('chat-popup');
+        popup.classList.add('chat-popup-hidden');
+        popup.classList.remove('chat-popup-visible');
+    }
+
+    function submitChatPopup() {
+        const text = document.getElementById('popup-chat-text').value.trim();
+        if (text) {
+            document.getElementById('chat-input').value = text;
+            envoyerMessage();
+        }
+        closeChatPopup();
+    }
+
+    // 🧪 TEST NOTIFICATION
+    function testNotification() {
+        if (!('Notification' in window)) {
+            alert("❌ Notifications non supportées");
+            return;
+        }
+        
+        if (Notification.permission !== 'granted') {
+            alert("❌ Permission refusée. Active d'abord les notifications ! 🔔");
+            return;
+        }
+
+        try {
+            // Sur téléphone, utiliser le Service Worker
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.ready.then((registration) => {
+                    registration.showNotification('🧪 TEST Hub Coloc', {
+                        body: 'Ceci est une notification de test ! Si tu la vois, tout fonctionne ! 🎉',
+                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">🏠</text></svg>',
+                        badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">🏠</text></svg>',
+                        tag: 'hub-coloc-test',
+                        requireInteraction: false,
+                        vibrate: [200, 100, 200]
+                    });
+                    console.log('✅ Notification de test envoyée via SW !');
+                });
+            } else {
+                // Sur ordinateur, utiliser new Notification
+                new Notification('🧪 TEST Hub Coloc', {
+                    body: 'Ceci est une notification de test ! Si tu la vois, tout fonctionne ! 🎉',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">🏠</text></svg>',
+                    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">🏠</text></svg>',
+                    tag: 'hub-coloc-test',
+                    requireInteraction: false,
+                    vibrate: [200, 100, 200]
+                });
+                console.log('✅ Notification de test envoyée !');
+            }
+        } catch(err) {
+            alert('❌ Erreur : ' + err.message);
+            console.error('Erreur notif test:', err);
+        }
     }
 
     // --- COMPTAGE INDIVIDUEL ET POP-UP NOUVEAUTÉS ---
@@ -1058,6 +1948,40 @@
         if (badgeChat) {
             badgeChat.style.display = newChatCount > 0 ? 'block' : 'none';
             badgeChat.innerText = newChatCount;
+        }
+
+        // 📱 Envoyer une notification push si on a des messages non lus
+        if (newChatCount > 0 && 'Notification' in window && Notification.permission === 'granted') {
+            const lastUnreadMsg = unreadChatMsgs[unreadChatMsgs.length - 1];
+            if (lastUnreadMsg) {
+                try {
+                    // Sur téléphone, utiliser le Service Worker
+                    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                        navigator.serviceWorker.ready.then((registration) => {
+                            registration.showNotification('💬 ' + getDisplayName(lastUnreadMsg.user), {
+                                body: lastUnreadMsg.text ? lastUnreadMsg.text.substring(0, 100) : 'Nouveau message',
+                                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
+                                badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
+                                tag: 'hub-coloc-chat',
+                                requireInteraction: false,
+                                vibrate: [200, 100, 200]
+                            });
+                        });
+                    } else {
+                        // Sur ordinateur, utiliser new Notification
+                        new Notification('💬 ' + getDisplayName(lastUnreadMsg.user), {
+                            body: lastUnreadMsg.text ? lastUnreadMsg.text.substring(0, 100) : 'Nouveau message',
+                            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
+                            badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232196F3" width="100" height="100"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">💬</text></svg>',
+                            tag: 'hub-coloc-chat',
+                            requireInteraction: false,
+                            vibrate: [200, 100, 200]
+                        });
+                    }
+                } catch(err) {
+                    console.warn('Erreur notification:', err);
+                }
+            }
         }
 
         const counts = { 
@@ -1166,10 +2090,16 @@
     }
 
     function validerAcces(user, path, isNew = false, rawPass = "", rawName = "") {
-        currentUser = user; colocPath = path;
+        // Si c'est franfran120374, utiliser 'sand', sinon garder l'identifiant original
+        currentUser = (user === 'franfran120374@gmail.com' || user === 'franfran120374') ? 'sand' : user;
+        colocPath = path;
         tempIsNew = isNew; tempPassword = rawPass; tempName = rawName;
         
-        localStorage.setItem('hub_user', currentUser); localStorage.setItem('hub_path', colocPath);
+        // Si c'est franfran120374, sauvegarder 'sand', sinon sauvegarder l'identifiant original
+        const userToSave = (user === 'franfran120374@gmail.com' || user === 'franfran120374') ? 'sand' : user;
+        localStorage.setItem('hub_user', userToSave); 
+        localStorage.setItem('hub_path', colocPath);
+        localStorage.removeItem('hub_last_notif_id');  // ← Nettoyer les notifs de l'ancienne colocation !
         document.getElementById('login-fields').style.display = 'none';
         document.getElementById('lang-select').style.display = 'none';
         document.getElementById('charte-fields').style.display = 'block';
@@ -1225,6 +2155,12 @@
     function ajouterRegleCharte() { const n = document.getElementById('nouvelle-charte').value.trim(); if(n) { db.charte = getSafeArray(db.charte); db.charte.push(n); document.getElementById('nouvelle-charte').value = ""; sync(); } }
     function supprimerRegleCharte(index) { db.charte = getSafeArray(db.charte); db.charte.splice(index, 1); if (db.charte.length === 0) db.charte = ["Bienveillance avant tout."]; sync(); }
 
+    function toggleTutorial(element) {
+        const content = element.nextElementSibling;
+        content.classList.toggle('open');
+        element.querySelector('.toggle-icon').textContent = content.classList.contains('open') ? '▼' : '▶';
+    }
+
     function showTab(tab) {
         currentTab = tab;
         document.querySelectorAll('.tab-content').forEach(x => x.style.display = 'none');
@@ -1242,11 +2178,80 @@
 
     function setAgendaView(view) {
         currentAgendaView = view;
-        document.getElementById('btn-agenda-actif').style.background = view === 'actif' ? 'var(--primary)' : 'white';
-        document.getElementById('btn-agenda-actif').style.color = view === 'actif' ? 'white' : 'var(--primary)';
-        document.getElementById('btn-agenda-archive').style.background = view === 'archive' ? 'var(--primary)' : 'white';
-        document.getElementById('btn-agenda-archive').style.color = view === 'archive' ? 'white' : 'var(--primary)';
+        
+        // Mettre à jour les styles des boutons
+        document.getElementById('btn-agenda-taches').style.background = view === 'taches' ? 'var(--primary)' : 'white';
+        document.getElementById('btn-agenda-taches').style.color = view === 'taches' ? 'white' : 'var(--primary)';
+        document.getElementById('btn-agenda-calendrier').style.background = view === 'calendrier' ? 'var(--primary)' : 'white';
+        document.getElementById('btn-agenda-calendrier').style.color = view === 'calendrier' ? 'white' : 'var(--primary)';
+        
+        // Afficher/cacher les sections
+        document.getElementById('tab-taches').style.display = view === 'taches' ? 'block' : 'none';
+        document.getElementById('tab-calendrier').style.display = view === 'calendrier' ? 'block' : 'none';
+        
+        if (view === 'calendrier') {
+            renderCalendar();
+        }
         renderAll();
+    }
+    
+    function prevMonth() {
+        currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() - 1);
+        renderCalendar();
+    }
+    
+    function nextMonth() {
+        currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + 1);
+        renderCalendar();
+    }
+    
+    function renderCalendar() {
+        const monthYear = currentCalendarMonth.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
+        document.getElementById('calendar-month-year').textContent = monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
+        
+        const firstDay = new Date(currentCalendarMonth.getFullYear(), currentCalendarMonth.getMonth(), 1);
+        const lastDay = new Date(currentCalendarMonth.getFullYear(), currentCalendarMonth.getMonth() + 1, 0);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
+        
+        const days = [];
+        let current = new Date(startDate);
+        while (current <= lastDay || current.getDay() !== 0) {
+            days.push(new Date(current));
+            current.setDate(current.getDate() + 1);
+        }
+        
+        // En-têtes jours
+        const dayHeaders = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+        let grid = '<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;">';
+        
+        // Ajouter les en-têtes
+        dayHeaders.forEach(day => {
+            grid += `<div style="text-align: center; font-weight: bold; padding: 10px 0; border-bottom: 2px solid var(--primary);">${day}</div>`;
+        });
+        
+        // Ajouter les jours
+        days.forEach(day => {
+            const dateStr = day.toISOString().split('T')[0];
+            const events = getSafeArray(db.agenda)
+                .flatMap(a => generateRecurringInstances(a))
+                .filter(e => e.d === dateStr);
+            
+            const isCurrentMonth = day.getMonth() === currentCalendarMonth.getMonth();
+            const isToday = dateStr === new Date().toISOString().split('T')[0];
+            
+            let cellStyle = `padding: 10px; border: 1px solid #ddd; border-radius: 6px; min-height: 80px; background: ${!isCurrentMonth ? '#f5f5f5' : 'white'}; ${isToday ? 'background: #E3F2FD; border: 2px solid var(--primary);' : ''}`;
+            
+            grid += `<div style="${cellStyle}">
+                <div style="font-weight: bold; color: ${isCurrentMonth ? '#000' : '#999'}; margin-bottom: 5px;">${day.getDate()}</div>
+                <div style="font-size: 0.75rem;">
+                    ${events.map(e => `<div style="background: ${e.type === 'tache' ? '#34b7f1' : '#ea4335'}; color: white; padding: 2px 4px; margin: 2px 0; border-radius: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${e.t}">${e.t}</div>`).join('')}
+                </div>
+            </div>`;
+        });
+        
+        grid += '</div>';
+        document.getElementById('calendar-grid').innerHTML = grid;
     }
     
     function setAnnoncesView(view) {
@@ -1354,16 +2359,270 @@
     }
 
     function ajouterAgenda() { 
-        const t_val = document.getElementById('evt-titre').value; const d = document.getElementById('evt-date').value; const type = document.getElementById('evt-type').value; const a = document.getElementById('evt-assignee').value; const f = document.getElementById('evt-freq').value; 
-        if(!t_val || !d) return alert(t('alertTitleDate')); 
+        const t_val = document.getElementById('evt-titre').value;
+        const d = document.getElementById('evt-date').value;
+        const time = document.getElementById('evt-time').value;
+        const type = document.getElementById('evt-type').value;
+        const a = document.getElementById('evt-assignee').value;
+        const f = document.getElementById('evt-freq').value;
+        const day = document.getElementById('evt-day').value;
+        
+        if(!t_val || !d) return alert(t('alertTitleDate'));
+        
         const createdAtStr = new Date().toLocaleString([], {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
         db.agenda = getSafeArray(db.agenda);
-        db.agenda.push({ id: Date.now(), t: t_val, d, type, a, f, done: false, creator: currentUser, createdAt: createdAtStr, responses: {} }); 
-        document.getElementById('evt-titre').value = ""; sync(); 
+        
+        const eventObj = { 
+            id: Date.now(), 
+            t: t_val, 
+            d: d,
+            time: time || null,
+            type: type, 
+            a: a, 
+            f: f,
+            day: day || null,
+            done: false, 
+            creator: currentUser, 
+            createdAt: createdAtStr, 
+            responses: {} 
+        };
+        
+        db.agenda.push(eventObj);
+        
+        sync(); 
+        document.getElementById('evt-titre').value = "";
+        document.getElementById('evt-date').value = "";
+        document.getElementById('evt-time').value = "";
+        document.getElementById('evt-day').value = "";
+        alert('✅ Tâche créée' + (f !== 'once' ? ' (récurrente)' : '') + ' !');
     }
     
-    function toggleDone(id) { const item = getSafeArray(db.agenda).find(x => String(x.id) === String(id)); if(item) { item.done = !item.done; item.doneBy = item.done ? currentUser : ""; item.doneAt = item.done ? new Date().toLocaleString([], {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : ""; sync(); } }
-    function respondEvt(id, res) { const item = getSafeArray(db.agenda).find(x => String(x.id) === String(id)); if(item) { if(!item.responses) item.responses = {}; item.responses[currentUser] = res; sync(); } }
+    function generateRecurringInstances(baseEvent) {
+        // Générer les instances futures d'une tâche récurrente (sans créer de nouveaux items)
+        if (baseEvent.f === 'once') return [baseEvent];
+        
+        const instances = [baseEvent];
+        const today = new Date();
+        const baseDate = new Date(baseEvent.d);
+        
+        for (let i = 1; i <= 12; i++) {
+            let newDate;
+            
+            if (baseEvent.f === 'hebdo') {
+                const dayMap = { 'lundi': 1, 'mardi': 2, 'mercredi': 3, 'jeudi': 4, 'vendredi': 5, 'samedi': 6, 'dimanche': 0 };
+                const targetDay = dayMap[baseEvent.day];
+                newDate = new Date(today);
+                newDate.setDate(newDate.getDate() + ((targetDay - newDate.getDay() + 7) % 7) + (i - 1) * 7);
+            } else if (baseEvent.f === 'mensuel') {
+                newDate = new Date(today.getFullYear(), today.getMonth() + i, 1);
+                if (baseEvent.day === '1') {
+                    newDate.setDate(1);
+                } else if (baseEvent.day === '15') {
+                    newDate.setDate(15);
+                } else if (baseEvent.day === '30') {
+                    newDate.setDate(30);
+                }
+            }
+            
+            if (newDate && newDate > today) {
+                const dateStr = newDate.toISOString().split('T')[0];
+                instances.push({
+                    ...baseEvent,
+                    id: baseEvent.id + '_recurring_' + i,
+                    d: dateStr,
+                    isRecurringInstance: true,
+                    recurringParentId: baseEvent.id
+                });
+            }
+        }
+        
+        return instances;
+    }
+    
+    function editTaskModal(taskId) {
+        const task = getSafeArray(db.agenda).find(t => t.id === taskId);
+        if (!task) return;
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:10000; padding:20px;';
+        
+        modal.innerHTML = `
+            <div style="background:white; padding:20px; border-radius:12px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto;">
+                <h2>✏️ Éditer la tâche</h2>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Titre</label>
+                    <input type="text" id="edit-task-titre" value="${task.t}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Date</label>
+                    <input type="date" id="edit-task-date" value="${task.d}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Heure (optionnel)</label>
+                    <input type="time" id="edit-task-time" value="${task.time || ''}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Fréquence</label>
+                    <select id="edit-task-freq" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                        <option value="once" ${task.f === 'once' ? 'selected' : ''}>Ponctuel</option>
+                        <option value="hebdo" ${task.f === 'hebdo' ? 'selected' : ''}>Chaque semaine</option>
+                        <option value="mensuel" ${task.f === 'mensuel' ? 'selected' : ''}>Chaque mois</option>
+                    </select>
+                </div>
+                
+                <div id="edit-task-day-container" style="margin: 15px 0; display: ${task.f !== 'once' ? 'block' : 'none'};">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Jour</label>
+                    <select id="edit-task-day" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                        <option value="">-- Sélectionner --</option>
+                        <option value="lundi" ${task.day === 'lundi' ? 'selected' : ''}>Lundi</option>
+                        <option value="mardi" ${task.day === 'mardi' ? 'selected' : ''}>Mardi</option>
+                        <option value="mercredi" ${task.day === 'mercredi' ? 'selected' : ''}>Mercredi</option>
+                        <option value="jeudi" ${task.day === 'jeudi' ? 'selected' : ''}>Jeudi</option>
+                        <option value="vendredi" ${task.day === 'vendredi' ? 'selected' : ''}>Vendredi</option>
+                        <option value="samedi" ${task.day === 'samedi' ? 'selected' : ''}>Samedi</option>
+                        <option value="dimanche" ${task.day === 'dimanche' ? 'selected' : ''}>Dimanche</option>
+                        <option value="1" ${task.day === '1' ? 'selected' : ''}>1er du mois</option>
+                        <option value="15" ${task.day === '15' ? 'selected' : ''}>15ème du mois</option>
+                        <option value="30" ${task.day === '30' ? 'selected' : ''}>30ème du mois</option>
+                    </select>
+                </div>
+                
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button onclick="saveEditTask(${taskId})" style="flex:1; padding:10px; background:var(--primary); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
+                        ✓ Sauvegarder
+                    </button>
+                    <button onclick="this.closest('div').parentElement.remove()" style="flex:1; padding:10px; background:#f0f0f0; border:1px solid #ddd; border-radius:6px; cursor:pointer; font-weight:bold;">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+        
+        // Afficher/cacher le sélecteur de jour
+        document.getElementById('edit-task-freq').addEventListener('change', function() {
+            document.getElementById('edit-task-day-container').style.display = this.value !== 'once' ? 'block' : 'none';
+        });
+    }
+    
+    function saveEditTask(taskId) {
+        const task = getSafeArray(db.agenda).find(t => t.id === taskId);
+        if (!task) return;
+        
+        task.t = document.getElementById('edit-task-titre').value.trim();
+        task.d = document.getElementById('edit-task-date').value;
+        task.time = document.getElementById('edit-task-time').value || null;
+        task.f = document.getElementById('edit-task-freq').value;
+        task.day = document.getElementById('edit-task-day').value || null;
+        
+        sync();
+        alert('✅ Tâche modifiée !');
+        document.querySelector('[style*="background:rgba(0,0,0,0.5)"]')?.remove();
+    }
+    
+    // Afficher/cacher le sélecteur de jour selon la fréquence
+    document.getElementById('evt-freq').addEventListener('change', function() {
+        const container = document.getElementById('evt-day-container');
+        container.style.display = this.value !== 'once' ? 'block' : 'none';
+    });
+    
+    function showEventDetails(eventId) {
+        const event = getSafeArray(db.agenda).find(e => String(e.id) === String(eventId));
+        if (!event) return;
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:10000; padding:20px;';
+        
+        const typeLabel = event.type === 'tache' ? '🧹 Tâche' : '🎉 Événement';
+        const statusBadge = event.done ? '✅ Complétée' : '⏳ En cours';
+        const freqLabel = event.f === 'once' ? 'Ponctuel' : (event.f === 'hebdo' ? `Chaque ${event.day}` : `Chaque mois (${event.day})`);
+        
+        modal.innerHTML = `
+            <div style="background:white; padding:25px; border-radius:12px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto;">
+                <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:20px;">
+                    <div style="flex:1;">
+                        <h2 style="margin:0; color:var(--primary-dark);">${event.t}</h2>
+                        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+                            <span style="background:${event.type === 'tache' ? '#34b7f1' : '#ea4335'}; color:white; padding:5px 10px; border-radius:6px; font-size:0.85rem;">${typeLabel}</span>
+                            <span style="background:${event.done ? '#4CAF50' : '#FFC107'}; color:white; padding:5px 10px; border-radius:6px; font-size:0.85rem;">${statusBadge}</span>
+                        </div>
+                    </div>
+                    <button onclick="this.closest('[style*=fixed]').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:0; color:#999;">✕</button>
+                </div>
+                
+                <div style="background:#f5f5f5; padding:15px; border-radius:8px; margin-bottom:15px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; font-size:0.9rem;">
+                        <div>
+                            <p style="margin:0; color:#888; font-weight:bold;">📅 Date</p>
+                            <p style="margin:5px 0 0 0; font-size:1rem;">${new Date(event.d).toLocaleDateString('fr-FR', {weekday:'long', day:'2-digit', month:'long', year:'numeric'})}</p>
+                        </div>
+                        ${event.time ? `<div>
+                            <p style="margin:0; color:#888; font-weight:bold;">⏰ Heure</p>
+                            <p style="margin:5px 0 0 0; font-size:1rem;">${event.time}</p>
+                        </div>` : ''}
+                        <div>
+                            <p style="margin:0; color:#888; font-weight:bold;">👤 Assigné à</p>
+                            <p style="margin:5px 0 0 0; font-size:1rem;">${event.a || 'Tous les colocs'}</p>
+                        </div>
+                        <div>
+                            <p style="margin:0; color:#888; font-weight:bold;">🔄 Fréquence</p>
+                            <p style="margin:5px 0 0 0; font-size:1rem;">${freqLabel}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom:15px;">
+                    <p style="margin:0 0 8px 0; color:#888; font-weight:bold; font-size:0.9rem;">Créé par</p>
+                    <p style="margin:0; font-size:0.9rem;">${event.creator} ${event.createdAt ? `• ${event.createdAt}` : ''}</p>
+                </div>
+                
+                ${event.done ? `<div style="background:#E8F5E9; padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.9rem;">
+                    <p style="margin:0;"><strong>✅ Complétée par :</strong> ${event.doneBy || 'N/A'} • ${event.doneAt || ''}</p>
+                </div>` : ''}
+                
+                ${event.type === 'evenement' && event.responses ? `<div style="background:#f0f0f0; padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.9rem;">
+                    <p style="margin:0 0 8px 0; font-weight:bold;">Présences :</p>
+                    <p style="margin:0;">✅ ${Object.entries(event.responses).filter(([k,v])=>v==='yes').map(([k,v])=>k).join(', ') || 'Aucun'}</p>
+                    <p style="margin:5px 0 0 0;">❌ ${Object.entries(event.responses).filter(([k,v])=>v==='no').map(([k,v])=>k).join(', ') || 'Aucun'}</p>
+                </div>` : ''}
+                
+                <div style="display:flex; gap:10px;">
+                    <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1; padding:12px; background:#f0f0f0; border:1px solid #ddd; border-radius:6px; cursor:pointer; font-weight:bold;">
+                        ◀ Retour
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+    }
+    
+    function toggleDone(id) { 
+        // Pour les instances récurrentes, trouver l'élément parent
+        let item = getSafeArray(db.agenda).find(x => String(x.id) === String(id));
+        if(!item) return;
+        
+        item.done = !item.done; 
+        item.doneBy = item.done ? currentUser : ""; 
+        item.doneAt = item.done ? new Date().toLocaleString([], {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : ""; 
+        sync(); 
+    }
+    
+    function respondEvt(id, res) { 
+        let item = getSafeArray(db.agenda).find(x => String(x.id) === String(id));
+        if(!item) return;
+        
+        if(!item.responses) item.responses = {}; 
+        item.responses[currentUser] = res; 
+        sync(); 
+    }
     function getCalLink(item) { const start = new Date(item.d).toISOString().replace(/-|:|\.\d\d\d/g, ""); return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(item.t)}&dates=${start}/${start}`; }
 
     function exporterItem(type, id) {
@@ -1433,27 +2692,101 @@
     function editerDepense(fid) {
         const f = getSafeArray(db.finances).find(x => String(x.id) === String(fid));
         if (!f) return;
-        const nouvelleDesc = prompt('Description :', f.d);
-        if (nouvelleDesc === null) return;
-        const nouveauMontant = prompt('Montant (€) :', f.m);
-        if (nouveauMontant === null) return;
-        const montantNum = parseFloat(nouveauMontant);
-        if (isNaN(montantNum) || montantNum <= 0) return alert('Montant invalide.');
-        f.d = nouvelleDesc.trim() || f.d;
-        f.m = montantNum;
-        // Recalculer les parts si le montant change
-        const nbOwers = (f.owers || []).length;
-        if (nbOwers > 0) {
-            const newPart = (montantNum / (nbOwers + 1)).toFixed(2);
-            f.owers.forEach(o => { o.amount = newPart; });
+        
+        // Créer un modal pour éditer
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:10000;padding:20px;';
+        
+        const debts = (f.owers || f.parts || []);
+        const content = `
+            <div style="background:white;padding:20px;border-radius:12px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;">
+                <h2>✏️ Éditer la dépense</h2>
+                
+                <div style="margin:15px 0;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Description</label>
+                    <input type="text" id="edit-desc" value="${f.d}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;">
+                </div>
+                
+                <div style="margin:15px 0;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Montant (€)</label>
+                    <input type="number" id="edit-amount" value="${f.m}" step="0.01" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;">
+                </div>
+                
+                <div style="margin:15px 0;">
+                    <label style="display:block;margin-bottom:10px;font-weight:bold;">✅ Qui a payé ?</label>
+                    <div style="border:1px solid #ddd;border-radius:6px;padding:10px;max-height:200px;overflow-y:auto;">
+                        ${debts.map((o, idx) => `
+                            <label style="display:flex;align-items:center;gap:8px;padding:8px;cursor:pointer;">
+                                <input type="checkbox" id="paid-${idx}" ${o.settled ? 'checked' : ''}>
+                                ${o.name} : ${o.amount}€
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div style="display:flex;gap:10px;margin-top:20px;">
+                    <button onclick="saveEditedDepense(${fid})" style="flex:1;padding:10px;background:var(--primary);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold;">
+                        ✓ Sauvegarder
+                    </button>
+                    <button onclick="this.closest('div').parentElement.remove()" style="flex:1;padding:10px;background:#f0f0f0;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-weight:bold;">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        modal.innerHTML = content;
+        document.body.appendChild(modal);
+        modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+    }
+
+    function saveEditedDepense(fid) {
+        const f = getSafeArray(db.finances).find(x => String(x.id) === String(fid));
+        if (!f) return;
+        
+        const desc = document.getElementById('edit-desc').value.trim();
+        const amount = parseFloat(document.getElementById('edit-amount').value);
+        
+        if (!desc) {
+            alert('La description ne peut pas être vide');
+            return;
         }
+        if (isNaN(amount) || amount <= 0) {
+            alert('Montant invalide');
+            return;
+        }
+        
+        f.d = desc;
+        f.m = amount;
+        
+        // Mettre à jour les statuts "settled"
+        const debts = (f.owers || f.parts || []);
+        debts.forEach((o, idx) => {
+            o.settled = document.getElementById(`paid-${idx}`)?.checked || false;
+        });
+        
         sync();
-        alert('✅ Dépense modifiée.');
+        alert('✅ Dépense modifiée');
+        document.querySelector('[style*="background:rgba(0,0,0,0.5)"]')?.remove();
     }
 
     function settleDebt(fid, oName) { const f = getSafeArray(db.finances).find(x => String(x.id) === String(fid)); if(f) { const debts = f.owers || f.parts || []; const o = debts.find(x => x.name === oName); if(o) { o.settled = !o.settled; sync(); } } }
     window.editerDepense = editerDepense;
+    window.saveEditedDepense = saveEditedDepense;
     window.settleDebt = settleDebt;
+    window.editTaskModal = editTaskModal;
+    window.saveEditTask = saveEditTask;
+    window.prevMonth = prevMonth;
+    window.nextMonth = nextMonth;
+    window.toggleTutorial = toggleTutorial;
+    window.showEventDetails = showEventDetails;
+    window.testNotification = testNotification;
+    window.openChatPopup = openChatPopup;
+    window.closeChatPopup = closeChatPopup;
+    window.submitChatPopup = submitChatPopup;
+    window.votePoll = votePoll;
+    window.proposePollOption = proposePollOption;
+    window.closePoll = closePoll;
 
     function toggleFluideInputs() {
         const type = document.getElementById('fluide-type').value;
@@ -1625,7 +2958,7 @@ Raphaël`;
     // ✅ FONCTIONS PREMIUM
     async function checkPremiumStatus(email) {
         // Propriétaire de la plateforme — accès permanent
-        if (email === 'franfran120374@gmail.com') return true;
+        if (email === 'sand@gmail.com') return true;
         try {
             const snapshot = await firestore.collection('users').where('email', '==', email).get();
             if (!snapshot.empty) {
@@ -1651,7 +2984,7 @@ Raphaël`;
             db.isPremium = true;
             db.premiumEmail = email;
             sync();
-            if (email === 'franfran120374@gmail.com') localStorage.setItem('hub_platform_owner', '1');
+            if (email === 'sand@gmail.com') localStorage.setItem('hub_platform_owner', '1');
             alert("⭐ Premium activé ! Colocataires illimités débloqués.");
         const pb=document.getElementById('btn-prefs-hub'); if(pb) pb.style.display='inline-block';
         } else {
@@ -1683,6 +3016,7 @@ Raphaël`;
         localStorage.removeItem('hub_signed');
         localStorage.removeItem('hub_path');
         localStorage.removeItem('hub_user');
+        localStorage.removeItem('hub_last_notif_id');  // ← Nettoyer les notifs aussi !
         window.location.reload();
     }
     window.deconnecterColoc = deconnecterColoc;
@@ -1697,7 +3031,9 @@ Raphaël`;
         const date = document.getElementById('mon-annif').value;
         if (!date) return alert("Sélectionnez votre date d'anniversaire.");
         if (!db.annifs) db.annifs = {};
-        db.annifs[currentUser] = date;
+        // Si c'est franfran120374, utiliser 'sand', sinon utiliser currentUser
+        const userKey = (currentUser === 'sand' || currentUser === 'franfran120374@gmail.com') ? 'sand' : currentUser;
+        db.annifs[userKey] = date;
         sync();
         alert("🎂 Anniversaire sauvegardé !");
     }
@@ -1707,7 +3043,9 @@ Raphaël`;
         const today = new Date();
         const annifEl = document.getElementById('liste-annifs');
         const monAnnif = document.getElementById('mon-annif');
-        if (monAnnif && annifs[currentUser]) monAnnif.value = annifs[currentUser];
+        // Si c'est franfran120374, utiliser 'sand', sinon utiliser currentUser
+        const userKey = (currentUser === 'sand' || currentUser === 'franfran120374@gmail.com') ? 'sand' : currentUser;
+        if (monAnnif && annifs[userKey]) monAnnif.value = annifs[userKey];
 
         const items = getSafeArray(db.membres).map(m => {
             if (!annifs[m]) return null;
@@ -1733,9 +3071,172 @@ Raphaël`;
         }).join('');
     }
 
+    // ── POLL SYSTEM ──
+    let pollMembersMode = 'all';
+    let selectedPollMembers = [];
+
+    function showPollModal() {
+        document.getElementById('poll-modal').style.display = 'flex';
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('poll-date').value = today;
+    }
+
+    function closePollModal() {
+        document.getElementById('poll-modal').style.display = 'none';
+        resetPollForm();
+    }
+
+    function resetPollForm() {
+        document.getElementById('poll-question').value = '';
+        document.getElementById('poll-date').value = '';
+        document.getElementById('poll-time').value = '';
+        document.getElementById('poll-options-container').innerHTML = `
+            <input type="text" class="poll-option" placeholder="Option 1" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 6px;">
+            <input type="text" class="poll-option" placeholder="Option 2" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 6px;">
+        `;
+        pollMembersMode = 'all';
+        selectedPollMembers = [];
+        setPollMembers('all');
+    }
+
+    function addPollOption() {
+        const container = document.getElementById('poll-options-container');
+        const optionNum = container.querySelectorAll('.poll-option').length + 1;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'poll-option';
+        input.placeholder = `Option ${optionNum}`;
+        input.style.cssText = 'width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 6px;';
+        container.appendChild(input);
+    }
+
+    function setPollMembers(mode) {
+        pollMembersMode = mode;
+        document.getElementById('btn-poll-all').style.background = mode === 'all' ? 'var(--primary)' : '#f0f0f0';
+        document.getElementById('btn-poll-all').style.color = mode === 'all' ? 'white' : 'black';
+        document.getElementById('btn-poll-all').style.border = mode === 'all' ? 'none' : '1px solid #ddd';
+        
+        document.getElementById('btn-poll-custom').style.background = mode === 'custom' ? 'var(--primary)' : '#f0f0f0';
+        document.getElementById('btn-poll-custom').style.color = mode === 'custom' ? 'white' : 'black';
+        document.getElementById('btn-poll-custom').style.border = mode === 'custom' ? 'none' : '1px solid #ddd';
+        
+        const membersSelect = document.getElementById('poll-members-select');
+        if (mode === 'custom') {
+            membersSelect.style.display = 'block';
+            const membres = getSafeArray(db.membres || []);
+            membersSelect.innerHTML = membres.map(m => `
+                <label style="display: flex; align-items: center; gap: 8px; padding: 8px; cursor: pointer;">
+                    <input type="checkbox" value="${m}" onchange="togglePollMember('${m}')" ${selectedPollMembers.includes(m) ? 'checked' : ''}>
+                    ${m}
+                </label>
+            `).join('');
+        } else {
+            membersSelect.style.display = 'none';
+            selectedPollMembers = [];
+        }
+    }
+
+    function togglePollMember(member) {
+        const idx = selectedPollMembers.indexOf(member);
+        if (idx > -1) {
+            selectedPollMembers.splice(idx, 1);
+        } else {
+            selectedPollMembers.push(member);
+        }
+    }
+
+    function createPoll() {
+        const question = document.getElementById('poll-question').value.trim();
+        const date = document.getElementById('poll-date').value;
+        const time = document.getElementById('poll-time').value;
+        const options = Array.from(document.querySelectorAll('.poll-option'))
+            .map(el => el.value.trim())
+            .filter(v => v);
+        
+        if (!question) {
+            alert('Veuillez entrer l\'objet du sondage');
+            return;
+        }
+        if (options.length < 2) {
+            alert('Veuillez entrer au moins 2 options');
+            return;
+        }
+
+        const poll = {
+            id: Date.now(),
+            question: question,
+            author: currentUser,
+            createdAt: new Date().toISOString(),
+            deadline: date && time ? date + 'T' + time : (date ? date + 'T23:59' : null),
+            options: options.map(opt => ({ label: opt, votes: {} })),
+            members: pollMembersMode === 'all' ? (db.membres || []) : selectedPollMembers,
+            open: true // Le sondage est ouvert aux nouvelles réponses
+        };
+
+        if (!db.sondages) db.sondages = [];
+        db.sondages.push(poll);
+        sync();
+
+        const deadlineText = poll.deadline ? ` (fin : ${new Date(poll.deadline).toLocaleString('fr-FR')})` : ' (sans limite)';
+        const pollMessage = `📊 Nouveau sondage : ${question}${deadlineText}`;
+        const msgObj = {
+            id: Date.now(),
+            user: currentUser,
+            text: pollMessage,
+            time: new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}),
+            isPoll: true,
+            pollId: poll.id
+        };
+        
+        db.messages = getSafeArray(db.messages);
+        db.messages.push(msgObj);
+        sync();
+
+        alert('✓ Sondage créé et envoyé !');
+        closePollModal();
+        showTab('chat');
+    }
+    
+    function votePoll(pollId, option) {
+        const poll = getSafeArray(db.sondages).find(p => p.id === pollId);
+        if (!poll) return;
+        
+        const pollOption = poll.options.find(o => o.label === option);
+        if (!pollOption) return;
+        
+        // Enregistrer le vote
+        if (!pollOption.votes) pollOption.votes = {};
+        pollOption.votes[currentUser] = true;
+        sync();
+    }
+    
+    function proposePollOption(pollId) {
+        const newOption = prompt('Proposer une nouvelle option :').trim();
+        if (!newOption) return;
+        
+        const poll = getSafeArray(db.sondages).find(p => p.id === pollId);
+        if (!poll) return;
+        
+        // Ajouter la nouvelle option
+        poll.options.push({
+            label: newOption,
+            votes: { [currentUser]: true }
+        });
+        sync();
+    }
+    
+    function closePoll(pollId) {
+        const poll = getSafeArray(db.sondages).find(p => p.id === pollId);
+        if (!poll) return;
+        
+        poll.open = false;
+        sync();
+    }
+    // ── END POLL SYSTEM ──
+
     // ✅ GESTION ADMIN
     function promouvoirAdmin(nom) {
-        const isPO = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'franfran120374@gmail.com';
+        const isPO = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'sand@gmail.com';
         if (!isPO) { alert('⛔ Seul le propriétaire de la plateforme peut changer l\'administrateur.'); return; }
         if (!confirm(`Voulez-vous vraiment donner le rôle d'administrateur à ${nom} ?`)) return;
         db.admin = nom;
@@ -1752,7 +3253,7 @@ Raphaël`;
     }
 
     function revoquerAdmin(nom) {
-        const isPO = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'franfran120374@gmail.com';
+        const isPO = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'sand@gmail.com';
         if (!isPO) {
             const pwd = prompt(`🔑 Mot de passe de la colocation pour révoquer ${nom} :`);
             if (pwd === null) return;
@@ -1791,7 +3292,7 @@ Raphaël`;
         if(db.membresPhotos && db.membresPhotos[currentUser]) { document.getElementById('my-profile-preview').src = db.membresPhotos[currentUser]; document.getElementById('my-profile-preview').style.display = 'block'; document.getElementById('header-avatar').src = db.membresPhotos[currentUser]; document.getElementById('header-avatar').style.display = 'inline-block'; } 
         
         const membresArr = getSafeArray(db.membres);
-        const isPlatformOwner = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'franfran120374@gmail.com';
+        const isPlatformOwner = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'sand@gmail.com';
         // Platform owner est toujours admin — auto-claim silencieux
         if (isPlatformOwner && db.admin !== currentUser && currentUser) {
             db.admin = currentUser;
@@ -1852,13 +3353,13 @@ Raphaël`;
             const photoUrl = db.membresPhotos && db.membresPhotos[m.user] ? db.membresPhotos[m.user] : null;
             const avatarHtml = photoUrl 
                 ? `<img src="${photoUrl}" class="avatar" style="display:flex;">` 
-                : `<div class="avatar">${m.user.charAt(0).toUpperCase()}</div>`;
+                : `<div class="avatar">${getDisplayName(m.user).charAt(0)}</div>`;
             return `
             <div class="msg-row ${m.user === currentUser ? 'sent' : ''}">
                 ${avatarHtml}
                 <div class="bubble ${m.user === currentUser ? 'sent-bubble' : 'received-bubble'}">
                     <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
-                        <small style="color:${m.user === currentUser ? '#075E54' : 'var(--danger)'}; font-weight:bold; font-size:0.7rem;">${m.user}</small>
+                        <small style="color:${m.user === currentUser ? '#075E54' : 'var(--danger)'}; font-weight:bold; font-size:0.7rem;">${getDisplayName(m.user)}</small>
                         <small style="font-size:0.6rem; color:#888; margin-left:10px;">${m.time || ''}</small>
                     </div>
                     ${m.text ? `<div>${m.text}</div>` : ''}
@@ -1882,22 +3383,101 @@ Raphaël`;
             </div>`
         }).join('');
         
+        // ── AFFICHER LES SONDAGES ──
+        const pollsContainer = document.getElementById('sondages-container');
+        const activePolls = getSafeArray(db.sondages).filter(p => p.open !== false);
+        
+        if (activePolls.length > 0) {
+            pollsContainer.innerHTML = activePolls.map(p => {
+                const totalVotes = {};
+                p.options.forEach(opt => {
+                    Object.keys(opt.votes || {}).forEach(voter => {
+                        totalVotes[opt.label] = (totalVotes[opt.label] || 0) + 1;
+                    });
+                });
+                
+                const maxVotes = Math.max(...Object.values(totalVotes), 1);
+                
+                return `
+                <div class="card" style="border-left: 5px solid #FF9800; margin-bottom: 12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <div style="flex:1;">
+                            <strong style="font-size: 1.1rem; color: #FF9800;">📊 ${p.question}</strong>
+                            <div style="font-size:0.8rem; color:var(--text-muted); margin-top:5px;">
+                                Créé par <b>${p.author}</b> 
+                                ${p.deadline ? `| Fin : ${new Date(p.deadline).toLocaleString('fr-FR')}` : '| Sans limite'}
+                            </div>
+                        </div>
+                        ${p.author === currentUser || isAdmin || isPlatformOwner ? `
+                            <button onclick="closePoll(${p.id})" style="width:auto; padding:6px 10px; font-size:0.8rem; background:#f0f0f0; border:1px solid #ddd; border-radius:6px; cursor:pointer; color:#FF9800;">
+                                🔒 Fermer
+                            </button>
+                        ` : ''}
+                    </div>
+                    
+                    <div style="margin-top: 12px;">
+                        ${p.options.map((opt, idx) => {
+                            const votes = Object.keys(opt.votes || {});
+                            const voteCount = votes.length;
+                            const percentage = maxVotes > 0 ? (voteCount / maxVotes) * 100 : 0;
+                            const userVoted = (opt.votes && opt.votes[currentUser]) ? '✅ ' : '';
+                            
+                            return `
+                            <div style="margin-bottom: 10px;">
+                                <button onclick="votePoll(${p.id}, '${opt.label.replace(/'/g, "\\'")}'); sync();" 
+                                    style="width:100%; text-align:left; padding:10px; background:${userVoted ? '#E8F5E9' : '#f9f9f9'}; border:${userVoted ? '2px solid #4CAF50' : '1px solid #ddd'}; border-radius:6px; cursor:pointer; font-weight:${userVoted ? 'bold' : 'normal'}; color:#000;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <span>${opt.label}</span>
+                                        <span style="font-size:0.85rem; color:#666;">${voteCount} ${voteCount > 1 ? 'votes' : 'vote'}</span>
+                                    </div>
+                                    <div style="background:#ddd; height:4px; border-radius:2px; margin-top:6px; overflow:hidden;">
+                                        <div style="background:#4CAF50; height:100%; width:${percentage}%;" />
+                                    </div>
+                                </button>
+                                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:3px;">
+                                    ${votes.length > 0 ? votes.join(', ') : 'Pas de vote'}
+                                </div>
+                            </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    
+                    <div style="margin-top: 10px; display:flex; gap:8px;">
+                        <button onclick="proposePollOption(${p.id}); sync();" style="flex:1; padding:8px; font-size:0.8rem; background:transparent; border:1px dashed #FF9800; color:#FF9800; border-radius:6px; cursor:pointer;">
+                            ➕ Proposer une option
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        } else {
+            pollsContainer.innerHTML = '';
+        }
+        
         document.getElementById('chat-mention').innerHTML = `<option value="">Tous</option>` + membresArr.filter(m => m !== currentUser).map(m => `<option value="${m}">@${m}</option>`).join('');
         document.getElementById('evt-assignee').innerHTML = `<option value="Tous">${t('allColocs')}</option>` + membresArr.map(m => `<option value="${m}">${m}</option>`).join('');
         
-        document.getElementById('liste-agenda').innerHTML = getSafeArray(db.agenda).filter(a => currentAgendaView === 'actif' ? !isEventArchived(a) : isEventArchived(a)).sort((a,b) => new Date(a.d) - new Date(b.d)).map(a => `
+        // ── AFFICHER LES TÂCHES PRINCIPALES (pas les instances) ──
+        document.getElementById('liste-taches').innerHTML = getSafeArray(db.agenda)
+            .filter(a => !a.isRecurringInstance) // Afficher seulement les tâches principales
+            .sort((a,b) => new Date(a.d) - new Date(b.d))
+            .map(a => `
             <div class="card" style="border-left: 5px solid ${a.type === 'evenement' ? '#ea4335' : '#34b7f1'}; margin-bottom: 8px;">
                 <div class="item-row" style="padding:0; border:none;">
-                    <div>
+                    <div style="flex:1; cursor:pointer;" onclick="showEventDetails(${a.id})">
                         <strong style="font-size: 1rem; color: var(--primary-dark);">${a.t}</strong>
                         <div class="meta-info">
-                            📅 ${new Date(a.d).toLocaleString([], {weekday:'short', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})} 
+                            📅 ${new Date(a.d).toLocaleString([], {weekday:'short', day:'2-digit', month:'short'})} 
+                            ${a.time ? `⏰ ${a.time}` : ''}
                             | 👤 ${t('assignedTo')} <b>${a.a || t('allColocs')}</b> 
-                            ${a.f !== 'once' ? `| 🔄 ${t(a.f) || a.f}` : ''}
+                            ${a.f !== 'once' ? `| 🔄 ${a.f === 'hebdo' ? 'Chaque ' + (a.day || 'semaine') : 'Chaque mois' + (a.day ? ' (' + a.day + ')' : '')}` : ''}
                         </div>
-                        <div class="meta-info"><i>${t('createdBy')} ${a.creator} ${a.createdAt ? t('on') + ' ' + a.createdAt : ''}</i></div>
+                        <div class="meta-info"><i>${t('createdBy')} ${getDisplayName(a.creator)} ${a.createdAt ? t('on') + ' ' + a.createdAt : ''}</i></div>
                     </div>
-                    ${a.creator === currentUser || isAdmin || isPlatformOwner ? `<button class="btn-danger" style="margin:0;" onclick="del('agenda', ${a.id})">✖</button>` : ''}
+                    <div style="display:flex; gap:5px;">
+                        ${a.creator === currentUser || isAdmin || isPlatformOwner ? `<button class="btn-outline" style="margin:0; font-size:0.8rem; padding:5px 8px;" onclick="editTaskModal(${a.id})">✏️ Éditer</button>` : ''}
+                        ${a.creator === currentUser || isAdmin || isPlatformOwner ? `<button class="btn-danger" style="margin:0;" onclick="del('agenda', ${a.id}); sync();">✖</button>` : ''}
+                    </div>
                 </div>
                 ${a.type === 'tache' ? `
                     <div style="margin-top: 10px; display:flex; justify-content:space-between; align-items:center;">
@@ -1915,6 +3495,43 @@ Raphaël`;
                 `}
             </div>
         `).join('');
+        
+        document.getElementById('liste-agenda').innerHTML = getSafeArray(db.agenda)
+            .flatMap(a => generateRecurringInstances(a))
+            .sort((a,b) => new Date(a.d) - new Date(b.d))
+            .map(a => `
+            <div class="card" style="border-left: 5px solid ${a.type === 'evenement' ? '#ea4335' : '#34b7f1'}; margin-bottom: 8px;">
+                <div class="item-row" style="padding:0; border:none;">
+                    <div>
+                        <strong style="font-size: 1rem; color: var(--primary-dark);">${a.t}</strong>
+                        <div class="meta-info">
+                            📅 ${new Date(a.d).toLocaleString([], {weekday:'short', day:'2-digit', month:'short'})} 
+                            ${a.time ? `⏰ ${a.time}` : ''}
+                            | 👤 ${t('assignedTo')} <b>${a.a || t('allColocs')}</b> 
+                            ${a.f !== 'once' ? `| 🔄 ${a.f === 'hebdo' ? 'Chaque ' + (a.day || 'semaine') : 'Chaque mois' + (a.day ? ' (' + a.day + ')' : '')}` : ''}
+                            ${a.isRecurringInstance ? '<span style="color:#999; font-size:0.75rem;"> (récurrence)</span>' : ''}
+                        </div>
+                        <div class="meta-info"><i>${t('createdBy')} ${getDisplayName(a.creator)} ${a.createdAt ? t('on') + ' ' + a.createdAt : ''}</i></div>
+                    </div>
+                    ${a.creator === currentUser || isAdmin || isPlatformOwner ? `<button class="btn-danger" style="margin:0;" onclick="del('agenda', ${a.recurringParentId || a.id}); sync();">✖</button>` : ''}
+                </div>
+                ${a.type === 'tache' ? `
+                    <div style="margin-top: 10px; display:flex; justify-content:space-between; align-items:center;">
+                        <button onclick="toggleDone(${a.id})" style="background:${a.done ? 'var(--text-muted)' : 'var(--primary)'}; width:auto; padding: 6px 12px; font-size:0.8rem;">
+                            ${a.done ? '✅ ' + t('doneBy') + ' ' + (a.doneBy || currentUser) : '☐ ' + t('markDone')}
+                        </button>
+                    </div>
+                ` : `
+                    <div style="margin-top: 10px; display:flex; gap:5px;">
+                        <button onclick="respondEvt(${a.id}, 'yes')" style="background:${a.responses && a.responses[currentUser]==='yes' ? '#25D366' : '#ddd'}; width:auto; padding: 6px 12px; font-size:0.8rem; color:#000;">✅ ${t('present')}</button>
+                        <button onclick="respondEvt(${a.id}, 'no')" style="background:${a.responses && a.responses[currentUser]==='no' ? '#ea4335' : '#ddd'}; width:auto; padding: 6px 12px; font-size:0.8rem; color:#000;">❌ ${t('absent')}</button>
+                        <a href="${getCalLink(a)}" target="_blank" style="margin-left:auto; text-decoration:none; font-size:1.2rem;" title="Ajouter à Google Agenda">📅</a>
+                    </div>
+                    ${a.responses ? `<div style="font-size:0.7rem; margin-top:5px; color:#555;"><b>Présents :</b> ${Object.entries(a.responses).filter(([k,v])=>v==='yes').map(([k,v])=>k).join(', ') || 'Aucun'}</div>` : ''}
+                `}
+            </div>
+        `).join('');
+        
         
         document.getElementById('catalogue-list').innerHTML = getSafeArray(db.catalogue).map(c => `<span class="react-btn" onclick="document.getElementById('course-nom').value='${c}'">${tCat(c)} +</span>`).join('');
         
@@ -2048,7 +3665,19 @@ Raphaël`;
         listen();
         const photo = localStorage.getItem('hub_photo');
         if(photo) { document.getElementById('coloc-photo-preview').src = photo; document.getElementById('coloc-photo-preview').style.display = 'block'; }
-        document.getElementById('header-name').innerText = currentUser;
+        document.getElementById('header-name').innerText = getDisplayName(currentUser);
+        
+        // 📱 Enregistrer le Service Worker pour les notifications push
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./service-worker.js')
+                .then((registration) => {
+                    console.log('✅ Service Worker enregistré:', registration);
+                })
+                .catch((error) => {
+                    console.warn('⚠️ Erreur Service Worker:', error);
+                    // L'app fonctionne même sans SW, pas de panique
+                });
+        }
     }
 
     if(currentUser && colocPath) { 
@@ -2145,8 +3774,67 @@ window.selectTheme_hub_coloc = function(id) {
   });
 };
 
-// Init theme on page load
-loadTheme_hub_coloc();
+// ── INVITATION SYSTEM ──
+function showInvitationModal() {
+    const invitationLink = generateInvitationLink();
+    document.getElementById('invitation-link').value = invitationLink;
+    document.getElementById('invitation-modal').style.display = 'flex';
+}
+
+function generateInvitationLink() {
+    const invitationCode = btoa(colocPath + '|' + (window.db ? window.db.password : tempPassword));
+    const baseUrl = window.location.origin + window.location.pathname;
+    return baseUrl + '?invite=' + invitationCode;
+}
+
+function copyInvitationLink() {
+    const link = document.getElementById('invitation-link').value;
+    navigator.clipboard.writeText(link).then(() => {
+        alert('✓ Lien copié !');
+    });
+}
+
+function shareInvitationWhatsApp() {
+    const link = document.getElementById('invitation-link').value;
+    const message = encodeURIComponent(`🏠 Rejoins ma colocation !\n\n${link}`);
+    window.open('https://wa.me/?text=' + message, '_blank');
+}
+
+function shareInvitationEmail() {
+    const link = document.getElementById('invitation-link').value;
+    const subject = encodeURIComponent(`Invitation colocation`);
+    const body = encodeURIComponent(`Clique ici pour rejoindre :\n${link}`);
+    window.open('mailto:?subject=' + subject + '&body=' + body, '_blank');
+}
+
+function closeInvitationModal() {
+    document.getElementById('invitation-modal').style.display = 'none';
+}
+
+// Gérer les invitations via URL
+function handleInvitationLink() {
+    const params = new URLSearchParams(window.location.search);
+    const inviteCode = params.get('invite');
+    
+    if (inviteCode) {
+        try {
+            const decoded = atob(inviteCode);
+            const [colocName, password] = decoded.split('|');
+            document.getElementById('coloc-token').value = colocName;
+            document.getElementById('coloc-password').value = password;
+            document.getElementById('login-name').focus();
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (e) {
+            console.error('Lien invalide');
+        }
+    }
+}
+
+window.addEventListener('load', () => {
+    setTimeout(handleInvitationLink, 500);
+});
+
+
 
 // Show ⚙️ btn when premium is already set from localStorage db
 (function() {
@@ -2169,6 +3857,100 @@ loadTheme_hub_coloc();
 
 </script>
 
+<!-- ── POLL MODAL ── -->
+<div id="poll-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 500px;">
+        <h2 style="text-align: center; margin-bottom: 20px;">📊 Créer un sondage</h2>
+        
+        <!-- Objet du sondage -->
+        <div style="margin-bottom: 20px;">
+            <label for="poll-question" style="display: block; margin-bottom: 8px; font-weight: bold;">Objet du sondage</label>
+            <input type="text" id="poll-question" placeholder="Ex: Qui cuisine demain ?" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+        </div>
+
+        <!-- Date et heure (optionnel) -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <div style="flex: 1;">
+                <label for="poll-date" style="display: block; margin-bottom: 8px; font-weight: bold;">📅 Date limite <span style="color:#999; font-size:0.85rem;">(optionnel)</span></label>
+                <input type="date" id="poll-date" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div style="flex: 1;">
+                <label for="poll-time" style="display: block; margin-bottom: 8px; font-weight: bold;">⏰ Heure <span style="color:#999; font-size:0.85rem;">(optionnel)</span></label>
+                <input type="time" id="poll-time" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+        </div>
+
+        <!-- Options de réponse -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold;">Choix possibles</label>
+            <div id="poll-options-container">
+                <input type="text" class="poll-option" placeholder="Option 1" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                <input type="text" class="poll-option" placeholder="Option 2" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <button onclick="addPollOption()" style="width: 100%; padding: 10px; margin-top: 8px; background: #f0f0f0; border: 1px dashed #ddd; border-radius: 6px; cursor: pointer;">+ Ajouter une option</button>
+        </div>
+
+        <!-- Sélection des membres -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold;">👥 Qui doit répondre ?</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <button onclick="setPollMembers('all')" id="btn-poll-all" style="flex: 1; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                    Tous les membres
+                </button>
+                <button onclick="setPollMembers('custom')" id="btn-poll-custom" style="flex: 1; padding: 10px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                    Sélectionner
+                </button>
+            </div>
+            <div id="poll-members-select" style="display: none; max-height: 150px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; padding: 10px;">
+                <!-- Membres seront ajoutés par JavaScript -->
+            </div>
+        </div>
+
+        <!-- Boutons -->
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button onclick="createPoll()" style="flex: 1; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                ✓ Créer le sondage
+            </button>
+            <button onclick="closePollModal()" style="flex: 1; padding: 12px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                Annuler
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ── INVITATION MODAL ── -->
+<div id="invitation-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="text-align: center; max-width: 450px;">
+        <div style="font-size: 3rem; margin-bottom: 15px;">📧</div>
+        <h2>Invitez vos colocataires !</h2>
+        <p style="margin: 15px 0; color: var(--text-muted); line-height: 1.5; font-size: 0.95rem;">
+            Partagez ce lien avec vos amis pour qu'ils rejoignent votre colocation
+        </p>
+        
+        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0; word-break: break-all;">
+            <small style="color: #666; display: block; margin-bottom: 8px;">🔗 Lien d'invitation :</small>
+            <input type="text" id="invitation-link" readonly style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; font-family: monospace;">
+        </div>
+
+        <div style="display: flex; gap: 10px; margin: 20px 0;">
+            <button onclick="copyInvitationLink()" style="flex: 1; background: var(--primary); color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                📋 Copier
+            </button>
+            <button onclick="shareInvitationWhatsApp()" style="flex: 1; background: #25D366; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                💬 WhatsApp
+            </button>
+        </div>
+
+        <button onclick="shareInvitationEmail()" style="width: 100%; background: #4285F4; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px;">
+            ✉️ Email
+        </button>
+
+        <button onclick="closeInvitationModal()" class="btn-outline" style="width: 100%; border-color: var(--primary); color: var(--primary);">
+            ✓ Continuer
+        </button>
+    </div>
+</div>
+
 <!-- ── PREFERENCES PANEL ── -->
 <div class="pref-overlay" id="pref-modal" role="dialog" aria-modal="true" aria-label="Préférences d'apparence">
   <div class="pref-card">
@@ -2189,4 +3971,5 @@ loadTheme_hub_coloc();
   </div>
 </div>
 </body>
-</html>
+</html>robuste)"
+fatal: not a git repository (or any of the parent directories): .git
