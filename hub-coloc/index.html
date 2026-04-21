@@ -3246,7 +3246,7 @@ Raphaël`;
         const poll = {
             id: Date.now(),
             question: question,
-            author: currentUser,
+            author: getDisplayName(currentUser),  // ← Utiliser le nom d'affichage !
             createdAt: new Date().toISOString(),
             deadline: date && time ? date + 'T' + time : (date ? date + 'T23:59' : null),
             options: options.map(opt => ({ label: opt, votes: {} })),
@@ -3285,22 +3285,37 @@ Raphaël`;
         const pollOption = poll.options.find(o => o.label === option);
         if (!pollOption) return;
         
-        // Enregistrer le vote
+        // Enregistrer le vote avec getDisplayName (pas d'email qui contient des points)
         if (!pollOption.votes) pollOption.votes = {};
-        pollOption.votes[currentUser] = true;
+        const voteKey = getDisplayName(currentUser);  // ← Utiliser le nom, pas l'email !
+        pollOption.votes[voteKey] = true;
         sync();
     }
     
     function proposePollOption(pollId) {
+        console.log('🔍 proposePollOption appelée avec pollId:', pollId);
+        
         const newOption = prompt('Proposer une nouvelle option :');
-        if (!newOption || !newOption.trim()) return;
+        console.log('📝 Option saisie:', newOption);
+        if (!newOption || !newOption.trim()) {
+            console.log('❌ Option vide, abandon');
+            return;
+        }
         
         const trimmedOption = newOption.trim();
+        console.log('🎯 Option trimmée:', trimmedOption);
+        console.log('📊 db.sondages:', db.sondages);
+        
         const poll = getSafeArray(db.sondages).find(p => p.id === pollId);
-        if (!poll || !poll.options) return;
+        console.log('🔎 Poll trouvé:', poll);
+        if (!poll || !poll.options) {
+            console.log('❌ Poll non trouvé ou pas d\'options');
+            return;
+        }
         
         // Vérifier que l'option n'existe pas déjà
         if (poll.options.some(opt => opt.label.toLowerCase() === trimmedOption.toLowerCase())) {
+            console.log('⚠️ Option existe déjà');
             alert('⚠️ Cette option existe déjà !');
             return;
         }
@@ -3310,10 +3325,14 @@ Raphaël`;
             label: trimmedOption,
             votes: {}
         };
-        newOpt.votes[currentUser] = true;
+        const voteKey = getDisplayName(currentUser);  // ← Utiliser le nom, pas l'email !
+        newOpt.votes[voteKey] = true;
         poll.options.push(newOpt);
         
+        console.log('✅ Option ajoutée, poll.options:', poll.options);
+        console.log('🔄 Appel sync()...');
         sync();
+        console.log('✅ Sync terminé');
         alert('✅ Option ajoutée avec succès !');
     }
     
@@ -3500,7 +3519,7 @@ Raphaël`;
                                 ${p.deadline ? `| Fin : ${new Date(p.deadline).toLocaleString('fr-FR')}` : '| Sans limite'}
                             </div>
                         </div>
-                        ${p.author === currentUser || isAdmin || isPlatformOwner ? `
+                        ${p.author === getDisplayName(currentUser) || isAdmin || isPlatformOwner ? `
                             <button onclick="closePoll(${p.id})" style="width:auto; padding:6px 10px; font-size:0.8rem; background:#f0f0f0; border:1px solid #ddd; border-radius:6px; cursor:pointer; color:#FF9800;">
                                 🔒 Fermer
                             </button>
@@ -3512,7 +3531,8 @@ Raphaël`;
                             const votes = Object.keys(opt.votes || {});
                             const voteCount = votes.length;
                             const percentage = maxVotes > 0 ? (voteCount / maxVotes) * 100 : 0;
-                            const userVoted = (opt.votes && opt.votes[currentUser]) ? '✅ ' : '';
+                            const userVoteKey = getDisplayName(currentUser);  // ← Utiliser le nom d'affichage !
+                            const userVoted = (opt.votes && opt.votes[userVoteKey]) ? '✅ ' : '';
                             
                             return `
                             <div style="margin-bottom: 12px;">
