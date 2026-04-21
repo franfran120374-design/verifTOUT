@@ -2868,6 +2868,8 @@
     window.votePoll = votePoll;
     window.proposePollOption = proposePollOption;
     window.closePoll = closePoll;
+    window.editPollOption = editPollOption;
+    window.deletePollOption = deletePollOption;
 
     function toggleFluideInputs() {
         const type = document.getElementById('fluide-type').value;
@@ -3343,6 +3345,55 @@ Raphaël`;
         poll.open = false;
         sync();
     }
+
+    function editPollOption(pollId, optionIdx, oldLabel) {
+        const poll = getSafeArray(db.sondages).find(p => p.id === pollId);
+        if (!poll || !poll.options[optionIdx]) return;
+        
+        // Vérifier que c'est bien l'auteur
+        if (poll.author !== getDisplayName(currentUser)) {
+            alert('❌ Seul l\'auteur peut modifier les options');
+            return;
+        }
+        
+        const newLabel = prompt('Nouvelle valeur pour l\'option :', oldLabel);
+        if (!newLabel || !newLabel.trim()) return;
+        
+        const trimmedLabel = newLabel.trim();
+        
+        // Vérifier que la nouvelle option n'existe pas déjà
+        if (poll.options.some((opt, idx) => idx !== optionIdx && opt.label.toLowerCase() === trimmedLabel.toLowerCase())) {
+            alert('⚠️ Cette option existe déjà !');
+            return;
+        }
+        
+        poll.options[optionIdx].label = trimmedLabel;
+        sync();
+        alert('✅ Option modifiée avec succès !');
+    }
+
+    function deletePollOption(pollId, optionIdx) {
+        const poll = getSafeArray(db.sondages).find(p => p.id === pollId);
+        if (!poll || !poll.options[optionIdx]) return;
+        
+        // Vérifier que c'est bien l'auteur
+        if (poll.author !== getDisplayName(currentUser)) {
+            alert('❌ Seul l\'auteur peut supprimer les options');
+            return;
+        }
+        
+        // Vérifier qu'il y a au moins 2 options
+        if (poll.options.length <= 2) {
+            alert('⚠️ Un sondage doit avoir au moins 2 options !');
+            return;
+        }
+        
+        if (!confirm(`Supprimer l'option "${poll.options[optionIdx].label}" ?`)) return;
+        
+        poll.options.splice(optionIdx, 1);
+        sync();
+        alert('✅ Option supprimée avec succès !');
+    }
     // ── END POLL SYSTEM ──
 
     // ✅ GESTION ADMIN
@@ -3533,25 +3584,40 @@ Raphaël`;
                             const percentage = maxVotes > 0 ? (voteCount / maxVotes) * 100 : 0;
                             const userVoteKey = getDisplayName(currentUser);  // ← Utiliser le nom d'affichage !
                             const userVoted = (opt.votes && opt.votes[userVoteKey]) ? '✅ ' : '';
+                            const isAuthor = p.author === getDisplayName(currentUser);  // Vérifier si c'est l'auteur
                             
                             return `
                             <div style="margin-bottom: 12px;">
-                                <button onclick="votePoll(${p.id}, '${opt.label.replace(/'/g, "\\'")}'); sync();" 
-                                    style="width:100%; text-align:left; padding:12px; background:${userVoted ? '#E8F5E9' : '#f9f9f9'}; border:${userVoted ? '2px solid #4CAF50' : '1px solid #ddd'}; border-radius:8px; cursor:pointer; font-weight:${userVoted ? 'bold' : 'normal'}; color:#000; transition:all 0.2s;">
-                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                                        <span style="font-size:1rem;">${opt.label}</span>
-                                        <span style="font-size:0.9rem; font-weight:bold; color:#4CAF50; background:#E8F5E9; padding:4px 10px; border-radius:12px;">${voteCount} ${voteCount > 1 ? 'votes' : 'vote'}</span>
-                                    </div>
-                                    <div style="background:#ddd; height:6px; border-radius:3px; margin-bottom:8px; overflow:hidden;">
-                                        <div style="background:#4CAF50; height:100%; width:${percentage}%; transition:width 0.3s;" />
-                                    </div>
-                                </button>
+                                <div style="display:flex; gap:8px; align-items:flex-start;">
+                                    <button onclick="votePoll(${p.id}, '${opt.label.replace(/'/g, "\\'")}'); sync();" 
+                                        style="flex:1; text-align:left; padding:12px; background:${userVoted ? '#E8F5E9' : '#f9f9f9'}; border:${userVoted ? '2px solid #4CAF50' : '1px solid #ddd'}; border-radius:8px; cursor:pointer; font-weight:${userVoted ? 'bold' : 'normal'}; color:#000; transition:all 0.2s;">
+                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                            <span style="font-size:1rem;">${opt.label}</span>
+                                            <span style="font-size:0.9rem; font-weight:bold; color:#4CAF50; background:#E8F5E9; padding:4px 10px; border-radius:12px;">${voteCount} ${voteCount > 1 ? 'votes' : 'vote'}</span>
+                                        </div>
+                                        <div style="background:#ddd; height:6px; border-radius:3px; margin-bottom:8px; overflow:hidden;">
+                                            <div style="background:#4CAF50; height:100%; width:${percentage}%; transition:width 0.3s;" />
+                                        </div>
+                                    </button>
+                                    ${isAuthor ? `
+                                        <div style="display:flex; gap:4px; flex-direction:column;">
+                                            <button onclick="editPollOption(${p.id}, ${idx}, '${opt.label.replace(/'/g, "\\'")}'); " 
+                                                style="padding:6px 10px; font-size:0.75rem; background:#2196F3; color:white; border:none; border-radius:6px; cursor:pointer; white-space:nowrap;">
+                                                ✏️ Modifier
+                                            </button>
+                                            <button onclick="deletePollOption(${p.id}, ${idx}); " 
+                                                style="padding:6px 10px; font-size:0.75rem; background:#f44336; color:white; border:none; border-radius:6px; cursor:pointer; white-space:nowrap;">
+                                                🗑️ Supprimer
+                                            </button>
+                                        </div>
+                                    ` : ''}
+                                </div>
                                 <div style="font-size:0.8rem; color:var(--text-main); margin-top:8px; padding:0 10px;">
                                     ${votes.length > 0 ? `
                                         <div style="display:flex; flex-wrap:wrap; gap:6px;">
                                             ${votes.map(voter => `
                                                 <span style="background:#E8F5E9; color:#2E7D32; padding:4px 10px; border-radius:12px; font-weight:500; font-size:0.75rem;">
-                                                    ✓ ${getDisplayName(voter)}
+                                                    ✓ ${voter}
                                                 </span>
                                             `).join('')}
                                         </div>
