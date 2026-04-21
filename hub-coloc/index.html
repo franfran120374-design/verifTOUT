@@ -802,14 +802,45 @@
     </div>
 
     <nav>
-        <button onclick="showTab('accueil')" id="nav-accueil" class="active"><span style="font-size:1.5rem;">🏠</span><span class="nav-badge" id="badge-accueil"></span><span data-i18n="tabHome">Accueil</span></button>
-        <button onclick="showTab('chat')" id="nav-chat"><span style="font-size:1.5rem;">💬</span><span class="nav-badge" id="badge-chat"></span><span data-i18n="tabChat">Chat</span></button>
-        <button onclick="showTab('agenda')" id="nav-agenda"><span style="font-size:1.5rem;">📅</span><span class="nav-badge" id="badge-agenda"></span><span data-i18n="tabAgenda">Agenda</span></button>
-        <button onclick="showTab('courses')" id="nav-courses"><span style="font-size:1.5rem;">🛒</span><span class="nav-badge" id="badge-courses"></span><span data-i18n="tabCourses">Courses</span></button>
-        <button onclick="showTab('finances')" id="nav-finances"><span style="font-size:1.5rem;">💰</span><span class="nav-badge" id="badge-finances"></span><span data-i18n="tabFinances">Finances</span></button>
-        <button onclick="showTab('fluides')" id="nav-fluides"><span style="font-size:1.5rem;">💧</span><span class="nav-badge" id="badge-fluides"></span><span data-i18n="tabFluides">Fluides</span></button>
-        <button onclick="showTab('annonces')" id="nav-annonces"><span style="font-size:1.5rem;">📢</span><span class="nav-badge" id="badge-annonces"></span><span data-i18n="tabAnnonces">Annonces</span></button>
-        <button onclick="showTab('reglages')" id="nav-reglages"><span style="font-size:1.5rem;">⚙️</span><span data-i18n="tabSettings">Colocs</span></button>
+        <button onclick="showTab('accueil')" id="nav-accueil" class="active" title="Accueil">
+            <span style="font-size:1.5rem;">🏠</span>
+            <span class="nav-badge" id="badge-accueil"></span>
+            <span style="font-size:0.65rem; margin-top:2px;" data-i18n="tabHome">Accueil</span>
+        </button>
+        <button onclick="showTab('chat')" id="nav-chat" title="Chat">
+            <span style="font-size:1.5rem;">💬</span>
+            <span class="nav-badge" id="badge-chat"></span>
+            <span style="font-size:0.65rem; margin-top:2px;" data-i18n="tabChat">Chat</span>
+        </button>
+        <button onclick="showTab('agenda')" id="nav-agenda" title="Agenda">
+            <span style="font-size:1.5rem;">📅</span>
+            <span class="nav-badge" id="badge-agenda"></span>
+            <span style="font-size:0.65rem; margin-top:2px;" data-i18n="tabAgenda">Agenda</span>
+        </button>
+        <button onclick="showTab('courses')" id="nav-courses" title="Courses">
+            <span style="font-size:1.5rem;">🛒</span>
+            <span class="nav-badge" id="badge-courses"></span>
+            <span style="font-size:0.65rem; margin-top:2px;" data-i18n="tabCourses">Courses</span>
+        </button>
+        <button onclick="showTab('finances')" id="nav-finances" title="Finances">
+            <span style="font-size:1.5rem;">💰</span>
+            <span class="nav-badge" id="badge-finances"></span>
+            <span style="font-size:0.65rem; margin-top:2px;" data-i18n="tabFinances">Finances</span>
+        </button>
+        <button onclick="showTab('fluides')" id="nav-fluides" title="Fluides">
+            <span style="font-size:1.5rem;">💧</span>
+            <span class="nav-badge" id="badge-fluides"></span>
+            <span style="font-size:0.65rem; margin-top:2px;" data-i18n="tabFluides">Fluides</span>
+        </button>
+        <button onclick="showTab('annonces')" id="nav-annonces" title="Annonces">
+            <span style="font-size:1.5rem;">📢</span>
+            <span class="nav-badge" id="badge-annonces"></span>
+            <span style="font-size:0.65rem; margin-top:2px;" data-i18n="tabAnnonces">Annonces</span>
+        </button>
+        <button onclick="showTab('reglages')" id="nav-reglages" title="Colocs">
+            <span style="font-size:1.5rem;">⚙️</span>
+            <span style="font-size:0.65rem; margin-top:2px;" data-i18n="tabSettings">Colocs</span>
+        </button>
     </nav>
 
     <div class="content-wrapper">
@@ -919,13 +950,25 @@
                         <label for="chat-file" style="cursor:pointer; font-size:1.3rem; padding:5px; margin-bottom:0;">📎</label>
                         <input type="file" id="chat-file" accept="image/*,application/pdf" style="display:none" onchange="document.getElementById('chat-file-preview-text').style.display='block'">
                         
-                        <button onclick="showPollModal()" style="width:40px; padding:8px; font-size:1.2rem; background:transparent; color:var(--text-muted); border:none; cursor:pointer; font-size:1.3rem;" title="Créer un sondage">📊</button>
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+                            <button onclick="showPollModal()" style="width:40px; padding:8px; font-size:1.3rem; background:transparent; color:var(--text-muted); border:none; cursor:pointer;" title="Créer un sondage">📊</button>
+                            <span style="font-size:0.6rem; color:var(--text-muted); white-space:nowrap;">Sondage</span>
+                        </div>
                         
                         <label for="chat-input" class="visually-hidden">Message</label>
                         <input type="text" id="chat-input" data-i18n="phChatMsg" placeholder="Ex: Coucou les colocs !" style="margin:0; flex-grow:1;">
-                        <button onclick="openChatPopup()" style="width:40px; padding:8px; font-size:1.2rem; background:transparent; color:var(--text-muted); border:none; cursor:pointer;" title="Écrire un long message">📝</button>
-                        <button id="btn-mic" onclick="toggleAudioRecord()" style="width:40px; padding:8px; font-size:1.2rem; background:transparent; color:var(--text-muted);">🎤</button>
-                        <button onclick="envoyerMessage()" style="width:50px; padding:8px;">🚀</button>
+                        
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+                            <button onclick="openChatPopup()" style="width:40px; padding:8px; font-size:1.3rem; background:transparent; color:var(--text-muted); border:none; cursor:pointer;" title="Écrire un long message">📝</button>
+                            <span style="font-size:0.6rem; color:var(--text-muted); white-space:nowrap;">Message long</span>
+                        </div>
+                        
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+                            <button id="btn-mic" onclick="toggleAudioRecord()" style="width:40px; padding:8px; font-size:1.3rem; background:transparent; color:var(--text-muted);" title="Enregistrement audio">🎤</button>
+                            <span style="font-size:0.6rem; color:var(--text-muted); white-space:nowrap;">Audio</span>
+                        </div>
+                        
+                        <button onclick="envoyerMessage()" style="width:50px; padding:8px; font-size:1.2rem;">🚀</button>
                     </div>
                 </div>
                 
