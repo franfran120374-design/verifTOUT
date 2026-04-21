@@ -3297,7 +3297,7 @@ Raphaël`;
         
         const trimmedOption = newOption.trim();
         const poll = getSafeArray(db.sondages).find(p => p.id === pollId);
-        if (!poll) return;
+        if (!poll || !poll.options) return;
         
         // Vérifier que l'option n'existe pas déjà
         if (poll.options.some(opt => opt.label.toLowerCase() === trimmedOption.toLowerCase())) {
@@ -3306,10 +3306,13 @@ Raphaël`;
         }
         
         // Ajouter la nouvelle option avec le vote du proposeur
-        poll.options.push({
+        const newOpt = {
             label: trimmedOption,
-            votes: { [currentUser]: true }
-        });
+            votes: {}
+        };
+        newOpt.votes[currentUser] = true;
+        poll.options.push(newOpt);
+        
         sync();
         alert('✅ Option ajoutée avec succès !');
     }
