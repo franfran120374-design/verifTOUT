@@ -3292,18 +3292,26 @@ Raphaël`;
     }
     
     function proposePollOption(pollId) {
-        const newOption = prompt('Proposer une nouvelle option :').trim();
-        if (!newOption) return;
+        const newOption = prompt('Proposer une nouvelle option :');
+        if (!newOption || !newOption.trim()) return;
         
+        const trimmedOption = newOption.trim();
         const poll = getSafeArray(db.sondages).find(p => p.id === pollId);
         if (!poll) return;
         
-        // Ajouter la nouvelle option
+        // Vérifier que l'option n'existe pas déjà
+        if (poll.options.some(opt => opt.label.toLowerCase() === trimmedOption.toLowerCase())) {
+            alert('⚠️ Cette option existe déjà !');
+            return;
+        }
+        
+        // Ajouter la nouvelle option avec le vote du proposeur
         poll.options.push({
-            label: newOption,
+            label: trimmedOption,
             votes: { [currentUser]: true }
         });
         sync();
+        alert('✅ Option ajoutée avec succès !');
     }
     
     function closePoll(pollId) {
