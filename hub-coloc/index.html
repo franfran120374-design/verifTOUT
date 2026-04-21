@@ -45,11 +45,12 @@
         }
 
         .app-wrapper {
-            max-width: 1200px; margin: 0 auto; background-color: var(--bg-app); 
+            max-width: 100%; 
+            margin: 0 auto; 
+            background-color: var(--bg-app); 
             height: 100dvh; 
             display: flex; 
             position: relative;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
             flex-direction: column;
             overflow: hidden;
         }
@@ -60,23 +61,28 @@
                 height: 100dvh;
             }
             nav { 
-                order: 2; 
+                order: 1; 
                 width: 100%; 
+                height: auto;
                 flex-direction: row; 
-                border-top: 1px solid #d1d7db; 
-                padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+                border-bottom: 1px solid #d1d7db; 
+                padding: 0;
                 background: #f0f2f5; 
                 flex-shrink: 0; 
                 overflow-x: auto;
+                overflow-y: hidden;
+                -webkit-overflow-scrolling: touch;
                 gap: 0;
+                scroll-behavior: smooth;
             }
             nav button {
-                padding: 6px 4px;
-                font-size: 0.55rem;
-                min-width: 45px;
+                padding: 12px 8px;
+                font-size: 0.65rem;
+                min-width: 60px;
+                flex-shrink: 0;
             }
             .content-wrapper { 
-                order: 1; 
+                order: 2; 
                 width: 100%; 
                 flex: 1; 
                 min-height: 0;
@@ -88,28 +94,39 @@
 
         @media (min-width: 768px) {
             .app-wrapper { 
-                flex-direction: row;
+                flex-direction: column;
                 height: 100dvh;
             }
             nav { 
                 order: 1; 
-                width: 100px; 
-                flex-direction: column; 
-                border-right: 1px solid #d1d7db; 
-                justify-content: flex-start !important; 
-                padding-top: 20px; 
-                gap: 20px; 
+                width: 100%; 
+                height: auto;
+                flex-direction: row; 
+                border-bottom: 1px solid #d1d7db; 
+                padding: 0;
+                gap: 0;
                 flex-shrink: 0; 
                 background: #f0f2f5;
+                overflow-x: auto;
+                overflow-y: hidden;
+                -webkit-overflow-scrolling: touch;
+                scroll-behavior: smooth;
+                justify-content: flex-start;
+            }
+            nav button {
+                padding: 15px 20px;
+                font-size: 0.85rem;
+                min-width: auto;
+                flex-shrink: 0;
             }
             .content-wrapper { 
                 order: 2; 
                 flex: 1; 
-                min-width: 0; 
+                min-height: 0; 
                 display: flex; 
                 flex-direction: column; 
                 overflow: hidden; 
-                width: calc(100% - 100px);
+                width: 100%;
             }
         }
 
@@ -3971,5 +3988,4 @@ window.addEventListener('load', () => {
   </div>
 </div>
 </body>
-</html>robuste)"
-fatal: not a git repository (or any of the parent directories): .git
+</html>
