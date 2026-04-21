@@ -324,7 +324,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            z-index: 10000;
+            z-index: 99999;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -334,69 +334,88 @@
         #chat-popup.chat-popup-hidden {
             display: none !important;
             visibility: hidden;
+            pointer-events: none;
         }
         
         #chat-popup.chat-popup-visible {
             display: flex !important;
             visibility: visible;
+            pointer-events: auto;
         }
         
         .chat-popup-overlay {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.8);
             cursor: pointer;
+            z-index: 1;
         }
         
         .chat-popup-modal {
             position: relative;
             background: white;
             border-radius: 12px;
-            width: 95%;
-            height: 95%;
-            max-width: 800px;
-            max-height: 90dvh;
+            width: 95vw;
+            height: 95vh;
+            max-width: 900px;
+            max-height: 95dvh;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            z-index: 1;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            z-index: 2;
+            animation: popupSlideUp 0.3s ease-out;
+        }
+        
+        @keyframes popupSlideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
         
         .chat-popup-header {
             padding: 20px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 2px solid #eee;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-shrink: 0;
+            background: #f8f9fa;
         }
         
         .chat-popup-header h2 {
             margin: 0;
             color: var(--primary-dark);
-            font-size: 1.2rem;
+            font-size: 1.3rem;
         }
         
         .chat-popup-close {
             background: none;
             border: none;
-            font-size: 1.8rem;
+            font-size: 2rem;
             cursor: pointer;
             color: #999;
             padding: 0;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s;
         }
         
         .chat-popup-close:hover {
             color: #333;
-            transform: scale(1.1);
+            transform: scale(1.15);
+            background: #f0f0f0;
+            border-radius: 50%;
         }
         
         .chat-popup-textarea {
@@ -408,36 +427,48 @@
             resize: none;
             overflow-y: auto;
             outline: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .chat-popup-textarea:focus {
+            background: #fafafa;
         }
         
         .chat-popup-footer {
             padding: 20px;
-            border-top: 1px solid #eee;
+            border-top: 2px solid #eee;
             display: flex;
-            gap: 10px;
+            gap: 15px;
             justify-content: flex-end;
             flex-shrink: 0;
+            background: #f8f9fa;
         }
         
         .chat-popup-btn-cancel,
         .chat-popup-btn-submit {
-            padding: 12px 24px;
-            border-radius: 6px;
+            padding: 14px 28px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
             border: none;
-            font-size: 14px;
-            transition: all 0.3s;
+            font-size: 15px;
+            transition: all 0.2s;
+            min-width: 120px;
         }
         
         .chat-popup-btn-cancel {
-            background: #f0f0f0;
-            border: 1px solid #ddd;
+            background: #e0e0e0;
+            border: 1px solid #d0d0d0;
             color: var(--text-main);
         }
         
         .chat-popup-btn-cancel:hover {
-            background: #e0e0e0;
+            background: #d0d0d0;
+            transform: translateY(-2px);
+        }
+        
+        .chat-popup-btn-cancel:active {
+            transform: translateY(0);
         }
         
         .chat-popup-btn-submit {
@@ -448,6 +479,55 @@
         
         .chat-popup-btn-submit:hover {
             background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .chat-popup-btn-submit:active {
+            transform: translateY(0);
+        }
+        
+        /* Mobile responsif */
+        @media (max-width: 600px) {
+            .chat-popup-modal {
+                width: 98vw;
+                height: 98vh;
+                max-height: 98dvh;
+                border-radius: 8px;
+            }
+            
+            .chat-popup-header {
+                padding: 15px;
+            }
+            
+            .chat-popup-header h2 {
+                font-size: 1.1rem;
+            }
+            
+            .chat-popup-close {
+                font-size: 1.6rem;
+                width: 40px;
+                height: 40px;
+            }
+            
+            .chat-popup-textarea {
+                padding: 15px;
+                font-size: 16px;
+            }
+            
+            .chat-popup-footer {
+                padding: 15px;
+                gap: 10px;
+                flex-direction: column;
+            }
+            
+            .chat-popup-btn-cancel,
+            .chat-popup-btn-submit {
+                padding: 12px 20px;
+                font-size: 14px;
+                min-width: auto;
+                width: 100%;
+            }
         }
 
         /* ─── RESPONSIVE DESIGN INTELLIGENT ─── */
@@ -669,22 +749,6 @@
     </style>
 </head>
 <body>
-
-<!-- 💬 POP-UP CHAT POUR ÉCRIRE DES LONGS MESSAGES -->
-<div id="chat-popup" class="chat-popup-hidden">
-    <div class="chat-popup-overlay" onclick="closeChatPopup()"></div>
-    <div class="chat-popup-modal">
-        <div class="chat-popup-header">
-            <h2>💬 Écrire un message</h2>
-            <button class="chat-popup-close" onclick="closeChatPopup()">✕</button>
-        </div>
-        <textarea id="popup-chat-text" class="chat-popup-textarea" placeholder="Écris ton message ici... Tu peux voir le texte en entier !"></textarea>
-        <div class="chat-popup-footer">
-            <button class="chat-popup-btn-cancel" onclick="closeChatPopup()">Annuler</button>
-            <button class="chat-popup-btn-submit" onclick="submitChatPopup()">Envoyer 🚀</button>
-        </div>
-    </div>
-</div>
 
 <div class="app-wrapper">
     <div id="auth-modal" class="modal-overlay">
@@ -3986,6 +4050,22 @@ window.addEventListener('load', () => {
     <button class="btn-apply-theme" onclick="applyAndSaveTheme_hub_coloc()">✓ Appliquer ce thème</button>
     <button class="btn-close-pref" onclick="closePrefs_hub_coloc()">Annuler</button>
   </div>
+</div>
+
+<!-- 💬 POP-UP CHAT (À LA FIN POUR Z-INDEX) -->
+<div id="chat-popup" class="chat-popup-hidden">
+    <div class="chat-popup-overlay" onclick="closeChatPopup()"></div>
+    <div class="chat-popup-modal">
+        <div class="chat-popup-header">
+            <h2>💬 Écrire un message</h2>
+            <button class="chat-popup-close" onclick="closeChatPopup()">✕</button>
+        </div>
+        <textarea id="popup-chat-text" class="chat-popup-textarea" placeholder="Écris ton message ici... Tu peux voir le texte en entier !"></textarea>
+        <div class="chat-popup-footer">
+            <button class="chat-popup-btn-cancel" onclick="closeChatPopup()">Annuler</button>
+            <button class="chat-popup-btn-submit" onclick="submitChatPopup()">Envoyer 🚀</button>
+        </div>
+    </div>
 </div>
 </body>
 </html>
