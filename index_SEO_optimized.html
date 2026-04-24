@@ -485,7 +485,7 @@ Pas encore de compte ? <a onclick="switchModal()">Créer un compte</a>
 </script>
 
 <!-- ══════════════════════════════════════════════
-🔥 FIREBASE CONFIG — Remplacez ces valeurs
+🔥 FIREBASE CONFIG
 ══════════════════════════════════════════════ -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
@@ -496,14 +496,15 @@ import {
 getFirestore, doc, getDoc, setDoc
 } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-// ⚠️ REMPLACEZ PAR VOTRE CONFIG FIREBASE
+// Configuration Firebase
 const firebaseConfig = {
-apiKey: "VOTRE_API_KEY",
-authDomain: "VOTRE_PROJECT.firebaseapp.com",
-projectId: "VOTRE_PROJECT_ID",
-storageBucket: "VOTRE_PROJECT.appspot.com",
-messagingSenderId: "VOTRE_SENDER_ID",
-appId: "VOTRE_APP_ID"
+  apiKey: "AIzaSyB1TwbZSkqkAKEPhNJXuwn9zMEz2BqBk48",
+  authDomain: "hub-coloc.firebaseapp.com",
+  databaseURL: "https://hub-coloc-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "hub-coloc",
+  storageBucket: "hub-coloc.firebasestorage.app",
+  messagingSenderId: "1090628612964",
+  appId: "1:1090628612964:web:b6bec497006f2214304071"
 };
 
 const app = initializeApp(firebaseConfig);
