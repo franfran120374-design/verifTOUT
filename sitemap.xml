@@ -7,25 +7,9 @@
   <!-- Page principale -->
   <url>
     <loc>https://franfran120374-design.github.io/verifTOUT/</loc>
-    <lastmod>2024-04-24</lastmod>
+    <lastmod>2026-04-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
-  
-  <!-- Ajoutez d'autres pages ici si vous en avez
-  <url>
-    <loc>https://franfran120374-design.github.io/verifTOUT/a-propos</loc>
-    <lastmod>2024-04-24</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>https://franfran120374-design.github.io/verifTOUT/contact</loc>
-    <lastmod>2024-04-24</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  -->
   
 </urlset>
