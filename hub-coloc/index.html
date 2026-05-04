@@ -3084,19 +3084,23 @@ Raphaël`;
     }
 
     // ✅ FONCTIONS PREMIUM
-    async function checkPremiumStatus(email) {
-        // Propriétaire de la plateforme — accès permanent
-        if (email === 'sand@gmail.com') return true;
-        try {
-            const snapshot = await firestore.collection('users').where('email', '==', email).get();
-            if (!snapshot.empty) {
-                const userData = snapshot.docs[0].data();
-                const sub = userData.subscriptions && userData.subscriptions['hub-coloc'];
-                return !!(sub && (sub.premium === true || sub.active === true));
-            }
-        } catch(e) { console.warn("Erreur vérification premium:", e); }
-        return false;
-    }
+  async function checkPremiumStatus(email) {
+    // Propriétaire de la plateforme — accès permanent
+    if (email === 'sand@gmail.com' || email === 'franfran120374@gmail.com') return true;
+    try {
+        const snapshot = await firestore.collection('users').where('email', '==', email).get();
+        if (!snapshot.empty) {
+            const userData = snapshot.docs[0].data();
+            // 1. Cherche à la racine (structure actuelle Firestore)
+            const subRoot = userData['hub-coloc'];
+            if (subRoot && (subRoot.premium === true || subRoot.active === true)) return true;
+            // 2. Fallback : sous-objet subscriptions (structure prévue par la landing)
+            const subNested = userData.subscriptions && userData.subscriptions['hub-coloc'];
+            if (subNested && (subNested.premium === true || subNested.active === true)) return true;
+        }
+    } catch(e) { console.warn("Erreur vérification premium:", e); }
+    return false;
+}
 
     async function activerPremium() {
         const email = document.getElementById('premium-email').value.trim();
