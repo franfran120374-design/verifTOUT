@@ -4070,7 +4070,231 @@ function handleInvitationLink() {
 window.addEventListener('load', () => {
     setTimeout(handleInvitationLink, 500);
 });
+// ═══════════════════════════════════════════════════════════════
+// 💾 SYSTÈME DE SAUVEGARDES AUTOMATIQUES + EXPORT/IMPORT MANUEL
+// ═══════════════════════════════════════════════════════════════
 
+// 1. SNAPSHOT FIREBASE QUOTIDIEN (max 30 jours d'historique)
+async function snapshotQuotidien() {
+    if (!colocPath || !db || !db.membres) return;
+    const today = new Date().toISOString().split('T')[0]; // ex: "2026-05-05"
+    const backupRef = database.ref('colocs_backups/' + colocPath + '/' + today);
+    
+    try {
+        // Vérifier si on a déjà fait un snapshot aujourd'hui
+        const existing = await backupRef.once('value');
+        if (existing.exists()) return; // Déjà fait, on ne refait pas
+        
+        // Créer le snapshot du jour
+        await backupRef.set({
+            ...db,
+            _snapshotAt: new Date().toISOString(),
+            _snapshotBy: currentUser
+        });
+        console.log('✅ Snapshot Firebase créé pour le ' + today);
+        
+        // Nettoyer les snapshots de plus de 30 jours
+        const allBackups = await database.ref('colocs_backups/' + colocPath).once('value');
+        if (allBackups.exists()) {
+            const backups = allBackups.val();
+            const dates = Object.keys(backups).sort();
+            if (dates.length > 30) {
+                const toDelete = dates.slice(0, dates.length - 30);
+                for (const oldDate of toDelete) {
+                    await database.ref('colocs_backups/' + colocPath + '/' + oldDate).remove();
+                }
+                console.log('🗑️ ' + toDelete.length + ' anciens snapshots supprimés');
+            }
+        }
+    } catch(e) {
+        console.warn('Erreur snapshot Firebase:', e);
+    }
+}
+
+// 2. SAUVEGARDE LOCALE (localStorage du navigateur)
+function sauvegardeLocale() {
+    if (!db || !db.membres) return;
+    try {
+        const localBackup = {
+            db: db,
+            colocPath: colocPath,
+            currentUser: currentUser,
+            savedAt: new Date().toISOString()
+        };
+        localStorage.setItem('hub_local_backup', JSON.stringify(localBackup));
+        console.log('💾 Sauvegarde locale OK (' + new Date().toLocaleTimeString() + ')');
+    } catch(e) {
+        console.warn('Erreur sauvegarde locale (probablement quota dépassé):', e);
+    }
+}
+
+// 3. EXPORT MANUEL EN FICHIER JSON
+function exporterSauvegardeComplete() {
+    if (!db || !db.membres) return alert('Aucune donnée à exporter.');
+    
+    const backup = {
+        version: '1.6.0',
+        exportedAt: new Date().toISOString(),
+        exportedBy: currentUser,
+        colocPath: colocPath,
+        colocName: db.name || 'coloc',
+        data: db
+    };
+    
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    a.download = `HubColoc_Sauvegarde_${slugify(db.name || 'coloc')}_${dateStr}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    setTimeout(() => {
+        if (confirm('✅ Sauvegarde téléchargée !\n\nVoulez-vous l\'envoyer sur Google Drive maintenant pour la conserver en sécurité ?')) {
+            openGoogleLink('drive');
+        }
+    }, 500);
+}
+
+// 4. RESTAURATION DEPUIS UN FICHIER JSON
+function ouvrirRestauration() {
+    document.getElementById('restore-file-input').click();
+}
+
+async function restaurerSauvegarde(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    try {
+        const text = await file.text();
+        const backup = JSON.parse(text);
+        
+        if (!backup.data || !backup.data.membres) {
+            return alert('❌ Fichier invalide. Ce n\'est pas une sauvegarde Hub Coloc.');
+        }
+        
+        const dateBackup = backup.exportedAt ? new Date(backup.exportedAt).toLocaleString('fr-FR') : 'inconnue';
+        const colocName = backup.colocName || 'inconnue';
+        
+        if (!confirm(`⚠️ ATTENTION : Vous allez ÉCRASER les données actuelles de cette coloc avec la sauvegarde du :\n\n📅 ${dateBackup}\n🏠 Coloc : ${colocName}\n\nCette action est IRRÉVERSIBLE. Continuer ?`)) {
+            event.target.value = '';
+            return;
+        }
+        
+        if (!confirm('Dernière confirmation : ÉCRASER vraiment les données actuelles ?')) {
+            event.target.value = '';
+            return;
+        }
+        
+        // Avant d'écraser, créer un snapshot d'urgence de l'état actuel
+        const emergencyKey = 'avant_restauration_' + Date.now();
+        await database.ref('colocs_backups/' + colocPath + '/' + emergencyKey).set({
+            ...db,
+            _snapshotAt: new Date().toISOString(),
+            _reason: 'Snapshot avant restauration manuelle'
+        });
+        
+        db = backup.data;
+        sync();
+        alert('✅ Restauration réussie ! L\'app va se rafraîchir.');
+        setTimeout(() => window.location.reload(), 1000);
+        
+    } catch(e) {
+        alert('❌ Erreur lors de la lecture du fichier : ' + e.message);
+        console.error(e);
+    }
+    event.target.value = '';
+}
+
+// 5. RESTAURATION DEPUIS UN SNAPSHOT FIREBASE
+async function ouvrirListeSnapshots() {
+    if (!colocPath) return;
+    const snap = await database.ref('colocs_backups/' + colocPath).once('value');
+    if (!snap.exists()) return alert('Aucune sauvegarde Firebase trouvée pour cette coloc.');
+    
+    const backups = snap.val();
+    const dates = Object.keys(backups).sort().reverse(); // Plus récent en premier
+    
+    let html = '<h3 style="margin-top:0;">📅 Sauvegardes disponibles</h3><p style="font-size:0.85rem; color:#666;">Cliquez sur une date pour la restaurer :</p>';
+    html += '<div style="max-height:400px; overflow-y:auto;">';
+    dates.forEach(date => {
+        const b = backups[date];
+        const at = b._snapshotAt ? new Date(b._snapshotAt).toLocaleString('fr-FR') : date;
+        const by = b._snapshotBy || '';
+        const reason = b._reason ? ` <span style="color:#888;">(${b._reason})</span>` : '';
+        html += `<div onclick="restaurerSnapshotFirebase('${date}')" style="padding:10px; border:1px solid #ddd; border-radius:6px; margin:5px 0; cursor:pointer; background:#f9f9f9;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background='#f9f9f9'">
+            <b>📅 ${at}</b>${reason}<br>
+            <span style="font-size:0.75rem; color:#666;">${by ? 'Par ' + by : ''} • ID : ${date}</span>
+        </div>`;
+    });
+    html += '</div>';
+    html += '<button onclick="this.closest(\'[style*=fixed]\').remove()" style="width:100%; margin-top:15px; padding:10px; background:#f0f0f0; border:1px solid #ddd; border-radius:6px; cursor:pointer;">Annuler</button>';
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:10000; padding:20px;';
+    modal.innerHTML = `<div style="background:white; padding:20px; border-radius:12px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto;">${html}</div>`;
+    modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+    document.body.appendChild(modal);
+}
+
+async function restaurerSnapshotFirebase(date) {
+    if (!confirm(`⚠️ ÉCRASER les données actuelles avec la sauvegarde du ${date} ?\n\nCette action est IRRÉVERSIBLE.`)) return;
+    if (!confirm('Vraiment sûr ?')) return;
+    
+    try {
+        const snap = await database.ref('colocs_backups/' + colocPath + '/' + date).once('value');
+        if (!snap.exists()) return alert('Snapshot introuvable.');
+        
+        // Snapshot d'urgence avant restauration
+        const emergencyKey = 'avant_restauration_' + Date.now();
+        await database.ref('colocs_backups/' + colocPath + '/' + emergencyKey).set({
+            ...db,
+            _snapshotAt: new Date().toISOString(),
+            _reason: 'Auto avant restauration ' + date
+        });
+        
+        const restored = snap.val();
+        delete restored._snapshotAt;
+        delete restored._snapshotBy;
+        delete restored._reason;
+        
+        db = restored;
+        sync();
+        alert('✅ Sauvegarde du ' + date + ' restaurée !');
+        setTimeout(() => window.location.reload(), 1000);
+    } catch(e) {
+        alert('❌ Erreur : ' + e.message);
+    }
+}
+
+// 6. DÉCLENCHEMENT AUTOMATIQUE
+// → Au démarrage : snapshot quotidien si pas déjà fait + sauvegarde locale
+// → À la fermeture de l'app : sauvegarde locale finale
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        if (isSigned && colocPath) {
+            snapshotQuotidien();
+            sauvegardeLocale();
+        }
+    }, 3000); // Attendre que les données soient bien chargées
+});
+
+window.addEventListener('beforeunload', () => {
+    if (isSigned) sauvegardeLocale();
+});
+
+// Sauvegarde locale aussi toutes les 5 minutes pendant l'utilisation
+setInterval(() => {
+    if (isSigned && db && db.membres) sauvegardeLocale();
+}, 5 * 60 * 1000);
+
+// Exposer les fonctions globalement
+window.exporterSauvegardeComplete = exporterSauvegardeComplete;
+window.ouvrirRestauration = ouvrirRestauration;
+window.restaurerSauvegarde = restaurerSauvegarde;
+window.ouvrirListeSnapshots = ouvrirListeSnapshots;
+window.restaurerSnapshotFirebase = restaurerSnapshotFirebase;
 
 
 // Show ⚙️ btn when premium is already set from localStorage db
