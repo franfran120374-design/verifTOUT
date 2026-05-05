@@ -1463,13 +1463,13 @@
                 <div class="card" style="border-left: 5px solid var(--accent);">
                     <h2>ℹ️ Support & Mise à jour</h2>
                     <div style="font-size:0.85rem; color:var(--text-main); margin-bottom:10px;">
-                        <b>Version de l'App :</b> 1.6.0<br>
+                       <b>Version de l'App :</b> 1.6.1<br>
                         <b>Mise à jour légale :</b> 08 Avril 2026
                     </div>
                     <button class="btn-outline" onclick="forceAppRefresh()" style="width:100%; border-color:var(--accent); color:var(--accent); margin-bottom:10px;">🔄 Rafraîchir l'application (Mise à jour)</button>
                     
                     <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px;">Un problème technique ? Envoyez-nous un message avec vos captures d'écran.</p>
-                    <button onclick="window.location.href='mailto:sand@gmail.com?subject=support%20hubcoloc%202026'" style="width:100%; background:var(--accent);">✉️ Contacter le support technique</button>
+button onclick="window.location.href='mailto:franfran120374@gmail.com?subject=support%20hubcoloc%202026'" style="width:100%; background:var(--accent);">✉️ Contacter le support technique</button>
                 </div>
                 
                 <div class="card">
@@ -1560,11 +1560,30 @@
     // =========================================================================
     // 🛡️ BOUCLIER ANTI-CRASH FIREBASE (getSafeArray)
     // =========================================================================
-    function getSafeArray(data) {
-        if (!data) return [];
-        if (Array.isArray(data)) return data.filter(Boolean);
-        return Object.values(data).filter(Boolean);
-    }
+function getSafeArray(data) {
+    if (!data) return [];
+    if (Array.isArray(data)) return data.filter(Boolean);
+    return Object.values(data).filter(Boolean);
+}
+
+// =========================================================================
+// 👑 PROPRIÉTAIRES DE LA PLATEFORME (accès permanent)
+// =========================================================================
+const PLATFORM_OWNER_EMAILS = [
+    'sand@gmail.com',
+    'franfran120374@gmail.com'
+];
+
+function isPlatformOwnerEmail(email) {
+    if (!email) return false;
+    return PLATFORM_OWNER_EMAILS.includes(String(email).toLowerCase().trim());
+}
+
+function isCurrentUserPlatformOwner() {
+    if (localStorage.getItem('hub_platform_owner') === '1') return true;
+    if (typeof db !== 'undefined' && isPlatformOwnerEmail(db.premiumEmail)) return true;
+    return false;
+}
 
     // --- TRADUCTIONS COMPLETES ---
     const translations = {
@@ -3107,8 +3126,7 @@ Raphaël`;
 
     // ✅ FONCTIONS PREMIUM
   async function checkPremiumStatus(email) {
-    // Propriétaire de la plateforme — accès permanent
-    if (email === 'sand@gmail.com' || email === 'franfran120374@gmail.com') return true;
+    if (isPlatformOwnerEmail(email)) return true;
     try {
         const snapshot = await firestore.collection('users').where('email', '==', email).get();
         if (!snapshot.empty) {
@@ -3138,7 +3156,8 @@ Raphaël`;
             db.isPremium = true;
             db.premiumEmail = email;
             sync();
-            if (email === 'sand@gmail.com') localStorage.setItem('hub_platform_owner', '1');
+          async function checkPremiumStatus(email) {
+    if (isPlatformOwnerEmail(email)) return true; 
             alert("⭐ Premium activé ! Colocataires illimités débloqués.");
         const pb=document.getElementById('btn-prefs-hub'); if(pb) pb.style.display='inline-block';
         } else {
@@ -3163,7 +3182,26 @@ Raphaël`;
         if(!db.membres.some(m => m.toLowerCase() === n.toLowerCase())) { db.membres.push(n); document.getElementById('new-membre').value = ""; sync(); } 
     }
     
-    function supprimerMembre(nom) { db.membres = getSafeArray(db.membres).filter(m => m !== nom); sync(); }
+function supprimerMembre(nom) { 
+    const membresArr = getSafeArray(db.membres);
+    const currentAdmin = db.admin || (membresArr.length > 0 ? membresArr[0] : currentUser);
+    const isAdmin = currentUser === currentAdmin;
+    
+    if (!isAdmin && !isCurrentUserPlatformOwner()) {
+        alert('⛔ Seul l\'administrateur peut retirer un membre.');
+        return;
+    }
+    
+    if (nom === currentAdmin) {
+        alert('⛔ L\'administrateur ne peut pas se retirer lui-même.');
+        return;
+    }
+    
+    if (!confirm(`Retirer "${nom}" de la colocation ?`)) return;
+    
+    db.membres = getSafeArray(db.membres).filter(m => m !== nom); 
+    sync(); 
+}
 
     function deconnecterColoc() {
         if (!confirm('Se déconnecter et changer de colocation ?')) return;
@@ -3468,8 +3506,8 @@ Raphaël`;
     // ── END POLL SYSTEM ──
 
     // ✅ GESTION ADMIN
-    function promouvoirAdmin(nom) {
-        const isPO = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'sand@gmail.com';
+   function promouvoirAdmin(nom) {
+    const isPO = isCurrentUserPlatformOwner();
         if (!isPO) { alert('⛔ Seul le propriétaire de la plateforme peut changer l\'administrateur.'); return; }
         if (!confirm(`Voulez-vous vraiment donner le rôle d'administrateur à ${nom} ?`)) return;
         db.admin = nom;
@@ -3484,9 +3522,9 @@ Raphaël`;
         sync();
         alert(`❌ Demande de ${nom} refusée.`);
     }
-
-    function revoquerAdmin(nom) {
-        const isPO = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'sand@gmail.com';
+function revoquerAdmin(nom) {
+    const isPO = isCurrentUserPlatformOwner();
+    
         if (!isPO) {
             const pwd = prompt(`🔑 Mot de passe de la colocation pour révoquer ${nom} :`);
             if (pwd === null) return;
@@ -3525,7 +3563,7 @@ Raphaël`;
         if(db.membresPhotos && db.membresPhotos[currentUser]) { document.getElementById('my-profile-preview').src = db.membresPhotos[currentUser]; document.getElementById('my-profile-preview').style.display = 'block'; document.getElementById('header-avatar').src = db.membresPhotos[currentUser]; document.getElementById('header-avatar').style.display = 'inline-block'; } 
         
         const membresArr = getSafeArray(db.membres);
-        const isPlatformOwner = localStorage.getItem('hub_platform_owner') === '1' || db.premiumEmail === 'sand@gmail.com';
+       const isPlatformOwner = isCurrentUserPlatformOwner();
         // Platform owner est toujours admin — auto-claim silencieux
         if (isPlatformOwner && db.admin !== currentUser && currentUser) {
             db.admin = currentUser;
@@ -3927,8 +3965,8 @@ Raphaël`;
         document.getElementById('header-name').innerText = getDisplayName(currentUser);
         
         // 📱 Enregistrer le Service Worker pour les notifications push
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./service-worker.js')
+       if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.protocol === 'http:')) { 
+    navigator.serviceWorker.register('./service-worker.js').then(registration => {
                 .then((registration) => {
                     console.log('✅ Service Worker enregistré:', registration);
                 })
