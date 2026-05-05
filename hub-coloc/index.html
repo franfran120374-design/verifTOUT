@@ -3156,9 +3156,20 @@ Raphaël`;
             db.isPremium = true;
             db.premiumEmail = email;
             sync();
-          async function checkPremiumStatus(email) {
-    if (isPlatformOwnerEmail(email)) return true; 
-            alert("⭐ Premium activé ! Colocataires illimités débloqués.");
+   async function checkPremiumStatus(email) {
+    if (isPlatformOwnerEmail(email)) return true;
+    try {
+        const snapshot = await firestore.collection('users').where('email', '==', email).get();
+        if (!snapshot.empty) {
+            const userData = snapshot.docs[0].data();
+            const subRoot = userData['hub-coloc'];
+            if (subRoot && (subRoot.premium === true || subRoot.active === true)) return true;
+            const subNested = userData.subscriptions && userData.subscriptions['hub-coloc'];
+            if (subNested && (subNested.premium === true || subNested.active === true)) return true;
+        }
+    } catch(e) { console.warn("Erreur vérification premium:", e); }
+    return false;
+}
         const pb=document.getElementById('btn-prefs-hub'); if(pb) pb.style.display='inline-block';
         } else {
             alert("❌ Aucun abonnement Premium trouvé pour cet e-mail.\n\nAbonnez-vous d'abord sur VérifTOUT.");
