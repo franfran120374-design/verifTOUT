@@ -3975,10 +3975,15 @@ function revoquerAdmin(nom) {
         if(photo) { document.getElementById('coloc-photo-preview').src = photo; document.getElementById('coloc-photo-preview').style.display = 'block'; }
         document.getElementById('header-name').innerText = getDisplayName(currentUser);
         
-        // 📱 Enregistrer le Service Worker pour les notifications push
-       if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.protocol === 'http:')) { 
+    // 📱 Enregistrer le Service Worker pour les notifications push
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.protocol === 'http:')) { 
     navigator.serviceWorker.register('./service-worker.js').then(registration => {
-                .then((registration) => {
+        console.log('✅ Service Worker enregistré:', registration);
+    }).catch((error) => {
+        console.warn('⚠️ Erreur Service Worker:', error);
+        // L'app fonctionne même sans SW, pas de panique
+    });
+}
                     console.log('✅ Service Worker enregistré:', registration);
                 })
                 .catch((error) => {
